@@ -372,7 +372,8 @@ img.emoji {
       <label>Status:</label>
       <select id="statusFilter">
         <option value="">ทั้งหมด</option>
-        <option value="To Do">📋 To Do</option>
+        <option value="To Do">📋 To Do (English)</option>
+        <option value="⏳ ยังไม่เริ่ม">⏳ ยังไม่เริ่ม (ไทย)</option>
         <option value="In Progress">🚀 In Progress</option>
         <option value="Done">✅ Done</option>
       </select>
@@ -425,16 +426,37 @@ function renderStats() {
   `;
 }
 
+function parseSprintNumber(s) {
+  // Parse "S1-S5" or "S1" or "S20-S22" → returns starting number
+  const match = s.match(/S(\d+)/);
+  return match ? parseInt(match[1]) : 0;
+}
+
+function expandSprints(sprintStr) {
+  // "S1-S5" → ["S1","S2","S3","S4","S5"], "S1" → ["S1"]
+  const rangeMatch = sprintStr.match(/S(\d+)-S?(\d+)/);
+  if (rangeMatch) {
+    const start = parseInt(rangeMatch[1]);
+    const end = parseInt(rangeMatch[2]);
+    const result = [];
+    for (let i = start; i <= end; i++) result.push('S' + i);
+    return result;
+  }
+  const singleMatch = sprintStr.match(/S(\d+)/);
+  return singleMatch ? ['S' + singleMatch[1]] : [sprintStr];
+}
+
 function renderSprints() {
+  // Build map from EXPANDED sprint names to tasks
   const sprintMap = {};
   TASKS.forEach(t => {
-    if (!sprintMap[t.sprint]) sprintMap[t.sprint] = [];
-    sprintMap[t.sprint].push(t);
+    const sprints = expandSprints(t.sprint);
+    sprints.forEach(s => {
+      if (!sprintMap[s]) sprintMap[s] = [];
+      sprintMap[s].push(t);
+    });
   });
-  const sortedKeys = Object.keys(sprintMap).sort((a, b) => {
-    const na = parseInt(a.replace('S', '')), nb = parseInt(b.replace('S', ''));
-    return na - nb;
-  });
+  const sortedKeys = Object.keys(sprintMap).sort((a, b) => parseSprintNumber(a) - parseSprintNumber(b));
   document.getElementById('sprints').innerHTML = sortedKeys.map(k => `
     <div class="sprint" data-sprint="${k}" onclick="filterSprint('${k}')">
       <div class="sprint-name">${k}</div>
@@ -448,7 +470,8 @@ function filterSprint(s) {
   activeSprintFilter = activeSprintFilter === s ? null : s;
   document.querySelectorAll('.sprint').forEach(el => el.classList.remove('active'));
   if (activeSprintFilter) {
-    document.querySelector(`.sprint[data-sprint="${activeSprintFilter}"]`).classList.add('active');
+    const el = document.querySelector(`.sprint[data-sprint="${activeSprintFilter}"]`);
+    if (el) el.classList.add('active');
   }
   renderTasks();
 }
@@ -464,7 +487,7 @@ function renderTasks() {
     if (prio && t.priority !== prio) return false;
     if (so && t.so !== so) return false;
     if (status && t.status !== status) return false;
-    if (activeSprintFilter && t.sprint !== activeSprintFilter) return false;
+    if (activeSprintFilter && !expandSprints(t.sprint).includes(activeSprintFilter)) return false;
     return true;
   });
   
