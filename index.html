@@ -306,11 +306,13 @@ footer {
 </style>
 <script src="https://cdn.jsdelivr.net/npm/twemoji@14/dist/twemoji.min.js"></script>
 <script>
-// Twemoji loader - wait for everything to render
 function applyTwemoji() {
   if (typeof twemoji !== 'undefined' && document.body) {
     try {
-    twemoji.parse(document.body, { folder: 'svg', ext: '.svg' });
+      twemoji.parse(document.body, { folder: 'svg', ext: '.svg' });
+    } catch (e) {
+      console.warn('Twemoji parse error:', e);
+    }
   } else {
     setTimeout(applyTwemoji, 200);
   }
@@ -320,9 +322,9 @@ if (document.readyState === 'loading') {
 } else {
   applyTwemoji();
 }
-// Also re-apply after dynamic content render
 setTimeout(applyTwemoji, 500);
 setTimeout(applyTwemoji, 1500);
+setTimeout(applyTwemoji, 3000);
 </script>
 <style>
 /* Twemoji SVG size */
