@@ -551,9 +551,21 @@ document.getElementById('priorityFilter').addEventListener('change', renderTasks
 document.getElementById('soFilter').addEventListener('change', renderTasks);
 document.getElementById('statusFilter').addEventListener('change', renderTasks);
 
-renderStats();
-renderSprints();
-renderTasks();
+function init() {
+  if (document.getElementById('taskGrid')) {
+    renderStats();
+    renderSprints();
+    renderTasks();
+  } else {
+    setTimeout(init, 50);
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
 </script>
 </body>
 </html>
