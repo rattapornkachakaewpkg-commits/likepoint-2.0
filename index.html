@@ -304,11 +304,12 @@ footer {
   .sprints { grid-template-columns: repeat(3, 1fr); }
 }
 </style>
-<script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/twemoji@14/dist/twemoji.min.js"></script>
 <script>
 // Twemoji loader - wait for everything to render
 function applyTwemoji() {
   if (typeof twemoji !== 'undefined' && document.body) {
+    try {
     twemoji.parse(document.body, { folder: 'svg', ext: '.svg' });
   } else {
     setTimeout(applyTwemoji, 200);
@@ -532,8 +533,7 @@ function openModal(id) {
   `;
   
   const acList = t.acceptance.map(a => `<li>${a}</li>`).join('');
-  const techList = t.techStack.split(/[,
-]/).map(s => s.trim()).filter(Boolean).map(s => `<span>${s}</span>`).join('');
+  const techList = (t.techStack || '').split(/[,;\n]/).map(s => s.trim()).filter(Boolean).map(s => `<span>${s}</span>`).join('');
   
   document.getElementById('modalBody').innerHTML = `
     <div class="modal-section">
