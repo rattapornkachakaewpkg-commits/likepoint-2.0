@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📋 LikePoint 2.0 — Task Dashboard (Full Detail)</title>
+<style>
+:root {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --border: #334155;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --green: #22c55e;
+  --orange: #f97316;
+  --yellow: #eab308;
+  --blue: #3b82f6;
+  --red: #ef4444;
+  --purple: #a855f7;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  padding: 1rem;
+  min-height: 100vh;
+}
+.container { max-width: 1400px; margin: 0 auto; }
+header {
+  text-align: center;
+  padding: 1.5rem 1rem;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border);
+}
+h1 { font-size: clamp(1.4rem, 4vw, 2.2rem); margin-bottom: 0.5rem; }
+.subtitle { color: var(--muted); font-size: 0.95rem; }
+
+/* Stats */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.stat {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+}
+.stat-num { font-size: 1.8rem; font-weight: bold; }
+.stat-label { color: var(--muted); font-size: 0.85rem; margin-top: 0.25rem; }
+.stat.p0 .stat-num { color: var(--red); }
+.stat.p1 .stat-num { color: var(--orange); }
+.stat.p2 .stat-num { color: var(--yellow); }
+.stat.done .stat-num { color: var(--green); }
+
+/* Filters */
+.filters {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.filter-group { display: flex; align-items: center; gap: 0.5rem; }
+.filter-group label { color: var(--muted); font-size: 0.9rem; }
+select, input[type=search] {
+  background: #0f172a;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+
+/* Timeline / Sprint bars */
+.sprint-bar {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+.sprint-bar h3 { font-size: 1rem; margin-bottom: 0.75rem; color: var(--muted); }
+.sprints {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.5rem;
+}
+.sprint {
+  background: #0f172a;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem;
+  font-size: 0.8rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.sprint:hover { transform: translateY(-2px); border-color: var(--green); }
+.sprint.active { background: var(--green); color: #000; font-weight: bold; }
+.sprint-name { font-weight: bold; }
+.sprint-tasks { color: var(--muted); font-size: 0.75rem; margin-top: 0.15rem; }
+.sprint.active .sprint-tasks { color: #000; }
+
+/* Task grid */
+.task-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.task-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.task-card:hover {
+  border-color: var(--green);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
+}
+.task-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.task-num {
+  background: var(--blue);
+  color: white;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: bold; font-size: 0.85rem;
+  flex-shrink: 0;
+}
+.priority {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-weight: bold;
+}
+.priority.P0 { background: var(--red); color: white; }
+.priority.P1 { background: var(--orange); color: white; }
+.priority.P2 { background: var(--yellow); color: #000; }
+.task-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.3;
+  flex: 1;
+}
+.task-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.task-meta span {
+  background: #0f172a;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+}
+.task-desc {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+.progress-bar {
+  background: #0f172a;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: auto;
+}
+.progress-fill {
+  background: linear-gradient(90deg, var(--green) 0%, #16a34a 100%);
+  height: 100%;
+  transition: width 0.5s;
+}
+.progress-text {
+  font-size: 0.75rem;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+}
+
+/* Modal */
+.modal-bg {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+.modal-bg.active { display: flex; }
+.modal {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  max-width: 700px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+.modal-close {
+  background: var(--red);
+  color: white;
+  border: none;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+.modal-section {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.modal-section:last-child { border-bottom: none; }
+.modal-section h4 {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.modal-section p { font-size: 0.95rem; }
+.modal-section ul {
+  list-style: none;
+  padding-left: 0;
+}
+.modal-section ul li {
+  padding: 0.4rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+  font-size: 0.9rem;
+}
+.modal-section ul li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--green);
+  font-weight: bold;
+}
+.tech-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.tech-stack span {
+  background: #0f172a;
+  border: 1px solid var(--border);
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: var(--blue);
+}
+
+.empty { text-align: center; padding: 3rem; color: var(--muted); }
+
+footer {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  border-top: 1px solid var(--border);
+  margin-top: 2rem;
+}
+
+@media (max-width: 600px) {
+  .task-grid { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .sprints { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+<script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js" crossorigin="anonymous"></script>
+<script>
+// Twemoji loader - wait for everything to render
+function applyTwemoji() {
+  if (typeof twemoji !== 'undefined' && document.body) {
+    twemoji.parse(document.body, { folder: 'svg', ext: '.svg' });
+  } else {
+    setTimeout(applyTwemoji, 200);
+  }
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', applyTwemoji);
+} else {
+  applyTwemoji();
+}
+// Also re-apply after dynamic content render
+setTimeout(applyTwemoji, 500);
+setTimeout(applyTwemoji, 1500);
+</script>
+<style>
+/* Twemoji SVG size */
+img.emoji {
+  height: 1em;
+  width: 1em;
+  margin: 0 .05em 0 .1em;
+  vertical-align: -0.1em;
+  display: inline-block;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>📋 LikePoint 2.0 — Task Dashboard</h1>
+    <p class="subtitle">แผนงาน 6 เดือน v2 + Sheet PM Kan = 57 Tasks ครบ | Updated: 2026-06-28</p>
+  </header>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <label>🔍 ค้นหา:</label>
+      <input type="search" id="searchInput" placeholder="ชื่อ Task / SO / Owner..." />
+    </div>
+    <div class="filter-group">
+      <label>Priority:</label>
+      <select id="priorityFilter">
+        <option value="">ทั้งหมด</option>
+        <option value="P0">P0 MUST</option>
+        <option value="P1">P1 SHOULD</option>
+        <option value="P2">P2 COULD</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Strategic Outcome:</label>
+      <select id="soFilter">
+        <option value="">ทั้งหมด</option>
+        <option value="Quality">⚙️ Quality</option>
+        <option value="Trusted">🔒 Trusted</option>
+        <option value="UX">❤️ UX</option>
+        <option value="Expand">🌐 Expand</option>
+        <option value="Growth">💰 Growth</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Status:</label>
+      <select id="statusFilter">
+        <option value="">ทั้งหมด</option>
+        <option value="To Do">📋 To Do</option>
+        <option value="In Progress">🚀 In Progress</option>
+        <option value="Done">✅ Done</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="sprint-bar">
+    <h3>📅 Sprint Timeline (คลิกเพื่อกรอง)</h3>
+    <div class="sprints" id="sprints"></div>
+  </div>
+
+  <div class="task-grid" id="taskGrid"></div>
+
+  <footer>
+    <p>📊 Updated: 2026-06-28 | Merged: 23 v2 + 34 sheet = 57 tasks | 🎯 Source of Truth</p>
+    <p>🔗 Source: <code>likepoint-2.0-task-plan-6m-v2-sheet-full.csv</code></p>
+  </footer>
+</div>
+
+<!-- Modal -->
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h2 id="modalTitle" style="font-size:1.2rem;margin-bottom:0.25rem"></h2>
+        <p id="modalSubtitle" style="color:var(--muted);font-size:0.9rem"></p>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+const TASKS = [{"taskId": 1, "taskName": "ป้องกันการสร้าง Wallet ซ้ำ (Duplicate Wallet Prevention)", "so": "Quality", "priority": "P0", "manDay": 5, "sprint": "S1", "startDate": "2026-06-28", "endDate": "2026-07-04", "status": "To Do", "owner": "Dev", "description": "ป้องกันไม่ให้สมาชิกสร้าง Wallet ซ้ำซ้อน — เพื่อให้ 1 คน = 1 Wallet หลักต่อ Chain", "empathize": "ลูกค้าเปิดแอปแล้วเจอ 'กระเป๋าซ้ำ' → งง กลัว Point หาย / Admin ต้อง reconcile ทุกวัน", "define": "ระบบไม่กันการสร้างกระเป๋าซ้ำ ทำให้ Point เข้าผิดกระเป๋า", "ideate": "1) BCT Verify Wallet ก่อนโอน Point  2) Unique Index (1 คน = 1 กระเป๋า/Chain)", "prototype": "API Verify + DB Constraint + Audit Log", "test": "Point ผิดกระเป๋า = 0 / Verify Response < 500ms", "outcome": "✅ ลูกค้าไว้ใจยอด Point  ✅ Admin ไม่ต้อง reconcile  ✅ ลดข้อร้องเรียน 100%", "acceptance": ["API /api/wallet/verify ทำงานถูกต้อง", "Database มี Unique Index", "Pre-transfer Check ทำงานก่อนทุก transaction", "Log บันทึกทุก verification attempt", "Alert ถ้า verify fail", "Unit test + Integration test", "Documentation อัปเดต"], "deliverable": "API endpoint + Source code, Unit test report, API docs", "techStack": "Node.js + Express, PostgreSQL, ethers.js / web3.js, Winston + Sentry", "source": "v2-plan", "category": "v2"}, {"taskId": 2, "taskName": "ตรวจสอบและทบทวนข้อมูล Wallet (Wallet Audit Report)", "so": "Quality", "priority": "P0", "manDay": 4, "sprint": "S1", "startDate": "2026-07-05", "endDate": "2026-07-09", "status": "To Do", "owner": "Dev", "description": "หน้า Admin ตรวจกระเป๋าซ้ำ + ทบทวนข้อมูล Wallet — Real-time Dashboard", "empathize": "Admin ใช้เวลา 2-3 ชม./วัน ตรวจกระเป๋าซ้ำด้วยตา / ลูกค้ารอนาน", "define": "ไม่มีเครื่องมือช่วยตรวจกระเป๋าซ้ำแบบ Real-time", "ideate": "Dashboard + Auto-Alert + ปุ่ม Merge/Archive", "prototype": "Web Dashboard + Table + Filter + Action", "test": "Admin ตรวจเสร็จ < 5 นาที / Alert ภายใน 1 นาที", "outcome": "✅ Admin เร็วขึ้น 30 เท่า  ✅ เห็นปัญหาก่อนลูกค้าบ่น  ✅ Audit Trail ครบ", "acceptance": ["Dashboard แสดง duplicate wallets ครบ", "Filter + Search ทำงาน", "Auto-Alert ทุก 1 ชั่วโมง", "Merge/Archive action ทำงาน + log", "Export CSV ใช้งานได้", "Permission check (Admin only)", "Responsive (mobile-friendly)"], "deliverable": "Admin Dashboard, API endpoints, Cron job, Notification system", "techStack": "React + TailwindCSS, Node.js + Express, PostgreSQL, node-cron, Email + Slack webhook", "source": "v2-plan", "category": "v2"}, {"taskId": 3, "taskName": "Error Handling + Logging", "so": "Quality", "priority": "P0", "manDay": 6, "sprint": "S1-S2", "startDate": "2026-07-12", "endDate": "2026-07-21", "status": "To Do", "owner": "Dev", "description": "เพิ่ม try/catch + logging ทุกฟังก์ชัน — ป้องกันระบบค้าง + แจ้งเตือน Error อัตโนมัติ", "empathize": "ระบบค้างบ่อย / Admin ไม่รู้ว่า Error ตรงไหน / ลูกค้าโกรธ", "define": "ระบบไม่มี try/catch + log ทำให้แก้ปัญหาไม่เป็น", "ideate": "try/catch ทุกฟังก์ชัน + Log + Alert อัตโนมัติ", "prototype": "Logger Library + Error Tracker + Alert Channel", "test": "ระบบไม่ค้าง / ไม่แตก / รู้ทันทีเมื่อพัง", "outcome": "✅ Uptime > 99.9%  ✅ แก้ปัญหาใน 1 ชม. (ไม่ใช่ 1 วัน)  ✅ User ไว้ใจ", "acceptance": ["try/catch ครอบทุก function สำคัญ", "Log level: error/warn/info/debug", "Log มี context (user_id, request_id, timestamp)", "Error tracker integration (Sentry)", "Alert ไป Telegram/Slack เมื่อ error critical", "Log retention 90 วัน", "Dashboard ดู error trend"], "deliverable": "Logger library, Error tracking setup, Alert rules, Documentation", "techStack": "Winston, Sentry, Telegram Bot API, Grafana/Loki", "source": "v2-plan", "category": "v2"}, {"taskId": 4, "taskName": "BUpoint Auth ใหม่", "so": "Trusted", "priority": "P0", "manDay": 12, "sprint": "S2-S3", "startDate": "2026-07-22", "endDate": "2026-08-08", "status": "To Do", "owner": "Dev", "description": "Auth Microservice แยกจาก BuApp + 2FA + Token Rotation — ป้องกัน Single Point of Failure", "empathize": "Auth ปัจจุบันผูกกับ BuApp อย่างเดียว → BuApp ล่ม = LikePoint ล่มด้วย / ไม่มี 2FA", "define": "Auth ไม่ปลอดภัย + Single Point of Failure", "ideate": "Auth แยกอิสระ + 2FA + Token Rotation + Rate Limiting", "prototype": "Auth Microservice + Login UI 2FA + Token API", "test": "Auth Fail Rate < 1% / Token Rotation ทุก 15 นาที", "outcome": "✅ ลดโอกาสถูก Hack 90%  ✅ ผ่าน PDPA/BoT  ✅ LikePoint ล่มแยกจาก BuApp", "acceptance": ["Auth Microservice deploy แยก", "2FA (TOTP/SMS/Email)", "Token Rotation ทุก 15 นาที", "Refresh Token + Revoke", "Rate Limiting (10 req/min per IP)", "OAuth 2.0 + OpenID Connect", "Session Management (Redis)", "Audit Log ทุก login attempt"], "deliverable": "Auth Microservice, 2FA UI, API docs, Security audit", "techStack": "Node.js + Express, JWT, Redis, Twilio/Email OTP", "source": "v2-plan", "category": "v2"}, {"taskId": 5, "taskName": "ระบบตรวจจับความผิดปกติ (Fraud Detection)", "so": "Trusted", "priority": "P0", "manDay": 10, "sprint": "S3-S4", "startDate": "2026-08-09", "endDate": "2026-08-22", "status": "To Do", "owner": "Dev", "description": "ตรวจจับ + ป้องกันการทุจริต + จำกัดการถอน + อนุมัติหลายลายเซ็น", "empathize": "ลูกค้าถอนเงินซ้ำได้ไม่จำกัด → เสี่ยงโกง / ฟอกเงิน / ไม่มีใครอนุมัติ", "define": "ไม่มีระบบป้องกันการถอนเงินผิดปกติ", "ideate": "Daily Limit + Cool-down 24 ชม. + Multi-sig Approval + Anomaly Detection", "prototype": "Fraud Detection Engine + Multi-sig Workflow + Alert", "test": "Fraud Rate < 0.1% / ข้อมูลรั่วไหล = 0 ครั้ง", "outcome": "✅ ลดความเสียหายทางการเงิน  ✅ ผ่านกฎหมาย AML  ✅ ลูกค้าปลอดภัย", "acceptance": ["Daily cash-out limit (เช่น 50,000 บาท/วัน)", "Cool-down 24 ชม. ระหว่าง transaction ใหญ่", "Multi-sig สำหรับ transaction > 100,000 บาท", "Anomaly Detection (พฤติกรรมผิดปกติ)", "Alert real-time ไป Admin", "Block + manual review", "Audit Trail ครบ"], "deliverable": "Fraud Engine, Multi-sig workflow, Anomaly detection rules, Dashboard", "techStack": "Python ML (scikit-learn), Redis Streams, Slack/Email alerts", "source": "v2-plan", "category": "v2"}, {"taskId": 6, "taskName": "กำหนดให้สมาชิกหนึ่งรายมีบัญชีหลักเพียงบัญชีเดียว (Single Wallet)", "so": "Quality", "priority": "P0", "manDay": 8, "sprint": "S4-S5", "startDate": "2026-08-23", "endDate": "2026-09-05", "status": "To Do", "owner": "Dev", "description": "Unique Index (member_id, chain_type) + API เช็คก่อนสร้าง — ปิดช่องโหว่ตั้งแต่ต้นทาง", "empathize": "1 คนมีหลายกระเป๋า → ลูกค้างง / Admin ต้อง reconcile", "define": "ระบบไม่บังคับให้ 1 คนมีกระเป๋าเดียวต่อ Chain", "ideate": "Unique Index (member_id, chain_type) + API เช็คก่อนสร้าง", "prototype": "DB Migration + API Endpoint + Test Coverage", "test": "1 Member = 1 Wallet/Chain / Dedupe Accuracy 100%", "outcome": "✅ ไม่มีกระเป๋าซ้ำตั้งแต่ต้นทาง  ✅ ลดภาระ Admin  ✅ ระบบสะอาด", "acceptance": ["Unique Index (member_id, chain_type)", "API checkWalletBeforeCreate()", "Migration script (รองรับข้อมูลเดิม)", "Test 100% coverage", "Rollback plan", "Document data flow"], "deliverable": "DB migration, API endpoint, Test report", "techStack": "PostgreSQL, Node.js, Integration tests", "source": "v2-plan", "category": "v2"}, {"taskId": 7, "taskName": "รวมบัญชีที่เกี่ยวข้องเข้าด้วยกัน (Wallet Merge / Claim Logic)", "so": "Quality", "priority": "P0", "manDay": 6, "sprint": "S5-S6", "startDate": "2026-09-06", "endDate": "2026-09-19", "status": "To Do", "owner": "Dev", "description": "Merge Tool + Archive + Set as Main — เคลียร์กระเป๋าซ้ำเก่าที่ค้างในระบบ", "empathize": "มีกระเป๋าซ้ำเก่าในระบบ → Admin ต้องย้าย Point ด้วยมือ", "define": "ไม่มีเครื่องมือรวมกระเป๋าเก่าที่ค้างอยู่", "ideate": "Merge Tool (รวม Point) + Archive + Set as Main + Confirm Modal", "prototype": "Admin UI + Merge API + Audit Log + Preview ผลกระทบ", "test": "Merge 100% ถูกต้อง / Audit Log ครบ", "outcome": "✅ เคลียร์กระเป๋าซ้ำเก่าหมด  ✅ ลูกค้าเห็นยอด Point ตัวเดียว  ✅ ลดเคส Support 80%", "acceptance": ["UI Merge Wallet (Admin only)", "Preview ผลกระทบก่อน Merge", "Confirm Modal ก่อนยืนยัน", "Point transfer ถูกต้อง 100%", "Audit Log ทุก Merge", "Rollback ภายใน 24 ชม."], "deliverable": "Admin UI, Merge API, Audit log table", "techStack": "React + TailwindCSS, Node.js, PostgreSQL transactions", "source": "v2-plan", "category": "v2"}, {"taskId": 8, "taskName": "Git + CI/CD + Staging", "so": "Quality", "priority": "P0", "manDay": 5, "sprint": "S6", "startDate": "2026-09-06", "endDate": "2026-09-19", "status": "To Do", "owner": "Dev", "description": "Git Repo + Branch Strategy + CI/CD + dev→staging→production + Checklist", "empathize": "Deploy ผิด → Production พัง / กู้คืนไม่ได้ / ใช้เวลานาน", "define": "ไม่มี Version Control + Staging Env = เสี่ยงทุกครั้ง", "ideate": "Git Repo + Branch Strategy + CI/CD + dev→staging→production + Checklist", "prototype": "GitHub Repo + GitHub Actions + 3 Environment", "test": "ย้อนเวอร์ชัน < 5 นาที / Deploy พัง = 0", "outcome": "✅ ปลอดภัย 100%  ✅ Deploy บ่อยได้  ✅ Dev ทำงานเป็นทีม", "acceptance": ["Git repo + branch strategy (main/develop/feature)", "CI pipeline (lint + test + build)", "CD pipeline (auto deploy staging)", "Manual approval ก่อน production", "Rollback automatic ถ้า health check fail", "Deploy checklist ใน PR template", "Notification เมื่อ deploy"], "deliverable": "Git repo, GitHub Actions, 3 Environments, Deploy docs", "techStack": "Git, GitHub Actions, Docker, Kubernetes (optional)", "source": "v2-plan", "category": "v2"}, {"taskId": 9, "taskName": "แผนสำรองและการกู้คืนระบบ (Backup & Recovery)", "so": "Trusted", "priority": "P0", "manDay": 5, "sprint": "S7", "startDate": "2026-09-20", "endDate": "2026-10-03", "status": "To Do", "owner": "Dev", "description": "Script สำรองทุกวัน 02:00 + DR Plan + Recovery Drill — ผ่าน Compliance", "empathize": "ถ้าระบบล่ม/ถูกแฮ็ก → ข้อมูลหาย / กู้คืนไม่ได้ / เสียหายหลายล้าน", "define": "ไม่มี Backup อัตโนมัติ + Recovery Plan", "ideate": "Script สำรองทุกวัน 02:00 + DR Plan + Test", "prototype": "Backup Script + DR Runbook + Recovery Drill", "test": "กู้คืน < 1 ชม. / ข้อมูลสูญหาย = 0", "outcome": "✅ ปลอดภัยจากภัยคุกคาม  ✅ ผ่าน Compliance  ✅ ลูกค้าไว้ใจ", "acceptance": ["Backup script อัตโนมัติทุกวัน 02:00", "เก็บ backup 90 วัน", "DR Runbook (ละเอียด)", "Recovery Drill ทุก 3 เดือน", "RTO < 1 ชม., RPO < 15 นาที", "Encryption at rest", "Off-site backup"], "deliverable": "Backup script, DR runbook, Recovery drill report", "techStack": "pg_dump, AWS S3, Cron, PGP encryption", "source": "v2-plan", "category": "v2"}, {"taskId": 10, "taskName": "บันทึกประวัติการทำรายการ (Audit Trail)", "so": "Trusted", "priority": "P0", "manDay": 5, "sprint": "S7", "startDate": "2026-09-20", "endDate": "2026-10-03", "status": "To Do", "owner": "Dev", "description": "Append-only log ทุก Transaction — ตรวจสอบได้ทุกเคส ลบไม่ได้", "empathize": "เกิด dispute → ตรวจสอบไม่ได้ / ไม่มีหลักฐาน", "define": "ไม่มี Audit Trail ที่ครบถ้วนและน่าเชื่อถือ", "ideate": "Append-only DB + Hash chain + Immutable log", "prototype": "Audit Service + Append-only table + Hash chain", "test": "Log ครบ 100% / ลบไม่ได้ / Verify ได้", "outcome": "✅ ตรวจสอบได้ทุกเคส  ✅ ผ่านกฎหมาย  ✅ Dispute น้อยลง", "acceptance": ["ทุก Transaction log เข้า audit_log table", "Append-only (ไม่มี UPDATE/DELETE)", "Hash chain (block เชื่อมกัน)", "เก็บ log 7 ปี (compliance)", "Query API ค้นหาตาม user_id, action, date", "Export สำหรับตรวจสอบ"], "deliverable": "Audit Service, Append-only schema, Hash chain implementation", "techStack": "PostgreSQL (immutable), Blockchain (optional), Node.js", "source": "v2-plan", "category": "v2"}, {"taskId": 11, "taskName": "การคุ้มครองข้อมูลส่วนบุคคลตาม PDPA", "so": "Trusted", "priority": "P0", "manDay": 6, "sprint": "S8", "startDate": "2026-10-04", "endDate": "2026-10-17", "status": "To Do", "owner": "Dev", "description": "Consent + Right to be Forgotten + Data Export — ผ่านกฎหมาย PDPA/GDPR", "empathize": "ลูกค้าขอลบข้อมูล → ลบไม่ได้ / ไม่รู้ว่าข้อมูลอยู่ที่ไหน", "define": "ระบบไม่รองรับ PDPA — เสี่ยงปรับ 5 ล้านบาท", "ideate": "Consent Management + Data Discovery + Right to be Forgotten", "prototype": "Consent Banner + Data Map + Delete API + Export API", "test": "Consent 100% / Delete < 30 วัน / Export < 7 วัน", "outcome": "✅ ผ่าน PDPA  ✅ ลูกค้าไว้ใจ  ✅ ปรับ 0 บาท", "acceptance": ["Consent Banner (first visit)", "Consent Management (opt-in/opt-out)", "Data Map (เก็บข้อมูลอะไรที่ไหน)", "Right to Access (Export ข้อมูล)", "Right to be Forgotten (ลบภายใน 30 วัน)", "Data Breach Notification (72 ชม.)", "DPIA (Data Protection Impact Assessment)", "Privacy Policy + Cookie Policy"], "deliverable": "Consent system, Data map, Delete API, Privacy docs", "techStack": "Node.js, PostgreSQL, Email templates, DPO consultant", "source": "v2-plan", "category": "v2"}, {"taskId": 12, "taskName": "การปฏิบัติตามมาตรการป้องกันการฟอกเงิน (AML)", "so": "Trusted", "priority": "P0", "manDay": 3, "sprint": "S8", "startDate": "2026-10-04", "endDate": "2026-10-17", "status": "To Do", "owner": "Dev", "description": "ตรวจ Transaction ผิดปกติ + รายงาน ธปท. — ป้องกันฟอกเงิน", "empathize": "ลูกค้าโอนเงินผิดปกติ → เสี่ยงถูกใช้เป็นช่องฟอกเงิน", "define": "ไม่มี AML — ใบอนุญาตถูกเพิกถอน", "ideate": "Transaction Monitoring + Risk Scoring + STR (Suspicious Transaction Report)", "prototype": "AML Engine + Risk Score + รายงาน ธปท.", "test": "ตรวจจับ transaction ต้องสงสัยได้ / STR ส่งภายใน 7 วัน", "outcome": "✅ ใบอนุญาตไม่ถูกเพิกถอน  ✅ ดำเนินธุรกิจได้ต่อ", "acceptance": ["Transaction monitoring real-time", "Risk Scoring (0-100)", "STR ส่ง ธปท. ภายใน 7 วัน", "Sanction list screening", "High-risk country check", "Politically Exposed Person (PEP) check", "Audit log AML decisions"], "deliverable": "AML Engine, Risk rules, STR report template, Compliance officer", "techStack": "Python (ML), Refinitiv/World-Check API, ธปท. e-reporting", "source": "v2-plan", "category": "v2"}, {"taskId": 13, "taskName": "กระบวนการยืนยันตัวตนลูกค้าและคู่ค้า (KYC / KYB)", "so": "Trusted", "priority": "P0", "manDay": 4, "sprint": "S9", "startDate": "2026-10-18", "endDate": "2026-10-31", "status": "To Do", "owner": "Dev", "description": "ยืนยันตัวตน + ยืนยันธุรกิจ — ปิดช่องโหว่ฟอกเงิน", "empathize": "ลูกค้าสมัครโดยไม่ยืนยันตัวตน → ช่องโหว่ฟอกเงิน", "define": "ไม่มี KYC/KYB — ไม่รู้ว่าใครใช้ระบบ", "ideate": "KYC (บุคคล) + KYB (นิติบุคคล) + OCR + Liveness check", "prototype": "KYC Flow + KYB Flow + Document Upload + Verification API", "test": "Verify สำเร็จ > 95% / Fraud < 0.1%", "outcome": "✅ ปิดช่องโหว่ 100%  ✅ ผ่านกฎหมาย", "acceptance": ["KYC: บัตรประชาชน + Selfie + Liveness", "KYB: หนังสือรับรอง + บัญชีธนาคาร + ผู้มีอำนาจ", "OCR อ่านข้อมูลจากเอกสาร", "Sanction list check", "Risk-based verification (low/medium/high)", "Manual review สำหรับ high-risk", "Re-KYC ทุก 2 ปี"], "deliverable": "KYC/KYB flow, OCR service, Verification report", "techStack": "Onfido/Veriff API, OCR (Tesseract/AWS Textract), Node.js", "source": "v2-plan", "category": "v2"}, {"taskId": 14, "taskName": "การปฏิบัติตามข้อกำกับของธนาคารแห่งประเทศไทย (BoT Compliance)", "so": "Trusted", "priority": "P0", "manDay": 4, "sprint": "S9", "startDate": "2026-10-18", "endDate": "2026-10-31", "status": "To Do", "owner": "Dev", "description": "ปฏิบัติตามข้อบังคับ ธปท. — ป้องกันถูกสั่งปิด", "empathize": "ถ้าไม่ทำตาม ธปท. → ถูกสั่งปิด", "define": "ไม่รู้ข้อกำหนด ธปท. ทั้งหมด → เสี่ยงโดนปรับ/สั่งปิด", "ideate": "ตรวจสอบข้อกำหนด + Implement ตามที่ ธปท. กำหนด", "prototype": "Compliance checklist + Implementation + Audit", "test": "ผ่านข้อกำหนดทุกข้อ / Audit ทุกปี", "outcome": "✅ เปิดให้บริการได้  ✅ ไม่ถูกสั่งปิด", "acceptance": ["ทุก requirement ของ ธปท. ถูก implement", "Capital Adequacy (เงินกองทุน)", "Liquidity (สภาพคล่อง)", "Risk Management Framework", "Internal Control", "Audit ทุกปี (external auditor)", "รายงาน ธปท. ตามกำหนด"], "deliverable": "Compliance report, Implementation log, External audit", "techStack": "External legal counsel, Compliance officer, Audit firm", "source": "v2-plan", "category": "v2"}, {"taskId": 15, "taskName": "การบริหารวงจรชีวิตของ Wallet (Wallet Lifecycle Master Plan)", "so": "Trusted", "priority": "P0", "manDay": 8, "sprint": "S9-S10", "startDate": "2026-10-18", "endDate": "2026-11-14", "status": "To Do", "owner": "Dev", "description": "State Machine: Create → Activate → Verify → Merge → Archive → Delete — ครบวงจร", "empathize": "กระเป๋าลูกค้าไม่มีแผนครบวงจร → สร้าง → ใช้ → ปิด → ลบ ขาดตอน", "define": "ไม่มีแผนจัดการกระเป๋าตลอดช่วงชีวิต", "ideate": "Lifecycle: Create → Activate → Verify → Merge → Archive → Delete", "prototype": "Lifecycle Engine + State Machine + Audit + Dashboard", "test": "Wallet ถูกต้อง 100% / ลบตามกฎหมาย", "outcome": "✅ ผ่าน PDPA/GDPR  ✅ ไม่มีข้อมูลค้าง  ✅ ลดภาระ Storage", "acceptance": ["State Machine ครบ 6 states", "Transition rules ชัดเจน", "Auto-trigger (Verify → Activate)", "Manual trigger (Archive)", "Scheduled (Delete หลัง 7 ปี)", "Audit log ทุก transition", "Dashboard แสดง wallet แต่ละ state"], "deliverable": "Lifecycle Engine, State diagram, Auto-rules", "techStack": "Node.js, PostgreSQL, XState (optional)", "source": "v2-plan", "category": "v2"}, {"taskId": 16, "taskName": "UX Re-design + Onboarding", "so": "UX", "priority": "P1", "manDay": 15, "sprint": "S10-S12", "startDate": "2026-11-01", "endDate": "2026-12-12", "status": "To Do", "owner": "Dev", "description": "ลด 3 คลิก → 1 คลิก + Progressive Disclosure + Tutorial + Tooltip", "empathize": "ใช้แอปงง ต้องกด 3-5 ครั้ง / สมัครใหม่ใช้เวลา 10 นาที", "define": "User Onboarding ยากเกินไป → คนเลิกใช้ก่อน", "ideate": "1-Click + Progressive Disclosure + Tutorial + Tooltip", "prototype": "New UI Flow + Onboarding Tour + Help Tooltip", "test": "Onboarding < 3 นาที / ไม่ต้องถามวิธีใช้ > 80%", "outcome": "✅ Retention +25%  ✅ ลูกค้าใหม่เข้าใจเร็ว  ✅ ลดเคส Support 50%", "acceptance": ["Onboarding tour 4 ขั้น", "Contextual help tooltip", "1-click action (transfer, claim)", "Empty states + loading states", "Mobile-first design", "Accessibility (WCAG 2.1 AA)", "A/B test variant"], "deliverable": "Redesigned UI, Onboarding flow, Component library", "techStack": "React + TailwindCSS, Figma, Hotjar analytics", "source": "v2-plan", "category": "v2"}, {"taskId": 17, "taskName": "Developer Portal + API Doc", "so": "Expand", "priority": "P1", "manDay": 8, "sprint": "S12-S13", "startDate": "2026-12-13", "endDate": "2026-12-26", "status": "To Do", "owner": "Dev", "description": "Swagger + SDK + Sandbox Env — BU ต่อ Platform ง่ายขึ้น 4 เท่า", "empathize": "BU อยากต่อ API แต่ไม่มีคู่มือ / Dev ใหม่ใช้เวลาเรียนรู้ 2 สัปดาห์", "define": "ไม่มีเอกสาร API + Sandbox", "ideate": "Swagger Doc + SDK (JS/Flutter) + Sandbox Env + Change Log", "prototype": "Dev Portal Web + SDK Repo + Sandbox Server", "test": "BU Integration < 1 สัปดาห์", "outcome": "✅ BU ต่อ Platform ง่ายขึ้น 4 เท่า  ✅ BU ใหม่ 2 ราย/เดือน  ✅ ลดงาน Support Dev", "acceptance": ["Swagger/OpenAPI 3.0 spec", "SDK JavaScript + Flutter", "Sandbox env (test data)", "API versioning", "Change log", "Authentication guide", "Code samples"], "deliverable": "Developer Portal, SDK packages, Sandbox server", "techStack": "Swagger UI, OpenAPI Generator, GitHub Pages", "source": "v2-plan", "category": "v2"}, {"taskId": 18, "taskName": "เชื่อมต่อบริการทองคำ (Gold Integration)", "so": "Expand+Growth", "priority": "P1", "manDay": 7, "sprint": "S14", "startDate": "2026-12-27", "endDate": "2027-01-09", "status": "To Do", "owner": "Dev", "description": "เชื่อม LikePoint ↔ Nativ ↔ MS24 — แลก Point เป็นทองคำแท่ง/ออมทอง", "empathize": "ลูกค้ามี Point เยอะ แต่แลกได้แค่ของ/เงิน → อยากแลกเป็นทองคำ", "define": "Point ไม่สามารถเปลี่ยนเป็น Real Asset ได้", "ideate": "เชื่อม LikePoint ↔ Nativ ↔ MS24 + แลก Point เป็นทองคำแท่ง/ออมทอง", "prototype": "Integration API + Gold Conversion Flow + UI แลก", "test": "สำเร็จ 100% / Transaction < 1 นาที", "outcome": "✅ Point มีมูลค่าจริง  ✅ ดึงดูดลูกค้า Wealth  ✅ รายได้ใหม่", "acceptance": ["เชื่อม Nativ API (gold price)", "Conversion rate real-time", "UI แลก Point → ทองคำ", "Audit log ทุก transaction", "Rollback ถ้า fail", "Notification ลูกค้า"], "deliverable": "Integration API, Conversion flow, UI", "techStack": "Nativ API, MS24 API, Node.js, React", "source": "v2-plan", "category": "v2"}, {"taskId": 19, "taskName": "เชื่อมต่อบริการสินทรัพย์ดิจิทัล (Crypto Integration)", "so": "Expand", "priority": "P1", "manDay": 7, "sprint": "S15", "startDate": "2027-01-10", "endDate": "2027-01-23", "status": "To Do", "owner": "Dev", "description": "เชื่อม LikePoint ↔ Nativ ↔ MS24 — แลก Point เป็น BTC/ETH", "empathize": "ลูกค้ารุ่นใหม่อยากถือ Crypto (BTC/ETH)", "define": "ไม่รองรับ Digital Asset ยอดนิยม", "ideate": "เชื่อม LikePoint ↔ Nativ ↔ MS24 + แลก Point เป็น BTC/ETH", "prototype": "Integration API + Crypto Wallet + Conversion Rate + UI", "test": "สำเร็จ 100% / รองรับ 3 Chain", "outcome": "✅ ดึงดูด User รุ่นใหม่  ✅ ทันโลก Web3  ✅ รายได้ใหม่", "acceptance": ["รองรับ BTC, ETH, USDC", "Crypto wallet integration", "Conversion rate real-time", "Security audit (smart contract)", "Compliance (SEC Thailand)", "Tax report"], "deliverable": "Integration API, Crypto wallet, Security audit", "techStack": "Web3.js, MetaMask, Chainlink price feed", "source": "v2-plan", "category": "v2"}, {"taskId": 20, "taskName": "ออกแบบกิจกรรมลุ้นรางวัลรูปแบบใหม่ (New Lotto)", "so": "UX+Growth", "priority": "P1", "manDay": 6, "sprint": "S16", "startDate": "2027-01-24", "endDate": "2027-02-06", "status": "To Do", "owner": "Dev", "description": "Progressive Jackpot + Animation — เพิ่ม Engagement +30%", "empathize": "ลูกค้าอยากลุ้นรางวัลใหญ่ / Lotto เดิมมีรางวัลน้อย", "define": "Lotto เดิมไม่ดึงดูด + ไม่มีเงินรางวัลสะสม", "ideate": "สะสมทบเงินรางวัล + Progressive + Animation", "prototype": "Lotto Engine + Progressive Jackpot + UI Animation", "test": "Participation +40% / Jackpot Hit Rate > 0.5%", "outcome": "✅ Engagement +30%  ✅ รายได้จากค่าส่วนแบ่ง  ✅ ลูกค้ากลับมาทุกวัน", "acceptance": ["Progressive jackpot (สะสมทุกงวด)", "Animation สนุก ๆ", "Fair random (provably fair)", "Audit trail", "Notification ผู้ชนะ"], "deliverable": "Lotto engine, Animation, Notification system", "techStack": "Node.js, Canvas API, Provably fair algorithm", "source": "v2-plan", "category": "v2"}, {"taskId": 21, "taskName": "Gamification (Daily Mission + Badge + Tier + Challenge + Leaderboard + Streak + Lucky Spin)", "so": "UX+Growth", "priority": "P1", "manDay": 8, "sprint": "S17-S18", "startDate": "2027-02-07", "endDate": "2027-03-06", "status": "To Do", "owner": "Dev", "description": "Achievement + Streak + VIP Tier + Leaderboard + Seasonal Events — ครบ 8 ระบบ", "empathize": "ลูกค้าเล่น Spin/Lotto ซ้ำๆ เบื่อ / อยากมีความสำเร็จใหม่ๆ", "define": "เกมไม่หลากหลาย → ไม่มี Retention", "ideate": "Daily Mission + Achievement Badge + Tier (Bronze/Silver/Gold/Platinum) + Challenge + Leaderboard + Campaign + Streak + Lucky Spin", "prototype": "Achievement Engine + Leaderboard + Event System + UI", "test": "Spin/Lotto Rate > 40% / Retention +20%", "outcome": "✅ ลูกค้ากลับมาทุกวัน  ✅ Social Proof ขยายฐาน  ✅ Brand Loyalty", "acceptance": ["Daily Mission (เช็คอินทุกวัน)", "Achievement Badge (ครบเป้า)", "Tier System (Bronze → Silver → Gold → Platinum)", "Leaderboard (อันดับ)", "Campaign (กิจกรรมพิเศษ)", "Streak (ใช้ต่อเนื่อง)", "Lucky Spin/Draw", "Push Notification"], "deliverable": "Gamification engine, UI components, Event system", "techStack": "Node.js, Redis (leaderboard), Push notification service", "source": "v2-plan", "category": "v2"}, {"taskId": 22, "taskName": "รองรับหลายภาษา (Multi-language)", "so": "UX", "priority": "P1", "manDay": 5, "sprint": "S19", "startDate": "2027-03-07", "endDate": "2027-03-20", "status": "To Do", "owner": "Dev", "description": "i18n Support (ไทย + อังกฤษ) + Lang Switcher — เปิดตลาด AEC", "empathize": "ต่างชาติใช้งานไม่ได้ เพราะ UI เป็นไทยอย่างเดียว", "define": "รองรับแค่ภาษาเดียว = จำกัดฐานลูกค้า", "ideate": "i18n Support (ไทย/อังกฤษ) + Lang Switcher + Translation Pipeline", "prototype": "i18next + Translation Files + UI Switcher", "test": "รองรับ 2+ ภาษา / สลับได้ Real-time", "outcome": "✅ เปิดตลาด AEC  ✅ User ต่างชาติเข้าถึง  ✅ Brand ระดับ Intl", "acceptance": ["รองรับ ไทย + อังกฤษ", "i18next integration", "Language switcher UI", "Translation files (TH, EN)", "Date/number formatting per locale", "RTL support (future)"], "deliverable": "i18n setup, Translation files, Language switcher", "techStack": "i18next, react-intl, Crowdin (translation)", "source": "v2-plan", "category": "v2"}, {"taskId": 23, "taskName": "Lifetime Incentive (Membership Tier + Loyalty Bonus + Privilege + Referral + Streak + Priority Access)", "so": "Growth", "priority": "P2", "manDay": 12, "sprint": "S20-S22", "startDate": "2027-03-21", "endDate": "2027-04-17", "status": "To Do", "owner": "Dev", "description": "Tier สะสม (Bronze→Silver→Gold→Platinum→Diamond) + Loyalty Bonus + Referral + Streak + Priority Access", "empathize": "ลูกค้าอยากได้ 'รางวัลตลอดชีพ' / อยากชวนเพื่อนแล้วได้ด้วย", "define": "ไม่มี Tier ตลอดอายุสมาชิก + ไม่มีเครือข่าย", "ideate": "Tier สะสม (Bronze→Silver→Gold→Platinum→Diamond) + Lifetime Bonus + Referral Network", "prototype": "Tier Engine + Lifetime Tracker + Network Graph + UI แสดง Tier", "test": "Retention +30% / Referral +50%", "outcome": "✅ ลูกค้าอยู่กับเรานานขึ้น 3 ปี  ✅ Word-of-mouth ขยายเร็ว  ✅ LTV เพิ่ม 2 เท่า", "acceptance": ["Tier 5 ระดับ (Bronze/Silver/Gold/Platinum/Diamond)", "Loyalty Bonus ตามอายุ (1/3/5 ปี)", "Referral Reward (ชวนเพื่อนได้ Point)", "Streak Bonus (ใช้ต่อเนื่อง)", "Priority Access (แลกของก่อน)", "Lifetime Status (ไม่ลด tier ง่ายๆ)", "Tier UI แสดง progress"], "deliverable": "Tier engine, Bonus rules, Referral system, UI", "techStack": "Node.js, PostgreSQL, Graph (referral network)", "source": "v2-plan", "category": "v2"}, {"taskId": 24, "taskName": "BUpoint Authen (Task #25)", "so": "Trusted", "priority": "P0", "manDay": 5, "sprint": "S1-S5", "startDate": "2026-06-28", "endDate": "Q1/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "โอม", "description": "สร้างระบบ Auth แยกเป็นอิสระ + 2FA + Session Management + Token Rotation", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "Auth Fail Rate < 1%", "outcome": "Auth Fail Rate < 1%", "acceptance": ["Auth Fail Rate < 1%"], "deliverable": "หมวดหมู่: Security | ทักษะ: #2", "techStack": "", "source": "sheet-pm", "category": "Security"}, {"taskId": 25, "taskName": "Fraud Detection (Task #24)", "so": "Trusted", "priority": "P0", "manDay": 5, "sprint": "S1-S5", "startDate": "2026-06-28", "endDate": "Q1/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "WahWah", "description": "Algorithm เช็ค Transaction ผิดปกติ + Anomaly Detection + ระงับการ Cash-out", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "Fraud Rate < 0.1%", "outcome": "Fraud Rate < 0.1%", "acceptance": ["Fraud Rate < 0.1%"], "deliverable": "หมวดหมู่: Security | ทักษะ: #2", "techStack": "", "source": "sheet-pm", "category": "Security"}, {"taskId": 26, "taskName": "Cash-out Risk Controls", "so": "Trusted", "priority": "P0", "manDay": 5, "sprint": "S1-S5", "startDate": "2026-06-28", "endDate": "Q1/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "WahWah", "description": "Daily Limit + Cool-down Period + Multi-signature Approval", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "ผลเสียหายจาก Cash-out = 0 บาท", "outcome": "ผลเสียหายจาก Cash-out = 0 บาท", "acceptance": ["ผลเสียหายจาก Cash-out = 0 บาท"], "deliverable": "หมวดหมู่: Security | ทักษะ: #2", "techStack": "", "source": "sheet-pm", "category": "Security"}, {"taskId": 27, "taskName": "Unit Test + Integration Test", "so": "Quality", "priority": "P1", "manDay": 5, "sprint": "S1-S5", "startDate": "2026-06-28", "endDate": "Q1/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "Dev Team", "description": "เขียน Unit Test ทุกฟังก์ชัน + Integration Test ระบบทั้งก้อน (Frontend + Backend + DB)", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "Bug ที่ User เจอ < 5%", "outcome": "Bug ที่ User เจอ < 5%", "acceptance": ["Bug ที่ User เจอ < 5%"], "deliverable": "หมวดหมู่: Testing | ทักษะ: #1,#18", "techStack": "", "source": "sheet-pm", "category": "Testing"}, {"taskId": 28, "taskName": "Backend Rate Limiting", "so": "Trusted", "priority": "P1", "manDay": 5, "sprint": "S1-S5", "startDate": "2026-06-28", "endDate": "Q1/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "WahWah", "description": "ป้องกัน bot ยิง API ตรง + Rate Limit ทุก Endpoint", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "บล็อก Bot 100%", "outcome": "บล็อก Bot 100%", "acceptance": ["บล็อก Bot 100%"], "deliverable": "หมวดหมู่: Security | ทักษะ: #20", "techStack": "", "source": "sheet-pm", "category": "Security"}, {"taskId": 29, "taskName": "Backend Data Validation", "so": "Trusted", "priority": "P1", "manDay": 5, "sprint": "S1-S5", "startDate": "2026-06-28", "endDate": "Q1/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "WahWah", "description": "validate ทุก field ฝั่ง Backend ป้องกันข้อมูลผิดพลาดเข้าระบบ", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "ข้อมูลผิดพลาดเข้าระบบ = 0 ครั้ง", "outcome": "ข้อมูลผิดพลาดเข้าระบบ = 0 ครั้ง", "acceptance": ["ข้อมูลผิดพลาดเข้าระบบ = 0 ครั้ง"], "deliverable": "หมวดหมู่: Security | ทักษะ: #21", "techStack": "", "source": "sheet-pm", "category": "Security"}, {"taskId": 30, "taskName": "Automated Backup", "so": "Trusted", "priority": "P1", "manDay": 5, "sprint": "S1-S5", "startDate": "2026-06-28", "endDate": "Q1/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "WahWah", "description": "Script สำรองข้อมูลอัตโนมัติทุกวัน + Recovery Plan", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "เวลากู้คืนข้อมูล < 1 ชั่วโมง", "outcome": "เวลากู้คืนข้อมูล < 1 ชั่วโมง", "acceptance": ["เวลากู้คืนข้อมูล < 1 ชั่วโมง"], "deliverable": "หมวดหมู่: Backup | ทักษะ: #9,#22", "techStack": "", "source": "sheet-pm", "category": "Backup"}, {"taskId": 31, "taskName": "Product Metrics Dashboard", "so": "Growth", "priority": "P1", "manDay": 5, "sprint": "S1-S5", "startDate": "2026-06-28", "endDate": "Q1/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "PM + Dev", "description": "สร้าง Dashboard วัด DAU, MAU, Retention, NPS, LTV, CAC + User Journey Funnel", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "MAU +20%/เดือน", "outcome": "MAU +20%/เดือน", "acceptance": ["MAU +20%/เดือน"], "deliverable": "หมวดหมู่: Metrics | ทักษะ: #5", "techStack": "", "source": "sheet-pm", "category": "Metrics"}, {"taskId": 32, "taskName": "UX Re-design + User Onboarding", "so": "UX", "priority": "P1", "manDay": 5, "sprint": "S1-S5", "startDate": "2026-06-28", "endDate": "Q1/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "ขิง + โอม", "description": "ลด Step 3 clicks → 1 click + Onboarding Flow + Tooltip/Guide ผู้ใช้ใหม่ + Progressive Disclosure", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "User ใหม่เข้าใจ < 3 นาที", "outcome": "User ใหม่เข้าใจ < 3 นาที", "acceptance": ["User ใหม่เข้าใจ < 3 นาที"], "deliverable": "หมวดหมู่: UX | ทักษะ: #10,#24", "techStack": "", "source": "sheet-pm", "category": "UX"}, {"taskId": 33, "taskName": "README + User Guide + Change Log + API Doc", "so": "Quality", "priority": "P1", "manDay": 5, "sprint": "S1-S5", "startDate": "2026-06-28", "endDate": "Q1/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "โอม + WahWah", "description": "เขียน README.md, User Guide, Change Log + Developer Portal + SDK + Sandbox", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "เวลากลับมาแก้งานเก่า < 30 นาที", "outcome": "เวลากลับมาแก้งานเก่า < 30 นาที", "acceptance": ["เวลากลับมาแก้งานเก่า < 30 นาที"], "deliverable": "หมวดหมู่: Documentation | ทักษะ: #4,#5", "techStack": "", "source": "sheet-pm", "category": "Documentation"}, {"taskId": 34, "taskName": "Design (UX/UI) Research + Design System", "so": "UX", "priority": "P1", "manDay": 5, "sprint": "S1-S5", "startDate": "2026-06-28", "endDate": "Q1/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "PM + ขิง", "description": "UX Research + User Journey Map + Wireframe + มาตรฐาน UI (สี, ฟอนต์, ขนาด)", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "User ไม่ต้องถามวิธีใช้ > 80%", "outcome": "User ไม่ต้องถามวิธีใช้ > 80%", "acceptance": ["User ไม่ต้องถามวิธีใช้ > 80%"], "deliverable": "หมวดหมู่: Design | ทักษะ: #10,#12", "techStack": "", "source": "sheet-pm", "category": "Design"}, {"taskId": 35, "taskName": "User Feedback Loop", "so": "UX", "priority": "P1", "manDay": 5, "sprint": "S1-S5", "startDate": "2026-06-28", "endDate": "Q1/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "PM + Dev", "description": "ระบบรับ Feedback ในแอป + สำรวจความต้องการ User", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "รู้ความต้องการ User < 7 วัน", "outcome": "รู้ความต้องการ User < 7 วัน", "acceptance": ["รู้ความต้องการ User < 7 วัน"], "deliverable": "หมวดหมู่: Feedback | ทักษะ: #16", "techStack": "", "source": "sheet-pm", "category": "Feedback"}, {"taskId": 36, "taskName": "Git + CI/CD Pipeline", "so": "Quality", "priority": "P2", "manDay": 5, "sprint": "S6-S10", "startDate": "2026-09-21", "endDate": "Q2/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "Dev Team", "description": "สร้าง Git repo + Branch strategy + CI/CD Pipeline + Deploy Checklist", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "ย้อนกลับเวอร์ชัน < 5 นาที", "outcome": "ย้อนกลับเวอร์ชัน < 5 นาที", "acceptance": ["ย้อนกลับเวอร์ชัน < 5 นาที"], "deliverable": "หมวดหมู่: Infrastructure | ทักษะ: #3", "techStack": "", "source": "sheet-pm", "category": "Infrastructure"}, {"taskId": 37, "taskName": "Staging Environment", "so": "Quality", "priority": "P2", "manDay": 5, "sprint": "S6-S10", "startDate": "2026-09-21", "endDate": "Q2/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "WahWah + โอม", "description": "dev → staging → production Pipeline", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "Deploy พัง Production = 0 ครั้ง", "outcome": "Deploy พัง Production = 0 ครั้ง", "acceptance": ["Deploy พัง Production = 0 ครั้ง"], "deliverable": "หมวดหมู่: Infrastructure | ทักษะ: #19", "techStack": "", "source": "sheet-pm", "category": "Infrastructure"}, {"taskId": 38, "taskName": "Redis Caching + Master-Replica DB", "so": "Quality", "priority": "P2", "manDay": 5, "sprint": "S6-S10", "startDate": "2026-09-21", "endDate": "Q2/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "WahWah + โอม", "description": "เพิ่ม Caching Layer สำหรับ Leaderboard/Spin State + แยก Read/Write DB", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "API Response P95 < 500ms", "outcome": "API Response P95 < 500ms", "acceptance": ["API Response P95 < 500ms"], "deliverable": "หมวดหมู่: Infrastructure | ทักษะ: #6", "techStack": "", "source": "sheet-pm", "category": "Infrastructure"}, {"taskId": 39, "taskName": "Modular Architecture Maturity", "so": "Quality", "priority": "P2", "manDay": 5, "sprint": "S6-S10", "startDate": "2026-09-21", "endDate": "Q2/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "โอม", "description": "API Versioning + Dependency Map + Feature Flag Management", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "Deploy พัง Production = 0", "outcome": "Deploy พัง Production = 0", "acceptance": ["Deploy พัง Production = 0"], "deliverable": "หมวดหมู่: Architecture | ทักษะ: #3", "techStack": "", "source": "sheet-pm", "category": "Architecture"}, {"taskId": 40, "taskName": "BU Self-Service Portal", "so": "Quality", "priority": "P2", "manDay": 5, "sprint": "S6-S10", "startDate": "2026-09-21", "endDate": "Q2/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "PM + โอม", "description": "Template สำหรับ BU เปิด Feature + Analytics วัด ROI แต่ละ Feature", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "BU Onboarding 2 BU/เดือน", "outcome": "BU Onboarding 2 BU/เดือน", "acceptance": ["BU Onboarding 2 BU/เดือน"], "deliverable": "หมวดหมู่: Architecture | ทักษะ: #11", "techStack": "", "source": "sheet-pm", "category": "Architecture"}, {"taskId": 41, "taskName": "Reusable Components Library", "so": "Quality", "priority": "P2", "manDay": 5, "sprint": "S6-S10", "startDate": "2026-09-21", "endDate": "Q2/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "ขิง", "description": "สร้าง Component Library ใช้ซ้ำได้ (Button, Form, Table, Toast, Modal)", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "เวลาส่งมอบโปรเจคใหม่ลด 50%+", "outcome": "เวลาส่งมอบโปรเจคใหม่ลด 50%+", "acceptance": ["เวลาส่งมอบโปรเจคใหม่ลด 50%+"], "deliverable": "หมวดหมู่: Components | ทักษะ: #11", "techStack": "", "source": "sheet-pm", "category": "Components"}, {"taskId": 42, "taskName": "Database Design + Migration", "so": "Quality", "priority": "P2", "manDay": 5, "sprint": "S6-S10", "startDate": "2026-09-21", "endDate": "Q2/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "โอม + WahWah", "description": "ออกแบบ DB Schema + Migration Plan + Data Validation", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "รองรับข้อมูล > 10,000 รายการ", "outcome": "รองรับข้อมูล > 10,000 รายการ", "acceptance": ["รองรับข้อมูล > 10,000 รายการ"], "deliverable": "หมวดหมู่: Database | ทักษะ: #13", "techStack": "", "source": "sheet-pm", "category": "Database"}, {"taskId": 43, "taskName": "Code Review + Linting + JSDoc", "so": "Quality", "priority": "P2", "manDay": 5, "sprint": "S6-S10", "startDate": "2026-09-21", "endDate": "Q2/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "Dev Team", "description": "กำหนด Code Review Process + ESLint + JSDoc ทุกฟังก์ชัน", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "คนอื่นอ่านโค้ดเข้าใจ < 30 นาที", "outcome": "คนอื่นอ่านโค้ดเข้าใจ < 30 นาที", "acceptance": ["คนอื่นอ่านโค้ดเข้าใจ < 30 นาที"], "deliverable": "หมวดหมู่: Code Quality | ทักษะ: #15", "techStack": "", "source": "sheet-pm", "category": "Code Quality"}, {"taskId": 44, "taskName": "Performance Budget", "so": "Quality", "priority": "P2", "manDay": 5, "sprint": "S6-S10", "startDate": "2026-09-21", "endDate": "Q2/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "Dev Team", "description": "เป้าหมาย: โหลด < 3s, First Paint < 1s + Pagination + Caching", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "โหลดหน้า < 3s ทุกหน้า", "outcome": "โหลดหน้า < 3s ทุกหน้า", "acceptance": ["โหลดหน้า < 3s ทุกหน้า"], "deliverable": "หมวดหมู่: Performance | ทักษะ: #6,#26", "techStack": "", "source": "sheet-pm", "category": "Performance"}, {"taskId": 45, "taskName": "Responsive Design + Mobile-First", "so": "UX", "priority": "P2", "manDay": 5, "sprint": "S6-S10", "startDate": "2026-09-21", "endDate": "Q2/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "ขิง", "description": "ทดสอบ + Optimize ทุกอุปกรณ์ (มือถือ, แท็บเล็ต, Desktop)", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "ใช้ได้ทุกอุปกรณ์ 100%", "outcome": "ใช้ได้ทุกอุปกรณ์ 100%", "acceptance": ["ใช้ได้ทุกอุปกรณ์ 100%"], "deliverable": "หมวดหมู่: Responsive | ทักษะ: #7", "techStack": "", "source": "sheet-pm", "category": "Responsive"}, {"taskId": 46, "taskName": "Error Tracking Dashboard", "so": "Trusted", "priority": "P2", "manDay": 5, "sprint": "S6-S10", "startDate": "2026-09-21", "endDate": "Q2/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "WahWah", "description": "สรุป Error แบบเห็นภาพ + แจ้งเตือน + รู้ Error ที่เกิดบ่อย", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "รู้ Error ที่เกิดบ่อยที่สุดทันที", "outcome": "รู้ Error ที่เกิดบ่อยที่สุดทันที", "acceptance": ["รู้ Error ที่เกิดบ่อยที่สุดทันที"], "deliverable": "หมวดหมู่: Monitoring | ทักษะ: #5,#23", "techStack": "", "source": "sheet-pm", "category": "Monitoring"}, {"taskId": 47, "taskName": "Disaster Recovery Plan", "so": "Trusted", "priority": "P2", "manDay": 5, "sprint": "S6-S10", "startDate": "2026-09-21", "endDate": "Q2/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "PM + WahWah", "description": "แผนกู้คืนเมื่อเกิดเหตุการณ์รุนแรง + ทดสอบ DR Drill", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "ระบบกู้คืนได้ < 4 ชั่วโมง", "outcome": "ระบบกู้คืนได้ < 4 ชั่วโมง", "acceptance": ["ระบบกู้คืนได้ < 4 ชั่วโมง"], "deliverable": "หมวดหมู่: Disaster | ทักษะ: #27", "techStack": "", "source": "sheet-pm", "category": "Disaster"}, {"taskId": 48, "taskName": "Gamification 2.0", "so": "Growth", "priority": "P3", "manDay": 5, "sprint": "S6-S10", "startDate": "2026-09-21", "endDate": "Q2/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "ขิง + โอม", "description": "Achievement System + Streak Rewards + Social Proof + Seasonal Events", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "Spin/Lotto Rate > 40%", "outcome": "Spin/Lotto Rate > 40%", "acceptance": ["Spin/Lotto Rate > 40%"], "deliverable": "หมวดหมู่: Gamification | ทักษะ: #8", "techStack": "", "source": "sheet-pm", "category": "Gamification"}, {"taskId": 49, "taskName": "Loyalty Program - Money Buddy (#26)", "so": "Growth", "priority": "P3", "manDay": 5, "sprint": "S1-S5", "startDate": "2026-06-28", "endDate": "Q1/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "WahWah", "description": "ระบบ Loyalty สำหรับ Money Buddy", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "Retention +15%", "outcome": "Retention +15%", "acceptance": ["Retention +15%"], "deliverable": "หมวดหมู่: Gamification | ทักษะ: ", "techStack": "", "source": "sheet-pm", "category": "Gamification"}, {"taskId": 50, "taskName": "Tap2Earn Design System (#27)", "so": "Growth", "priority": "P3", "manDay": 5, "sprint": "S1-S5", "startDate": "2026-06-28", "endDate": "Q1/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "โอม", "description": "ออกแบบ Tap2Earn ระบบใหม่", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "Engagement +20%", "outcome": "Engagement +20%", "acceptance": ["Engagement +20%"], "deliverable": "หมวดหมู่: Gamification | ทักษะ: ", "techStack": "", "source": "sheet-pm", "category": "Gamification"}, {"taskId": 51, "taskName": "TypeScript Migration", "so": "Quality", "priority": "P3", "manDay": 5, "sprint": "S11-S15", "startDate": "2026-12-21", "endDate": "Q3/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "Dev Team", "description": "ศึกษา + วางแผน Migration เป็น TypeScript", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "Bug จาก Type Error ลด 30%", "outcome": "Bug จาก Type Error ลด 30%", "acceptance": ["Bug จาก Type Error ลด 30%"], "deliverable": "หมวดหมู่: TypeScript | ทักษะ: #14", "techStack": "", "source": "sheet-pm", "category": "TypeScript"}, {"taskId": 52, "taskName": "Accessibility (a11y)", "so": "UX", "priority": "P3", "manDay": 5, "sprint": "S11-S15", "startDate": "2026-12-21", "endDate": "Q3/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "ขิง", "description": "a11y Checklist + สีคอนทราสต์ + ขนาดอักษร + คีย์บอร์ด + Screen Reader", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "ผ่าน a11y Checklist", "outcome": "ผ่าน a11y Checklist", "acceptance": ["ผ่าน a11y Checklist"], "deliverable": "หมวดหมู่: Accessibility | ทักษะ: #8,#17", "techStack": "", "source": "sheet-pm", "category": "Accessibility"}, {"taskId": 53, "taskName": "Multi-language Support (i18n)", "so": "Expand", "priority": "P3", "manDay": 5, "sprint": "S11-S15", "startDate": "2026-12-21", "endDate": "Q3/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "Dev Team", "description": "รองรับภาษาไทย + อังกฤษ", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "รองรับ 2+ ภาษา", "outcome": "รองรับ 2+ ภาษา", "acceptance": ["รองรับ 2+ ภาษา"], "deliverable": "หมวดหมู่: Language | ทักษะ: #25", "techStack": "", "source": "sheet-pm", "category": "Language"}, {"taskId": 54, "taskName": "Revenue Model Optimization", "so": "Growth", "priority": "P3", "manDay": 5, "sprint": "S6-S10", "startDate": "2026-09-21", "endDate": "Q2/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "PM", "description": "Premium Tier + Transaction Fee + Data Insights Package สำหรับ BU", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "ARPU +15%/ไตรมาส", "outcome": "ARPU +15%/ไตรมาส", "acceptance": ["ARPU +15%/ไตรมาส"], "deliverable": "หมวดหมู่: Revenue | ทักษะ: ", "techStack": "", "source": "sheet-pm", "category": "Revenue"}, {"taskId": 55, "taskName": "Compliance & Regulatory", "so": "Trusted", "priority": "P3", "manDay": 5, "sprint": "S6-S10", "startDate": "2026-09-21", "endDate": "Q2/2026", "status": "⏳ ยังไม่เริ่ม", "owner": "PM + โอม", "description": "AML Policy + PDPA/GDPR + Audit Trail ทุก Transaction", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "ผ่าน Audit 100%", "outcome": "ผ่าน Audit 100%", "acceptance": ["ผ่าน Audit 100%"], "deliverable": "หมวดหมู่: Compliance | ทักษะ: ", "techStack": "", "source": "sheet-pm", "category": "Compliance"}, {"taskId": 56, "taskName": "QC Checklist", "so": "Quality", "priority": "QC", "manDay": 5, "sprint": "S1-S10", "startDate": "2026-06-28", "endDate": "ก่อนส่งมอบ", "status": "⏳ ยังไม่เริ่ม", "owner": "ทุกคน", "description": "ทุกโปรเจคต้องผ่าน 2 มุมมอง: (1) Full-Stack Production Grade (2) QC Test Suite", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "ผ่าน 100% ก่อน Deploy", "outcome": "ผ่าน 100% ก่อน Deploy", "acceptance": ["ผ่าน 100% ก่อน Deploy"], "deliverable": "หมวดหมู่: Quality | ทักษะ: QC", "techStack": "", "source": "sheet-pm", "category": "Quality"}, {"taskId": 57, "taskName": "AI Self-Review", "so": "Quality", "priority": "QC", "manDay": 5, "sprint": "S1-S10", "startDate": "2026-06-28", "endDate": "ก่อนส่งมอบ", "status": "⏳ ยังไม่เริ่ม", "owner": "AI + PM", "description": "สั่ง AI ตรวจ Code ตาม Checklist: Security, Error Handling, Performance, Mobile Responsive, Bug ซ่อน", "empathize": "", "define": "", "ideate": "", "prototype": "", "test": "ผ่าน AI Review 100%", "outcome": "ผ่าน AI Review 100%", "acceptance": ["ผ่าน AI Review 100%"], "deliverable": "หมวดหมู่: Quality | ทักษะ: QC", "techStack": "", "source": "sheet-pm", "category": "Quality"}];
+
+function renderStats() {
+  const p0 = TASKS.filter(t => t.priority === 'P0').length;
+  const p1 = TASKS.filter(t => t.priority === 'P1').length;
+  const p2 = TASKS.filter(t => t.priority === 'P2').length;
+  const totalDays = TASKS.reduce((s, t) => s + t.manDay, 0);
+  const done = TASKS.filter(t => t.status === 'Done').length;
+  document.getElementById('stats').innerHTML = `
+    <div class="stat p0"><div class="stat-num">${p0}</div><div class="stat-label">🔴 P0 MUST</div></div>
+    <div class="stat p1"><div class="stat-num">${p1}</div><div class="stat-label">🟠 P1 SHOULD</div></div>
+    <div class="stat p2"><div class="stat-num">${p2}</div><div class="stat-label">🟡 P2 COULD</div></div>
+    <div class="stat done"><div class="stat-num">${done}</div><div class="stat-label">✅ Done</div></div>
+    <div class="stat"><div class="stat-num">${TASKS.length}</div><div class="stat-label">📋 Tasks ทั้งหมด</div></div>
+    <div class="stat"><div class="stat-num">${totalDays}</div><div class="stat-label">⏱️ Man-days</div></div>
+  `;
+}
+
+function renderSprints() {
+  const sprintMap = {};
+  TASKS.forEach(t => {
+    if (!sprintMap[t.sprint]) sprintMap[t.sprint] = [];
+    sprintMap[t.sprint].push(t);
+  });
+  const sortedKeys = Object.keys(sprintMap).sort((a, b) => {
+    const na = parseInt(a.replace('S', '')), nb = parseInt(b.replace('S', ''));
+    return na - nb;
+  });
+  document.getElementById('sprints').innerHTML = sortedKeys.map(k => `
+    <div class="sprint" data-sprint="${k}" onclick="filterSprint('${k}')">
+      <div class="sprint-name">${k}</div>
+      <div class="sprint-tasks">${sprintMap[k].length} tasks</div>
+    </div>
+  `).join('');
+}
+
+let activeSprintFilter = null;
+function filterSprint(s) {
+  activeSprintFilter = activeSprintFilter === s ? null : s;
+  document.querySelectorAll('.sprint').forEach(el => el.classList.remove('active'));
+  if (activeSprintFilter) {
+    document.querySelector(`.sprint[data-sprint="${activeSprintFilter}"]`).classList.add('active');
+  }
+  renderTasks();
+}
+
+function renderTasks() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const prio = document.getElementById('priorityFilter').value;
+  const so = document.getElementById('soFilter').value;
+  const status = document.getElementById('statusFilter').value;
+  
+  const filtered = TASKS.filter(t => {
+    if (search && !(`${t.taskName} ${t.so} ${t.owner}`.toLowerCase().includes(search))) return false;
+    if (prio && t.priority !== prio) return false;
+    if (so && t.so !== so) return false;
+    if (status && t.status !== status) return false;
+    if (activeSprintFilter && t.sprint !== activeSprintFilter) return false;
+    return true;
+  });
+  
+  if (filtered.length === 0) {
+    document.getElementById('taskGrid').innerHTML = '<div class="empty">ไม่พบ Task ที่ตรงกับ filter</div>';
+    return;
+  }
+  
+  document.getElementById('taskGrid').innerHTML = filtered.map(t => `
+    <div class="task-card" onclick="openModal(${t.taskId})">
+      <div class="task-head">
+        <div class="task-num">${t.taskId}</div>
+        <span class="priority ${t.priority}">${t.priority}</span>
+        <div class="task-name">${t.taskName}</div>
+      </div>
+      <div class="task-meta">
+        <span>📅 ${t.sprint}</span>
+        <span>⏱️ ${t.manDay}d</span>
+        <span>🎯 ${t.so}</span>
+        <span>👤 ${t.owner}</span>
+        <span>${t.status === 'Done' ? '✅' : t.status === 'In Progress' ? '🚀' : '📋'} ${t.status}</span>
+      </div>
+      <div class="task-desc">${t.description}</div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: ${t.status === 'Done' ? 100 : t.status === 'In Progress' ? 50 : 0}%"></div>
+      </div>
+      <div class="progress-text">
+        <span>${t.startDate} → ${t.endDate}</span>
+        <span>${t.status === 'Done' ? '100%' : t.status === 'In Progress' ? '50%' : '0%'}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openModal(id) {
+  const t = TASKS.find(x => x.taskId === id);
+  if (!t) return;
+  document.getElementById('modalTitle').textContent = `#${t.taskId} — ${t.taskName}`;
+  document.getElementById('modalSubtitle').innerHTML = `
+    <span class="priority ${t.priority}">${t.priority}</span>
+    ${t.sprint} • ${t.manDay} วัน • ${t.startDate} → ${t.endDate} • ${t.so} • ${t.owner}
+  `;
+  
+  const acList = t.acceptance.map(a => `<li>${a}</li>`).join('');
+  const techList = t.techStack.split(/[,
+]/).map(s => s.trim()).filter(Boolean).map(s => `<span>${s}</span>`).join('');
+  
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-section">
+      <h4>📝 Description</h4>
+      <p>${t.description}</p>
+    </div>
+    <div class="modal-section">
+      <h4>🎨 Design Thinking</h4>
+      <p><strong>💜 Empathize:</strong> ${t.empathize}</p>
+      <p style="margin-top:0.5rem"><strong>🎯 Define:</strong> ${t.define}</p>
+      <p style="margin-top:0.5rem"><strong>💡 Ideate:</strong> ${t.ideate}</p>
+      <p style="margin-top:0.5rem"><strong>🛠️ Prototype:</strong> ${t.prototype}</p>
+      <p style="margin-top:0.5rem"><strong>🧪 Test:</strong> ${t.test}</p>
+      <p style="margin-top:0.5rem"><strong>🏆 Outcome:</strong> ${t.outcome}</p>
+    </div>
+    <div class="modal-section">
+      <h4>✅ Acceptance Criteria (${t.acceptance.length} ข้อ)</h4>
+      <ul>${acList}</ul>
+    </div>
+    <div class="modal-section">
+      <h4>📦 Deliverable</h4>
+      <p>${t.deliverable}</p>
+    </div>
+    <div class="modal-section">
+      <h4>💻 Tech Stack</h4>
+      <div class="tech-stack">${techList}</div>
+    </div>
+  `;
+  document.getElementById('modalBg').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('modalBg').classList.remove('active');
+}
+
+document.getElementById('searchInput').addEventListener('input', renderTasks);
+document.getElementById('priorityFilter').addEventListener('change', renderTasks);
+document.getElementById('soFilter').addEventListener('change', renderTasks);
+document.getElementById('statusFilter').addEventListener('change', renderTasks);
+
+renderStats();
+renderSprints();
+renderTasks();
+</script>
+</body>
+</html>
