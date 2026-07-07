@@ -170,6 +170,9 @@
   <button class="main-tab tab-7" onclick="showMain(7)">
     <span class="icon">🎨</span>Tab 7: Admin Console
   </button>
+  <button class="main-tab tab-8" onclick="showMain(8)">
+    <span class="icon">📋</span>Tab 8: Task for Dev
+  </button>
 </div>
 
 <!-- ==================== TAB 1: STANDARDS ==================== -->
@@ -2399,4 +2402,86 @@ window.addEventListener('load', () => {
 <p style="text-align: center; color: #94a3b8;">Released: 7 กรกฎาคม 2569 · © 2026 Likepoint · All rights reserved</p>
 </section>
 </body>
+<!-- ==================== TAB 8: TASK FOR DEV (Consolidated Backlog) ==================== -->
+<div id="tab8" class="main-content" style="display:none;">
+  <h2>📋 Tab 8: Task Backlog for Dev — ประเด็นที่จะนำไปพัฒนาต่อ</h2>
+  <p style="margin-bottom: 20px; color: #94a3b8;">รวบรวมจาก Phase A → Phase E (22 cycles) + gaps ที่ build ไปแล้ว + optional next PFs · แบ่งตาม priority 4 ระดับ</p>
+
+  <div style="background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 6px solid #ef4444;">
+    <h2 style="color: #fecaca; margin: 0;">🚨 P0 - CRITICAL (ต้องทำก่อน Production Launch)</h2>
+    <p style="color: #fee2e2; font-size: 13px; margin: 6px 0 16px 0;">Production blocker · ส่งผลต่อ security/data integrity</p>
+    <table style="width: 100%; border-collapse: collapse; color: #fef2f2;">
+      <thead><tr style="background: rgba(0,0,0,0.3);"><th style="padding: 8px; text-align: left;">#</th><th style="padding: 8px; text-align: left;">Task</th><th style="padding: 8px; text-align: left;">Source</th><th style="padding: 8px; text-align: right;">Effort</th></tr></thead>
+      <tbody>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">T-C01</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">Apply SessionGuard middleware (PF-21) to all 25 engines (refactor)</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">PF-21 gap</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d; text-align: right;">3 days</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">T-C02</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">Rotate 4 API keys + old Sentry DSN (hardcoded in v2.0 source)</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">LikePoint v2.1 audit</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d; text-align: right;">1 day</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">T-C03</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">Move Telegram bot token to env injection (security)</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">LikePoint v2.1 audit</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d; text-align: right;">0.5 day</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">T-C04</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">Fix remaining 110+ support-ops bugs (filter out from 150+ dump)</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">PF-2 dump</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d; text-align: right;">5 days</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="background: linear-gradient(135deg, #7c2d12 0%, #9a3412 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 6px solid #f97316;">
+    <h2 style="color: #fed7aa; margin: 0;">🔥 P1 - HIGH (ภายในเดือนแรกของ Launch)</h2>
+    <p style="color: #ffedd5; font-size: 13px; margin: 6px 0 16px 0;">User experience &amp; growth critical · เพิ่ม adoption + retention</p>
+    <table style="width: 100%; border-collapse: collapse; color: #fff7ed;">
+      <thead><tr style="background: rgba(0,0,0,0.3);"><th style="padding: 8px; text-align: left;">#</th><th style="padding: 8px; text-align: left;">Task</th><th style="padding: 8px; text-align: left;">Source</th><th style="padding: 8px; text-align: right;">Effort</th></tr></thead>
+      <tbody>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">T-H01</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">Per-merchant B2B Dashboard (scoped analytics for Enterprise tier)</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">PF-23 optional</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12; text-align: right;">2 days</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">T-H02</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">NFT Profile + Community (Web3 username per Likepoint meeting 12/01/2023)</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">PF-24 optional</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12; text-align: right;">5 days</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">T-H03</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">DAM Engagement Engine (Daily Active Member tracking per Kowit vision)</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">PF-25 optional</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12; text-align: right;">3 days</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">T-H04</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">Server-side per-member auth (JWT) — replace x-api-key (security)</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">LikePoint v2.1 audit</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12; text-align: right;">4 days</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">T-H05</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">Deferred dependency majors: mobile_scanner 3→7, rive 0.11→0.14, permission_handler 10→12</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">LikePoint v2.1 audit</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12; text-align: right;">3 days</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="background: linear-gradient(135deg, #78350f 0%, #92400e 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 6px solid #eab308;">
+    <h2 style="color: #fef3c7; margin: 0;">⚡ P2 - MEDIUM (ภายใน Q1/Q2 หลัง Launch)</h2>
+    <p style="color: #fef9c3; font-size: 13px; margin: 6px 0 16px 0;">Operational excellence &amp; growth experiments</p>
+    <table style="width: 100%; border-collapse: collapse; color: #fefce8;">
+      <thead><tr style="background: rgba(0,0,0,0.3);"><th style="padding: 8px; text-align: left;">#</th><th style="padding: 8px; text-align: left;">Task</th><th style="padding: 8px; text-align: left;">Source</th><th style="padding: 8px; text-align: right;">Effort</th></tr></thead>
+      <tbody>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #78350f;">T-M01</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">Load test 10K concurrent users (validate SessionGuard + rate limit)</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">PF-28 optional</td><td style="padding: 8px; border-bottom: 1px solid #78350f; text-align: right;">3 days</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #78350f;">T-M02</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">External provider integrations (Twilio, SendGrid, FCM, Line, Telegram)</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">PF-29 optional</td><td style="padding: 8px; border-bottom: 1px solid #78350f; text-align: right;">2 days</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #78350f;">T-M03</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">Replace discontinued flutter_markdown + register-page overflow fix</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">LikePoint v2.1 audit</td><td style="padding: 8px; border-bottom: 1px solid #78350f; text-align: right;">1 day</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #78350f;">T-M04</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">A/B test reward amounts (POI/PF-7) for engagement optimization</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">PF-7 follow-up</td><td style="padding: 8px; border-bottom: 1px solid #78350f; text-align: right;">2 days</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #78350f;">T-M05</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">Add Unit tests for the 12 engine stubs not yet tested (mfa, recovery, etc.)</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">Quality gap</td><td style="padding: 8px; border-bottom: 1px solid #78350f; text-align: right;">3 days</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #78350f;">T-M06</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">Cron job automation (FX refresh, lotto draw, billing, retention sweep, report cache)</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">PF-17 deployment</td><td style="padding: 8px; border-bottom: 1px solid #78350f; text-align: right;">2 days</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #78350f;">T-M07</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">Implement MFA for admin console login (currently password-only)</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">PF-20 admin gap</td><td style="padding: 8px; border-bottom: 1px solid #78350f; text-align: right;">1 day</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #78350f;">T-M08</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">Real backend deployment (not just GitHub Pages admin consoles)</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">PF-27 production</td><td style="padding: 8px; border-bottom: 1px solid #78350f; text-align: right;">5 days</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="background: linear-gradient(135deg, #064e3b 0%, #065f46 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 6px solid #22c55e;">
+    <h2 style="color: #bbf7d0; margin: 0;">🌱 P3 - LOW / Polish (Backlog)</h2>
+    <p style="color: #d1fae5; font-size: 13px; margin: 6px 0 16px 0;">Nice-to-have · code quality · technical debt</p>
+    <table style="width: 100%; border-collapse: collapse; color: #ecfdf5;">
+      <thead><tr style="background: rgba(0,0,0,0.3);"><th style="padding: 8px; text-align: left;">#</th><th style="padding: 8px; text-align: left;">Task</th><th style="padding: 8px; text-align: left;">Source</th><th style="padding: 8px; text-align: right;">Effort</th></tr></thead>
+      <tbody>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #064e3b;">T-L01</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">Naming/typo cleanup (e.g., "promt/" → "prompt/", "transacion_history/")</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">LikePoint v2.1 audit</td><td style="padding: 8px; border-bottom: 1px solid #064e3b; text-align: right;">0.5 day</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #064e3b;">T-L02</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">Add ESLint + Prettier config for consistent code style</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">Quality</td><td style="padding: 8px; border-bottom: 1px solid #064e3b; text-align: right;">1 day</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #064e3b;">T-L03</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">Add CI/CD pipeline (GitHub Actions: test + lint + deploy)</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">DevOps</td><td style="padding: 8px; border-bottom: 1px solid #064e3b; text-align: right;">1 day</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #064e3b;">T-L04</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">Migration guide: Likepoint 1.0 → 2.0 (per-merchant onboarding)</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">Operations</td><td style="padding: 8px; border-bottom: 1px solid #064e3b; text-align: right;">1 day</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #064e3b;">T-L05</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">Add OpenAPI spec + SDK generation (for partner integrations)</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">API</td><td style="padding: 8px; border-bottom: 1px solid #064e3b; text-align: right;">2 days</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #064e3b;">T-L06</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">Caching layer (Redis) for hot reads (POI, lotto, gift card balances)</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">Performance</td><td style="padding: 8px; border-bottom: 1px solid #064e3b; text-align: right;">2 days</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #064e3b;">T-L07</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">Webhook system for partner integrations (e.g., merchant POS systems)</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">Integration</td><td style="padding: 8px; border-bottom: 1px solid #064e3b; text-align: right;">3 days</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="background: #1e293b; padding: 20px; border-radius: 10px; border: 2px solid #3b82f6;">
+    <h2 style="color: #93c5fd; margin: 0 0 12px 0;">📊 Task Summary</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px;">
+      <div style="background: #0f172a; padding: 12px; border-radius: 6px; text-align: center;"><div style="font-size: 1.5rem; font-weight: bold; color: #ef4444;">4</div><div style="font-size: 0.85rem; color: #94a3b8;">P0 Critical</div></div>
+      <div style="background: #0f172a; padding: 12px; border-radius: 6px; text-align: center;"><div style="font-size: 1.5rem; font-weight: bold; color: #f97316;">5</div><div style="font-size: 0.85rem; color: #94a3b8;">P1 High</div></div>
+      <div style="background: #0f172a; padding: 12px; border-radius: 6px; text-align: center;"><div style="font-size: 1.5rem; font-weight: bold; color: #eab308;">8</div><div style="font-size: 0.85rem; color: #94a3b8;">P2 Medium</div></div>
+      <div style="background: #0f172a; padding: 12px; border-radius: 6px; text-align: center;"><div style="font-size: 1.5rem; font-weight: bold; color: #22c55e;">7</div><div style="font-size: 0.85rem; color: #94a3b8;">P3 Low</div></div>
+    </div>
+    <div style="text-align: center; font-size: 1.2rem; color: #fbbf24; font-weight: bold;">Total: 24 tasks · ~52 days effort</div>
+    <div style="margin-top: 12px; font-size: 13px; color: #94a3b8;">📌 ที่มา: Phase A (Original QW) + Phase B PF-2 (15+ bugs) + Phase E gaps + LikePoint v2.1 audit items + Optional PFs (23-29)</div>
+  </div>
+</div>
+
 </html>
