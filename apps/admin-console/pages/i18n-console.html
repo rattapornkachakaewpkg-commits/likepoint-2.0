@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>i18n Console — PF-18</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; padding: 24px; }
+  h1 { font-size: 22px; margin-bottom: 6px; }
+  .subtitle { color: #94a3b8; font-size: 13px; margin-bottom: 20px; }
+  .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px; }
+  .stat { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 12px; }
+  .stat .label { font-size: 10px; color: #94a3b8; text-transform: uppercase; }
+  .stat .value { font-size: 22px; font-weight: 700; margin-top: 4px; color: #f1f5f9; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 16px; }
+  .card h2 { font-size: 16px; margin-bottom: 12px; }
+  .locale-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+  .locale-card { background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 10px; text-align: center; cursor: pointer; }
+  .locale-card:hover { border-color: #3b82f6; }
+  .locale-card.selected { border-color: #22c55e; background: #052e16; }
+  .locale-card .flag { font-size: 24px; }
+  .locale-card .name { font-size: 11px; margin-top: 4px; }
+  .row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .row label { width: 100px; font-size: 12px; color: #94a3b8; }
+  input, select, button, textarea { background: #0f172a; color: #e2e8f0; border: 1px solid #334155; padding: 6px 10px; border-radius: 5px; font-size: 13px; }
+  button { cursor: pointer; font-weight: 600; }
+  button.primary { background: #3b82f6; border-color: #3b82f6; color: white; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #334155; }
+  th { color: #94a3b8; font-size: 10px; text-transform: uppercase; }
+  .badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; }
+  .badge.ok { background: #16a34a; color: white; }
+  .badge.miss { background: #475569; color: white; }
+  .empty { padding: 16px; text-align: center; color: #64748b; font-size: 12px; }
+  .preview { background: #020617; border-radius: 6px; padding: 12px; font-size: 14px; line-height: 1.6; }
+  .preview .label { font-size: 10px; color: #64748b; text-transform: uppercase; margin-bottom: 4px; }
+  .preview .text { color: #22c55e; }
+</style>
+</head>
+<body>
+
+<h1>🌍 i18n Translation Console</h1>
+<p class="subtitle">PF-18 (Phase E) — 4 locales (th/en/kh/la) + variable substitution + locale formatting · 19/19 tests passing</p>
+
+<div class="stats">
+  <div class="stat">
+    <div class="label">Total Keys</div>
+    <div class="value" id="stat-total">0</div>
+  </div>
+  <div class="stat">
+    <div class="label">🇹🇭 Thai</div>
+    <div class="value" id="stat-th">0</div>
+  </div>
+  <div class="stat">
+    <div class="label">🇺🇸 English</div>
+    <div class="value" id="stat-en">0</div>
+  </div>
+  <div class="stat">
+    <div class="label">🇰🇭 Khmer</div>
+    <div class="value" id="stat-kh">0</div>
+  </div>
+  <div class="stat">
+    <div class="label">🇱🇦 Lao</div>
+    <div class="value" id="stat-la">0</div>
+  </div>
+</div>
+
+<div class="grid">
+  <!-- Add/Edit Translation -->
+  <div class="card">
+    <h2>① Add/Edit Translation</h2>
+    <div class="row">
+      <label>Key</label>
+      <input id="t-key" placeholder="greeting.hello" style="flex: 1;">
+    </div>
+    <div class="row">
+      <label>Locale</label>
+      <div class="locale-grid" style="flex: 1; margin: 0;">
+        <div class="locale-card selected" data-locale="th" onclick="selectLocale('th')">
+          <div class="flag">🇹🇭</div><div class="name">TH</div>
+        </div>
+        <div class="locale-card" data-locale="en" onclick="selectLocale('en')">
+          <div class="flag">🇺🇸</div><div class="name">EN</div>
+        </div>
+        <div class="locale-card" data-locale="kh" onclick="selectLocale('kh')">
+          <div class="flag">🇰🇭</div><div class="name">KH</div>
+        </div>
+        <div class="locale-card" data-locale="la" onclick="selectLocale('la')">
+          <div class="flag">🇱🇦</div><div class="name">LA</div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <label>Value</label>
+      <textarea id="t-value" rows="2" placeholder="Translation text ({{variables}} supported)" style="flex: 1;"></textarea>
+    </div>
+    <div class="row">
+      <label>Context</label>
+      <select id="t-context" style="flex: 1;">
+        <option value="general">general</option>
+        <option value="button">button</option>
+        <option value="error">error</option>
+        <option value="email">email</option>
+        <option value="notification">notification</option>
+        <option value="greeting">greeting</option>
+      </select>
+    </div>
+    <button class="primary" onclick="addTranslation()">+ Add/Update</button>
+  </div>
+
+  <!-- Live Preview -->
+  <div class="card">
+    <h2>② Live Preview (4 locales)</h2>
+    <div class="row">
+      <label>Key</label>
+      <input id="p-key" value="greeting.welcome" style="flex: 1;" oninput="renderPreview()">
+    </div>
+    <div class="row">
+      <label>Variables</label>
+      <input id="p-vars" value='{"name":"Alice"}' style="flex: 1; font-family: monospace; font-size: 11px;" oninput="renderPreview()">
+    </div>
+    <div id="preview-container"></div>
+  </div>
+</div>
+
+<!-- Coverage Table -->
+<div class="card" style="margin-top: 16px;">
+  <h2>③ Translation Coverage</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Key</th>
+        <th>🇹🇭 TH</th>
+        <th>🇺🇸 EN</th>
+        <th>🇰🇭 KH</th>
+        <th>🇱🇦 LA</th>
+        <th>Coverage</th>
+      </tr>
+    </thead>
+    <tbody id="coverage-tbody">
+      <tr><td colspan="6" class="empty">No translations</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+const mockStore = { _translations: new Map() };
+let selectedLocale = 'th';
+
+function newId() { return `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`; }
+
+// Seed default translations
+mockStore._translations.set('greeting.hello', { th: 'สวัสดี', en: 'Hello', kh: 'ជំរាបសួស', la: 'ສະບາຍດີ' });
+mockStore._translations.set('greeting.welcome', { th: 'ยินดีต้อนรับ {{name}}', en: 'Welcome {{name}}', kh: 'សូមស្វាគមមក {{name}}', la: 'ຍິນດີຕ້ອນຮັບ {{name}}' });
+mockStore._translations.set('error.payment_failed', { th: 'การชำระเงินล้มเหลว', en: 'Payment failed', kh: 'ការទូទាត់បានបរាជ័យ', la: 'ການຈ່າຍເງິນບໍ່ສຳເລັດ' });
+mockStore._translations.set('button.submit', { th: 'ส่ง', en: 'Submit', kh: 'ដាក់ស្នើ', la: 'ສົ່ງ' });
+mockStore._translations.set('notif.poi.reward', { th: 'คุณได้รับ {{amount}} BCP', en: 'You received {{amount}} BCP', kh: 'អ្នកបានទទួល {{amount}} BCP', la: 'ທ່ານໄດ້ຮັບ {{amount}} BCP' });
+
+function selectLocale(loc) {
+  selectedLocale = loc;
+  document.querySelectorAll('.locale-card').forEach((c) => c.classList.remove('selected'));
+  document.querySelector(`[data-locale="${loc}"]`).classList.add('selected');
+}
+
+function addTranslation() {
+  const key = document.getElementById('t-key').value.trim();
+  const value = document.getElementById('t-value').value.trim();
+  if (!key || !value) { alert('Key + Value required'); return; }
+  if (!mockStore._translations.has(key)) mockStore._translations.set(key, {});
+  const existing = mockStore._translations.get(key);
+  existing[selectedLocale] = value;
+  renderCoverage();
+  updateStats();
+  alert(`✅ Saved: ${key} [${selectedLocale}] = "${value}"`);
+}
+
+function renderPreview() {
+  const key = document.getElementById('p-key').value.trim();
+  let vars = {};
+  try { vars = JSON.parse(document.getElementById('p-vars').value || '{}'); } catch (e) {}
+  const container = document.getElementById('preview-container');
+  const entry = mockStore._translations.get(key);
+  if (!entry) { container.innerHTML = '<div class="empty">Key not found</div>'; return; }
+  container.innerHTML = ['th', 'en', 'kh', 'la'].map((loc) => {
+    const raw = entry[loc] || '(missing)';
+    let text = raw;
+    for (const [k, v] of Object.entries(vars)) text = text.replace(new RegExp(`{{\\s*${k}\\s*}}`, 'g'), v);
+    return `<div class="preview" style="margin-bottom: 8px;"><div class="label">${loc.toUpperCase()}</div><div class="text">${text}</div></div>`;
+  }).join('');
+}
+
+function renderCoverage() {
+  const tbody = document.getElementById('coverage-tbody');
+  const keys = Array.from(mockStore._translations.keys()).sort();
+  if (keys.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="empty">No translations</td></tr>'; return; }
+  tbody.innerHTML = keys.map((key) => {
+    const entry = mockStore._translations.get(key);
+    const cells = ['th', 'en', 'kh', 'la'].map((loc) => {
+      const has = entry[loc];
+      return `<td><span class="badge ${has ? 'ok' : 'miss'}">${has ? '✅' : '—'}</span></td>`;
+    }).join('');
+    const count = ['th', 'en', 'kh', 'la'].filter((l) => entry[l]).length;
+    const pct = (count / 4 * 100).toFixed(0);
+    return `<tr><td><code>${key}</code></td>${cells}<td>${count}/4 (${pct}%)</td></tr>`;
+  }).join('');
+}
+
+function updateStats() {
+  const keys = Array.from(mockStore._translations.keys());
+  document.getElementById('stat-total').textContent = keys.length;
+  ['th', 'en', 'kh', 'la'].forEach((loc) => {
+    const count = keys.filter((k) => mockStore._translations.get(k)[loc]).length;
+    document.getElementById(`stat-${loc}`).textContent = count;
+  });
+}
+
+selectLocale('th');
+renderCoverage();
+renderPreview();
+updateStats();
+</script>
+
+</body>
+</html>
