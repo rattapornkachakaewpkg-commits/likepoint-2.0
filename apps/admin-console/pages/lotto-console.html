@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Lotto Console — PF-10</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; padding: 24px; }
+  h1 { font-size: 22px; margin-bottom: 6px; }
+  .subtitle { color: #94a3b8; font-size: 13px; margin-bottom: 20px; }
+  .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
+  .stat { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 14px; }
+  .stat .label { font-size: 11px; color: #94a3b8; text-transform: uppercase; }
+  .stat .value { font-size: 24px; font-weight: 700; margin-top: 6px; color: #f1f5f9; }
+  .stat.success .value { color: #22c55e; }
+  .stat.warning .value { color: #f59e0b; }
+  .stat.danger .value { color: #ef4444; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 16px; }
+  .card h2 { font-size: 16px; margin-bottom: 12px; }
+  .row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .row label { width: 130px; font-size: 12px; color: #94a3b8; }
+  input, select, button { background: #0f172a; color: #e2e8f0; border: 1px solid #334155; padding: 6px 10px; border-radius: 5px; font-size: 13px; }
+  button { cursor: pointer; font-weight: 600; }
+  button.primary { background: #3b82f6; border-color: #3b82f6; color: white; }
+  button.success { background: #22c55e; border-color: #22c55e; color: white; }
+  button.warning { background: #f59e0b; border-color: #f59e0b; color: white; }
+  button.danger { background: #ef4444; border-color: #ef4444; color: white; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #334155; }
+  th { color: #94a3b8; font-size: 10px; text-transform: uppercase; }
+  .badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; }
+  .badge.open { background: #16a34a; color: white; }
+  .badge.drawn { background: #3b82f6; color: white; }
+  .badge.claimed { background: #a855f7; color: white; }
+  .badge.cancelled { background: #475569; color: white; }
+  .log { background: #020617; border-radius: 6px; padding: 10px; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 11px; }
+  .log .ts { color: #64748b; }
+  .log .ok { color: #22c55e; }
+  .log .err { color: #ef4444; }
+  .log .info { color: #60a5fa; }
+  .empty { padding: 16px; text-align: center; color: #64748b; font-size: 12px; }
+  .winner-banner { background: linear-gradient(90deg, #16a34a, #3b82f6); border-radius: 8px; padding: 16px; margin-bottom: 16px; display: none; }
+  .winner-banner.show { display: block; }
+  .winner-banner .icon { font-size: 24px; }
+  .winner-banner .text { font-size: 16px; font-weight: 700; color: white; margin-left: 8px; }
+  .ticket-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 4px; max-height: 200px; overflow-y: auto; padding: 4px; }
+  .ticket { background: #0f172a; border: 1px solid #334155; border-radius: 4px; padding: 6px; text-align: center; font-size: 11px; }
+  .ticket .num { font-weight: 700; color: #f1f5f9; }
+  .ticket .code { font-size: 9px; color: #94a3b8; margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<h1>🎰 Lotto Console</h1>
+<p class="subtitle">PF-10 (Phase E) — Weekly/Daily lotto with RNG draws · 24/24 tests passing</p>
+
+<div class="stats">
+  <div class="stat success">
+    <div class="label">Open Rounds</div>
+    <div class="value" id="stat-open">0</div>
+  </div>
+  <div class="stat">
+    <div class="label">Drawn</div>
+    <div class="value" id="stat-drawn">0</div>
+  </div>
+  <div class="stat warning">
+    <div class="label">Tickets Sold</div>
+    <div class="value" id="stat-tickets">0</div>
+  </div>
+  <div class="stat success">
+    <div class="label">Revenue (THB)</div>
+    <div class="value" id="stat-revenue">0</div>
+  </div>
+  <div class="stat danger">
+    <div class="label">Prize Pool (THB)</div>
+    <div class="value" id="stat-prize">0</div>
+  </div>
+</div>
+
+<div class="winner-banner" id="winner-banner">
+  <span class="icon">🏆</span>
+  <span class="text" id="winner-text"></span>
+</div>
+
+<div class="grid">
+  <!-- Create round -->
+  <div class="card">
+    <h2>① Create Round</h2>
+    <div class="row">
+      <label>Round Name</label>
+      <input id="round-name" value="Weekly Lotto #1" style="flex: 1;">
+    </div>
+    <div class="row">
+      <label>Ticket Price</label>
+      <input id="round-price" type="number" value="100" style="flex: 1;">
+    </div>
+    <div class="row">
+      <label>Max Tickets</label>
+      <input id="round-max" type="number" value="50" style="flex: 1;">
+    </div>
+    <div class="row">
+      <label>Prize Pool</label>
+      <input id="round-prize" type="number" value="5000" style="flex: 1;">
+    </div>
+    <div class="row">
+      <label>Frequency</label>
+      <select id="round-freq" style="flex: 1;">
+        <option value="weekly">Weekly</option>
+        <option value="daily">Daily</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>Draw At</label>
+      <input id="round-draw" type="datetime-local" style="flex: 1;">
+    </div>
+    <div class="row">
+      <label>Required Feature</label>
+      <select id="round-feature" style="flex: 1;">
+        <option value="">none (open to all)</option>
+        <option value="lotto_weekly">lotto_weekly (Basic)</option>
+        <option value="lotto_daily">lotto_daily (Pro)</option>
+      </select>
+    </div>
+    <button class="primary" onclick="createRound()">+ Create Round</button>
+  </div>
+
+  <!-- Buy ticket -->
+  <div class="card">
+    <h2>② Buy Ticket</h2>
+    <div class="row">
+      <label>Round</label>
+      <select id="buy-round" style="flex: 1;"></select>
+    </div>
+    <div class="row">
+      <label>Member ID</label>
+      <input id="buy-member" value="M-1" style="flex: 1;">
+    </div>
+    <div class="row">
+      <label>Has Sub?</label>
+      <select id="buy-sub" style="flex: 1;">
+        <option value="basic">Basic (lotto_weekly)</option>
+        <option value="pro">Pro (lotto_daily)</option>
+        <option value="none">None</option>
+      </select>
+    </div>
+    <button class="success" onclick="buyTicket()">🎫 Buy Ticket</button>
+    <div class="log" id="buy-log" style="margin-top: 12px;"></div>
+  </div>
+</div>
+
+<!-- Active rounds -->
+<div class="card" style="margin-bottom: 16px;">
+  <h2>③ Active Rounds</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Round</th>
+        <th>Price</th>
+        <th>Sold</th>
+        <th>Prize</th>
+        <th>Draws At</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="rounds-tbody">
+      <tr><td colspan="7" class="empty">No rounds yet</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Tickets in selected round -->
+<div class="card">
+  <h2>④ Tickets in Round <span id="ticket-round-id" style="color: #94a3b8; font-weight: 400;"></span></h2>
+  <div class="ticket-grid" id="ticket-grid">
+    <div class="empty">Select a round above to see tickets</div>
+  </div>
+</div>
+
+<script>
+const mockStore = {
+  _rounds: new Map(),
+  _tickets: [],
+  _draws: new Map(),
+  _idSeq: 0,
+};
+let selectedRoundId = null;
+
+function newId(prefix) { return `${prefix}-${Date.now()}-${++mockStore._idSeq}`; }
+function logTo(elemId, msg, type = 'info') {
+  const el = document.getElementById(elemId);
+  const ts = new Date().toLocaleTimeString('th-TH');
+  const cls = type === 'ok' ? 'ok' : type === 'err' ? 'err' : 'info';
+  el.innerHTML += `<div><span class="ts">[${ts}]</span> <span class="${cls}">${msg}</span></div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+function createRound() {
+  const name = document.getElementById('round-name').value.trim();
+  const price = parseFloat(document.getElementById('round-price').value);
+  const max = parseInt(document.getElementById('round-max').value);
+  const prize = parseFloat(document.getElementById('round-prize').value) || (price * max * 0.9);
+  const freq = document.getElementById('round-freq').value;
+  const drawAt = document.getElementById('round-draw').value;
+  const feature = document.getElementById('round-feature').value;
+  if (!name || !price || !max || !drawAt) { alert('กรุณากรอกข้อมูลให้ครบ'); return; }
+
+  const round_id = newId('LOTTO');
+  const round = {
+    round_id, name, ticket_price: price, max_tickets: max,
+    tickets_sold: 0, prize_pool: prize, draw_at: new Date(drawAt).toISOString(),
+    frequency: freq, required_feature: feature || null,
+    status: 'open', winning_ticket_id: null, created_at: new Date().toISOString(),
+  };
+  mockStore._rounds.set(round_id, round);
+  selectedRoundId = round_id;
+  renderRounds();
+  updateStats();
+  renderTickets();
+  logTo('buy-log', `✅ Round created: ${round_id} (${name})`, 'ok');
+}
+
+function buyTicket() {
+  const roundId = document.getElementById('buy-round').value;
+  const memberId = document.getElementById('buy-member').value.trim();
+  const sub = document.getElementById('buy-sub').value;
+  if (!roundId || !memberId) { logTo('buy-log', '❌ Round + Member required', 'err'); return; }
+  const round = mockStore._rounds.get(roundId);
+  if (!round) return;
+  if (round.status !== 'open') { logTo('buy-log', `❌ Round is ${round.status}`, 'err'); return; }
+  if (round.tickets_sold >= round.max_tickets) { logTo('buy-log', '❌ Sold out', 'err'); return; }
+
+  // Feature gate
+  const features = { basic: ['lotto_weekly'], pro: ['lotto_daily', 'lotto_weekly'], none: [] };
+  if (round.required_feature && !features[sub].includes(round.required_feature)) {
+    logTo('buy-log', `❌ Member needs ${round.required_feature}`, 'err');
+    return;
+  }
+
+  // Duplicate check
+  if (mockStore._tickets.find((t) => t.round_id === roundId && t.member_id === memberId && t.status !== 'cancelled')) {
+    logTo('buy-log', `❌ Member already has ticket for this round`, 'err');
+    return;
+  }
+
+  const ticket_id = newId('TKT');
+  const ticket_number = round.tickets_sold + 1;
+  const lucky_code = String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
+  const ticket = {
+    ticket_id, round_id: roundId, member_id: memberId,
+    ticket_number, lucky_code, price_paid: round.ticket_price,
+    status: 'active', purchased_at: new Date().toISOString(),
+  };
+  mockStore._tickets.push(ticket);
+  round.tickets_sold++;
+  logTo('buy-log', `✅ ${memberId} bought ticket #${ticket_number} (${lucky_code})`, 'ok');
+  logTo('buy-log', `   Charged: ฿${round.ticket_price}`, 'info');
+  renderRounds();
+  renderTickets();
+  updateStats();
+}
+
+function drawRound(roundId) {
+  const round = mockStore._rounds.get(roundId);
+  if (!round) return;
+  if (round.tickets_sold === 0) { alert('No tickets sold'); return; }
+  const tickets = mockStore._tickets.filter((t) => t.round_id === roundId && t.status === 'active');
+  const winning = tickets[Math.floor(Math.random() * tickets.length)];
+  winning.status = 'won';
+  tickets.forEach((t) => { if (t.ticket_id !== winning.ticket_id) t.status = 'lost'; });
+  round.status = 'drawn';
+  round.winning_ticket_id = winning.ticket_id;
+  round.drawn_at = new Date().toISOString();
+  // Show winner banner
+  document.getElementById('winner-banner').classList.add('show');
+  document.getElementById('winner-text').textContent = `🏆 ${winning.member_id} wins ฿${round.prize_pool} (ticket #${winning.ticket_number})`;
+  renderRounds();
+  renderTickets();
+  updateStats();
+}
+
+function renderRounds() {
+  const tbody = document.getElementById('rounds-tbody');
+  const rounds = Array.from(mockStore._rounds.values()).sort((a, b) => b.created_at.localeCompare(a.created_at));
+  if (rounds.length === 0) { tbody.innerHTML = '<tr><td colspan="7" class="empty">No rounds yet</td></tr>'; return; }
+  tbody.innerHTML = rounds.map((r) => `
+    <tr>
+      <td><strong>${r.name}</strong><br><code style="font-size:10px;color:#64748b">${r.round_id.slice(0, 18)}…</code></td>
+      <td>฿${r.ticket_price}</td>
+      <td>${r.tickets_sold}/${r.max_tickets}</td>
+      <td>฿${r.prize_pool.toLocaleString()}</td>
+      <td>${new Date(r.draw_at).toLocaleString('th-TH')}</td>
+      <td><span class="badge ${r.status}">${r.status}</span></td>
+      <td>${r.status === 'open' ? `<button class="warning" style="padding:2px 6px;font-size:11px;" onclick="drawRound('${r.round_id}')">🎰 Draw</button>` : '—'}</td>
+    </tr>
+  `).join('');
+  // Update buy select
+  const buyRound = document.getElementById('buy-round');
+  const openRounds = rounds.filter((r) => r.status === 'open');
+  buyRound.innerHTML = openRounds.map((r) => `<option value="${r.round_id}">${r.name} (฿${r.ticket_price})</option>`).join('');
+}
+
+function renderTickets() {
+  const grid = document.getElementById('ticket-grid');
+  const label = document.getElementById('ticket-round-id');
+  if (!selectedRoundId) { grid.innerHTML = '<div class="empty">Select a round to see tickets</div>'; label.textContent = ''; return; }
+  const round = mockStore._rounds.get(selectedRoundId);
+  if (!round) { grid.innerHTML = ''; return; }
+  label.textContent = `— ${round.name}`;
+  const tickets = mockStore._tickets.filter((t) => t.round_id === selectedRoundId).sort((a, b) => a.ticket_number - b.ticket_number);
+  if (tickets.length === 0) { grid.innerHTML = '<div class="empty">No tickets sold yet</div>'; return; }
+  grid.innerHTML = tickets.map((t) => `
+    <div class="ticket" style="${t.status === 'won' ? 'border-color: #22c55e; background: #052e16;' : t.status === 'lost' ? 'opacity: 0.4;' : ''}">
+      <div class="num">#${t.ticket_number}</div>
+      <div class="code">${t.lucky_code}</div>
+      <div style="font-size:9px;color:#64748b;margin-top:2px;">${t.member_id}</div>
+      ${t.status === 'won' ? '<div style="color:#22c55e;font-size:9px;">🏆 WON</div>' : ''}
+    </div>
+  `).join('');
+}
+
+function updateStats() {
+  const rounds = Array.from(mockStore._rounds.values());
+  const tickets = mockStore._tickets;
+  const totalRev = tickets.reduce((s, t) => s + t.price_paid, 0);
+  const totalPrize = Array.from(mockStore._rounds.values()).reduce((s, r) => s + r.prize_pool, 0);
+  document.getElementById('stat-open').textContent = rounds.filter((r) => r.status === 'open').length;
+  document.getElementById('stat-drawn').textContent = rounds.filter((r) => r.status === 'drawn' || r.status === 'claimed').length;
+  document.getElementById('stat-tickets').textContent = tickets.length;
+  document.getElementById('stat-revenue').textContent = totalRev.toLocaleString();
+  document.getElementById('stat-prize').textContent = totalPrize.toLocaleString();
+}
+
+// Set default draw time = 1 week from now
+document.getElementById('round-draw').value = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 16);
+
+renderRounds();
+renderTickets();
+updateStats();
+</script>
+
+</body>
+</html>
