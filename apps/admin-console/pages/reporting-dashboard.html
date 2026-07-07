@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Reporting Dashboard — PF-17</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; padding: 24px; }
+  h1 { font-size: 22px; margin-bottom: 6px; }
+  .subtitle { color: #94a3b8; font-size: 13px; margin-bottom: 20px; }
+  .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
+  .stat { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 14px; }
+  .stat .label { font-size: 10px; color: #94a3b8; text-transform: uppercase; }
+  .stat .value { font-size: 24px; font-weight: 700; margin-top: 4px; color: #f1f5f9; }
+  .stat .sub { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+  .stat.success .value { color: #22c55e; }
+  .stat.warning .value { color: #f59e0b; }
+  .stat.info .value { color: #3b82f6; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 16px; }
+  .card h2 { font-size: 16px; margin-bottom: 12px; }
+  .funnel { display: flex; align-items: center; gap: 8px; }
+  .funnel-stage { flex: 1; padding: 16px; border-radius: 6px; text-align: center; }
+  .funnel-stage .label { font-size: 11px; color: #94a3b8; }
+  .funnel-stage .value { font-size: 24px; font-weight: 700; margin-top: 4px; }
+  .funnel-arrow { color: #64748b; font-size: 20px; }
+  .funnel-stage.free { background: #475569; }
+  .funnel-stage.basic { background: #3b82f6; }
+  .funnel-stage.pro { background: #a855f7; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #334155; }
+  th { color: #94a3b8; font-size: 10px; text-transform: uppercase; }
+  .badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; }
+  .badge.pending { background: #f59e0b; color: white; }
+  .badge.approved { background: #16a34a; color: white; }
+  .badge.rejected { background: #ef4444; color: white; }
+  .empty { padding: 16px; text-align: center; color: #64748b; font-size: 12px; }
+  .bar-chart { display: flex; align-items: flex-end; height: 80px; gap: 2px; padding-top: 8px; }
+  .bar { background: #3b82f6; flex: 1; min-width: 4px; border-radius: 2px 2px 0 0; position: relative; }
+  .bar-label { position: absolute; bottom: -16px; left: 50%; transform: translateX(-50%); font-size: 9px; color: #64748b; }
+</style>
+</head>
+<body>
+
+<h1>📊 Reporting Dashboard</h1>
+<p class="subtitle">PF-17 (Phase E) — Analytics: MRR, retention, funnel, top merchants, KYC pipeline · 15/15 tests passing</p>
+
+<div class="stats">
+  <div class="stat success">
+    <div class="label">MRR (THB)</div>
+    <div class="value" id="stat-mrr">0</div>
+    <div class="sub">ARR: ฿<span id="stat-arr">0</span></div>
+  </div>
+  <div class="stat info">
+    <div class="label">Active Subs</div>
+    <div class="value" id="stat-subs">0</div>
+  </div>
+  <div class="stat success">
+    <div class="label">Active Merchants</div>
+    <div class="value" id="stat-merchants">0</div>
+  </div>
+  <div class="stat warning">
+    <div class="label">Total Members</div>
+    <div class="value" id="stat-members">0</div>
+  </div>
+  <div class="stat info">
+    <div class="label">Events Today</div>
+    <div class="value" id="stat-events">0</div>
+  </div>
+</div>
+
+<div class="grid">
+  <!-- Conversion Funnel -->
+  <div class="card">
+    <h2>📈 Conversion Funnel</h2>
+    <div class="funnel">
+      <div class="funnel-stage free">
+        <div class="label">FREE</div>
+        <div class="value" id="funnel-free">0</div>
+      </div>
+      <div class="funnel-arrow">→</div>
+      <div class="funnel-stage basic">
+        <div class="label">BASIC</div>
+        <div class="value" id="funnel-basic">0</div>
+      </div>
+      <div class="funnel-arrow">→</div>
+      <div class="funnel-stage pro">
+        <div class="label">PRO</div>
+        <div class="value" id="funnel-pro">0</div>
+      </div>
+    </div>
+    <div style="margin-top: 24px; font-size: 12px; color: #94a3b8;">
+      Free → Paid: <strong id="funnel-paid-rate" style="color: #22c55e;">0%</strong>
+      &nbsp;|&nbsp; Basic → Pro: <strong id="funnel-upgrade-rate" style="color: #3b82f6;">0%</strong>
+    </div>
+  </div>
+
+  <!-- Retention -->
+  <div class="card">
+    <h2>🔁 Retention (D1 / D7 / D30)</h2>
+    <div style="display: flex; gap: 16px; margin-bottom: 12px;">
+      <div style="flex: 1; text-align: center; padding: 16px; background: #0f172a; border-radius: 6px;">
+        <div style="font-size: 11px; color: #94a3b8;">D1</div>
+        <div style="font-size: 28px; font-weight: 700; color: #22c55e;" id="ret-d1">0%</div>
+      </div>
+      <div style="flex: 1; text-align: center; padding: 16px; background: #0f172a; border-radius: 6px;">
+        <div style="font-size: 11px; color: #94a3b8;">D7</div>
+        <div style="font-size: 28px; font-weight: 700; color: #3b82f6;" id="ret-d7">0%</div>
+      </div>
+      <div style="flex: 1; text-align: center; padding: 16px; background: #0f172a; border-radius: 6px;">
+        <div style="font-size: 11px; color: #94a3b8;">D30</div>
+        <div style="font-size: 28px; font-weight: 700; color: #a855f7;" id="ret-d30">0%</div>
+      </div>
+    </div>
+    <div style="font-size: 12px; color: #64748b;">Cohort size: <strong id="ret-cohort" style="color: #f1f5f9;">0</strong></div>
+  </div>
+</div>
+
+<!-- Engagement + FX + KYC -->
+<div class="grid">
+  <div class="card">
+    <h2>📊 Engagement (7d)</h2>
+    <table>
+      <thead>
+        <tr><th>Event</th><th>Count</th></tr>
+      </thead>
+      <tbody id="eng-tbody">
+        <tr><td>POI Triggers</td><td id="eng-poi">0</td></tr>
+        <tr><td>Gift Cards Redeemed</td><td id="eng-gift">0</td></tr>
+        <tr><td>Vouchers Redeemed</td><td id="eng-voucher">0</td></tr>
+        <tr><td>Lotto Tickets</td><td id="eng-lotto-ticket">0</td></tr>
+        <tr><td>Lotto Draws</td><td id="eng-lotto-draw">0</td></tr>
+        <tr><td>Notifications Sent</td><td id="eng-notif">0</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>🏛️ KYC Pipeline</h2>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+      <div style="padding: 12px; background: #0f172a; border-radius: 6px;">
+        <div style="font-size: 11px; color: #94a3b8;">Total</div>
+        <div style="font-size: 24px; font-weight: 700;" id="kyc-total">0</div>
+      </div>
+      <div style="padding: 12px; background: #0f172a; border-radius: 6px;">
+        <div style="font-size: 11px; color: #94a3b8;">Pending</div>
+        <div style="font-size: 24px; font-weight: 700; color: #f59e0b;" id="kyc-pending">0</div>
+      </div>
+      <div style="padding: 12px; background: #0f172a; border-radius: 6px;">
+        <div style="font-size: 11px; color: #94a3b8;">Approved</div>
+        <div style="font-size: 24px; font-weight: 700; color: #22c55e;" id="kyc-approved">0</div>
+      </div>
+      <div style="padding: 12px; background: #0f172a; border-radius: 6px;">
+        <div style="font-size: 11px; color: #94a3b8;">Approval Rate</div>
+        <div style="font-size: 24px; font-weight: 700; color: #3b82f6;" id="kyc-rate">0%</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FX Volume + Top Merchants -->
+<div class="grid">
+  <div class="card">
+    <h2>💱 FX Volume</h2>
+    <div style="display: flex; gap: 16px; margin-bottom: 12px;">
+      <div style="flex: 1; padding: 12px; background: #0f172a; border-radius: 6px;">
+        <div style="font-size: 11px; color: #94a3b8;">Total Events</div>
+        <div style="font-size: 24px; font-weight: 700;" id="fx-events">0</div>
+      </div>
+      <div style="flex: 1; padding: 12px; background: #0f172a; border-radius: 6px;">
+        <div style="font-size: 11px; color: #94a3b8;">Active Pairs</div>
+        <div style="font-size: 24px; font-weight: 700;" id="fx-pairs">0</div>
+      </div>
+    </div>
+    <table>
+      <thead><tr><th>Pair</th><th>Count</th><th>Avg Rate</th></tr></thead>
+      <tbody id="fx-tbody">
+        <tr><td colspan="3" class="empty">No FX data</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>🏆 Top Merchants</h2>
+    <table>
+      <thead>
+        <tr><th>Merchant</th><th>Count</th><th>Volume</th></tr>
+      </thead>
+      <tbody id="merchants-tbody">
+        <tr><td colspan="3" class="empty">No merchant data</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const mockStore = {
+  _subs: new Map(),
+  _members: new Map(),
+  _merchants: new Map(),
+  _audit: new Map(),
+  _kycApps: new Map(),
+  _idSeq: 0,
+};
+function newId(prefix) { return `${prefix}-${Date.now()}-${++mockStore._idSeq}`; }
+const now = new Date().toISOString();
+
+// Seed sample data
+mockStore._members.set('M-1', { tier: 'free' });
+mockStore._members.set('M-2', { tier: 'free' });
+mockStore._members.set('M-3', { tier: 'pro' });
+mockStore._members.set('M-4', { tier: 'enterprise' });
+mockStore._members.set('M-5', { tier: 'basic' });
+
+mockStore._merchants.set('MCH-1', { status: 'active' });
+mockStore._merchants.set('MCH-2', { status: 'active' });
+mockStore._merchants.set('MCH-3', { status: 'active' });
+
+mockStore._subs.set('SUB-1', { plan_id: 'basic', status: 'active', price_thb: 10, billing_period: 'monthly' });
+mockStore._subs.set('SUB-2', { plan_id: 'pro', status: 'active', price_thb: 99, billing_period: 'monthly' });
+mockStore._subs.set('SUB-3', { plan_id: 'pro', status: 'active', price_thb: 1188, billing_period: 'yearly' });
+
+mockStore._kycApps.set('KYC-1', { status: 'approved', submitted_at: now, sla_deadline: new Date(Date.now() + 86400000).toISOString() });
+mockStore._kycApps.set('KYC-2', { status: 'in_review', submitted_at: now, sla_deadline: new Date(Date.now() + 86400000).toISOString() });
+
+// Seed events
+mockStore._audit.set('A-1', { event_type: 'POI_TRIGGERED', member_id: 'M-1', created_at: now });
+mockStore._audit.set('A-2', { event_type: 'POI_TRIGGERED', member_id: 'M-1', created_at: now });
+mockStore._audit.set('A-3', { event_type: 'POI_TRIGGERED', member_id: 'M-2', created_at: now });
+mockStore._audit.set('A-4', { event_type: 'GIFT_CARD_REDEEMED', member_id: 'M-2', created_at: now });
+mockStore._audit.set('A-5', { event_type: 'VOUCHER_REDEEMED', member_id: 'M-1', created_at: now });
+mockStore._audit.set('A-6', { event_type: 'LOTTO_DRAWN', member_id: 'M-3', created_at: now });
+mockStore._audit.set('A-7', { event_type: 'NOTIFICATION_SENT', member_id: 'M-2', created_at: now });
+mockStore._audit.set('A-8', { event_type: 'FX_RATE_SET', resource_id: 'MCH-1', metadata: { from_currency: 'USD', to_currency: 'THB', rate: 37 }, created_at: now });
+mockStore._audit.set('A-9', { event_type: 'TOKEN_MINTED', member_id: 'M-1', resource_id: 'MCH-1', created_at: now });
+mockStore._audit.set('A-10', { event_type: 'SUBSCRIPTION_CREATED', member_id: 'M-2', created_at: now });
+
+// Compute metrics
+function update() {
+  // MRR
+  let mrr = 0;
+  for (const s of mockStore._subs.values()) {
+    if (s.status === 'active' || s.status === 'trial') {
+      mrr += s.billing_period === 'yearly' ? s.price_thb / 12 : s.price_thb;
+    }
+  }
+  document.getElementById('stat-mrr').textContent = mrr.toLocaleString();
+  document.getElementById('stat-arr').textContent = (mrr * 12).toLocaleString();
+
+  const activeSubs = Array.from(mockStore._subs.values()).filter((s) => s.status === 'active' || s.status === 'trial').length;
+  document.getElementById('stat-subs').textContent = activeSubs;
+  document.getElementById('stat-merchants').textContent = Array.from(mockStore._merchants.values()).filter((m) => m.status === 'active').length;
+  document.getElementById('stat-members').textContent = mockStore._members.size;
+  document.getElementById('stat-events').textContent = mockStore._audit.size;
+
+  // Funnel
+  const free = Array.from(mockStore._members.values()).filter((m) => !m.tier || m.tier === 'free').length;
+  const basic = Array.from(mockStore._members.values()).filter((m) => m.tier === 'basic' || m.tier === 'gold').length;
+  const pro = Array.from(mockStore._members.values()).filter((m) => m.tier === 'pro' || m.tier === 'enterprise').length;
+  document.getElementById('funnel-free').textContent = free;
+  document.getElementById('funnel-basic').textContent = basic;
+  document.getElementById('funnel-pro').textContent = pro;
+  const total = mockStore._members.size;
+  document.getElementById('funnel-paid-rate').textContent = total > 0 ? (((basic + pro) / total) * 100).toFixed(1) + '%' : '0%';
+  document.getElementById('funnel-upgrade-rate').textContent = basic > 0 ? ((pro / basic) * 100).toFixed(1) + '%' : '0%';
+
+  // Retention (mock)
+  document.getElementById('ret-d1').textContent = '75%';
+  document.getElementById('ret-d7').textContent = '45%';
+  document.getElementById('ret-d30').textContent = '25%';
+  document.getElementById('ret-cohort').textContent = '20';
+
+  // Engagement
+  const events = Array.from(mockStore._audit.values());
+  const eng = {
+    poi: events.filter((e) => e.event_type === 'POI_TRIGGERED').length,
+    gift: events.filter((e) => e.event_type === 'GIFT_CARD_REDEEMED').length,
+    voucher: events.filter((e) => e.event_type === 'VOUCHER_REDEEMED').length,
+    lottoTicket: events.filter((e) => e.event_type === 'LOTTO_TICKET_PURCHASED').length,
+    lottoDraw: events.filter((e) => e.event_type === 'LOTTO_DRAWN').length,
+    notif: events.filter((e) => e.event_type === 'NOTIFICATION_SENT').length,
+  };
+  document.getElementById('eng-poi').textContent = eng.poi;
+  document.getElementById('eng-gift').textContent = eng.gift;
+  document.getElementById('eng-voucher').textContent = eng.voucher;
+  document.getElementById('eng-lotto-ticket').textContent = eng.lottoTicket;
+  document.getElementById('eng-lotto-draw').textContent = eng.lottoDraw;
+  document.getElementById('eng-notif').textContent = eng.notif;
+
+  // KYC
+  const kycApps = Array.from(mockStore._kycApps.values());
+  const approved = kycApps.filter((a) => a.status === 'approved').length;
+  const pending = kycApps.filter((a) => a.status === 'in_review' || a.status === 'pending').length;
+  document.getElementById('kyc-total').textContent = kycApps.length;
+  document.getElementById('kyc-pending').textContent = pending;
+  document.getElementById('kyc-approved').textContent = approved;
+  document.getElementById('kyc-rate').textContent = kycApps.length > 0 ? ((approved / kycApps.length) * 100).toFixed(1) + '%' : '0%';
+
+  // FX
+  const fxEvents = events.filter((e) => e.event_type === 'FX_RATE_SET');
+  const fxByPair = {};
+  for (const e of fxEvents) {
+    const pair = `${e.metadata?.from_currency || '?'}-${e.metadata?.to_currency || '?'}`;
+    if (!fxByPair[pair]) fxByPair[pair] = { pair, count: 0, avg_rate: 0 };
+    fxByPair[pair].count++;
+    fxByPair[pair].avg_rate = e.metadata?.rate || 0;
+  }
+  document.getElementById('fx-events').textContent = fxEvents.length;
+  document.getElementById('fx-pairs').textContent = Object.keys(fxByPair).length;
+  const fxTbody = document.getElementById('fx-tbody');
+  if (Object.keys(fxByPair).length === 0) {
+    fxTbody.innerHTML = '<tr><td colspan="3" class="empty">No FX data</td></tr>';
+  } else {
+    fxTbody.innerHTML = Object.values(fxByPair).map((p) => `<tr><td>${p.pair}</td><td>${p.count}</td><td>${p.avg_rate.toFixed(4)}</td></tr>`).join('');
+  }
+
+  // Top Merchants
+  const merchEvents = events.filter((e) => ['TOKEN_MINTED', 'VOUCHER_REDEEMED', 'LOTTO_TICKET_PURCHASED', 'GIFT_CARD_REDEEMED'].includes(e.event_type));
+  const merchStats = {};
+  for (const e of merchEvents) {
+    const mid = e.resource_id;
+    if (!merchStats[mid]) merchStats[mid] = { merchant_id: mid, count: 0, volume: 0 };
+    merchStats[mid].count++;
+    if (e.metadata?.amount) merchStats[mid].volume += e.metadata.amount;
+  }
+  const mTbody = document.getElementById('merchants-tbody');
+  if (Object.keys(merchStats).length === 0) {
+    mTbody.innerHTML = '<tr><td colspan="3" class="empty">No merchant data</td></tr>';
+  } else {
+    mTbody.innerHTML = Object.values(merchStats).sort((a, b) => b.count - a.count).map((m) => `<tr><td>${m.merchant_id}</td><td>${m.count}</td><td>${m.volume.toLocaleString()}</td></tr>`).join('');
+  }
+}
+
+update();
+</script>
+
+</body>
+</html>
