@@ -176,6 +176,9 @@
   <button class="main-tab tab-9" onclick="showMain(9)">
     <span class="icon">🌊</span>Tab 9: Data Flow
   </button>
+  <button class="main-tab tab-10" onclick="showMain(10)">
+    <span class="icon">👥</span>Tab 10: Audience Matrix
+  </button>
 </div>
 
 <!-- ==================== TAB 1: STANDARDS ==================== -->
@@ -2647,6 +2650,161 @@ ReportingEngine:aggregate() → (no external) ──→ audit_log → 📊 Dashb
       <tr><td style="padding: 6px; border-bottom: 1px solid #334155;">SessionGuard (PF-14)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">sessions, request_idempotency</td><td style="padding: 6px; border-bottom: 1px solid #334155;">sessions (in-memory + DB)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">session.created, session.destroyed</td></tr>
     </tbody>
   </table>
+</div>
+
+<!-- ==================== TAB 10: AUDIENCE MATRIX ==================== -->
+<div id="tab10" class="main-content" style="display:none;">
+  <h2>👥 Tab 10: Audience Matrix — ทุก Tab มีมุมมอง 4 audience</h2>
+  <p style="margin-bottom: 20px; color: #94a3b8;">แต่ละ Tab แสดง 4 มุมมอง: 📊 All · 👨‍💻 Dev · 💼 PM · 👤 User · ใช้เลือกตามตำแหน่งหรือความสนใจ</p>
+
+  <!-- MASTER MATRIX -->
+  <h2 style="color: #fbbf24; margin-top: 30px;">📊 Master Matrix — ทุก Tab × 4 Audiences</h2>
+  <table style="width: 100%; border-collapse: collapse; color: #e2e8f0; font-size: 12px;">
+    <thead><tr style="background: #0f172a;">
+      <th style="padding: 10px; text-align: left;">Tab</th>
+      <th style="padding: 10px; text-align: left;">📊 All</th>
+      <th style="padding: 10px; text-align: left;">👨‍💻 Dev</th>
+      <th style="padding: 10px; text-align: left;">💼 PM</th>
+      <th style="padding: 10px; text-align: left;">👤 User</th>
+    </tr></thead>
+    <tbody>
+      <tr style="background: rgba(59, 130, 246, 0.05);">
+        <td style="padding: 8px; border-bottom: 1px solid #334155;"><strong>Tab 1: Standards</strong></td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Reference list (all standards)</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Coding rules + Anti-patterns</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Standards to enforce</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">- N/A (internal)</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;"><strong>Tab 2: Audit (UAT)</strong></td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Audit overview + 13 issues</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Task list + Code patterns</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Priority + Roadmap + Risk</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Analogy + 3 Q&A</td>
+      </tr>
+      <tr style="background: rgba(59, 130, 246, 0.05);">
+        <td style="padding: 8px; border-bottom: 1px solid #334155;"><strong>Tab 3: Production Incident</strong></td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Wallet duplication overview</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Timeline + Fix code + Database</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Customer impact + Cost</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ What happened (simple)</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;"><strong>Tab 4: Execution Roadmap</strong></td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Eisenhower matrix + 90-day</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Tasks + Pipeline + Tests</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Priority + Resources + ROI</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ What changes (layman)</td>
+      </tr>
+      <tr style="background: rgba(59, 130, 246, 0.05);">
+        <td style="padding: 8px; border-bottom: 1px solid #334155;"><strong>Tab 5: Architecture</strong></td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Trade-off matrix + Decision tree</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Path + Code + Migration steps</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Business case + Cost</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ What changes (layman)</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;"><strong>Tab 6: Production Testing</strong></td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Zero-risk guardrails overview</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Checklist + Code + Scripts</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Safety + SLA + Monitoring</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ How safe (layman)</td>
+      </tr>
+      <tr style="background: rgba(59, 130, 246, 0.05);">
+        <td style="padding: 8px; border-bottom: 1px solid #334155;"><strong>Tab 7: Admin Console</strong></td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ 23 consoles overview + Stats</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Dev implementation + URLs</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Decision matrix + Cost</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">- N/A (admin only)</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;"><strong>Tab 8: Task for Dev</strong></td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ 24 tasks · 4 priorities</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Implementation details + Effort</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Sprint planning + Team allocation</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">- N/A (internal)</td>
+      </tr>
+      <tr style="background: rgba(59, 130, 246, 0.05);">
+        <td style="padding: 8px; border-bottom: 1px solid #334155;"><strong>Tab 9: Data Flow</strong></td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ 5 layers · 14-engine matrix</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Reads/Writes/Events per engine</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">✅ Cross-engine dependencies</td>
+        <td style="padding: 8px; border-bottom: 1px solid #334155;">- N/A (technical)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- QUICK ACCESS BY ROLE -->
+  <h2 style="color: #fbbf24; margin-top: 40px;">⚡ Quick Access — ตามตำแหน่ง</h2>
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px;">
+    <!-- DEV -->
+    <div style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); padding: 20px; border-radius: 10px; border: 2px solid #3b82f6;">
+      <h2 style="color: #93c5fd; margin: 0 0 12px 0;">👨‍💻 Dev (Developer)</h2>
+      <p style="color: #dbeafe; font-size: 13px; margin-bottom: 12px;">ถ้าคุณเขียน code / แก้ bug / refactor</p>
+      <ol style="color: #bfdbfe; font-size: 13px; line-height: 1.8; padding-left: 18px; margin: 0;">
+        <li><strong>Tab 1:</strong> Standards (clean code rules)</li>
+        <li><strong>Tab 2:</strong> Audit Dev section (15+ bugs)</li>
+        <li><strong>Tab 4:</strong> Execution (tasks + pipeline)</li>
+        <li><strong>Tab 5:</strong> Architecture (path + code)</li>
+        <li><strong>Tab 6:</strong> Testing (checklist + scripts)</li>
+        <li><strong>Tab 7:</strong> Admin Console (impl + URLs)</li>
+        <li><strong>Tab 8:</strong> Task Backlog (24 tasks, 4 priorities)</li>
+        <li><strong>Tab 9:</strong> Data Flow (engine → storage)</li>
+        <li><strong>Tab 3:</strong> Incident (timeline + fix code)</li>
+      </ol>
+    </div>
+    <!-- PM -->
+    <div style="background: linear-gradient(135deg, #581c87 0%, #6b21a8 100%); padding: 20px; border-radius: 10px; border: 2px solid #a855f7;">
+      <h2 style="color: #d8b4fe; margin: 0 0 12px 0;">💼 PM (Product/Project Manager)</h2>
+      <p style="color: #ede9fe; font-size: 13px; margin-bottom: 12px;">ถ้าคุณวาง roadmap / บริหาร resource / รายงาน exec</p>
+      <ol style="color: #e9d5ff; font-size: 13px; line-height: 1.8; padding-left: 18px; margin: 0;">
+        <li><strong>Tab 1:</strong> Standards (which to enforce)</li>
+        <li><strong>Tab 2:</strong> Audit PM section (priority + risk)</li>
+        <li><strong>Tab 3:</strong> Incident (customer impact + cost)</li>
+        <li><strong>Tab 4:</strong> Execution (priority + ROI)</li>
+        <li><strong>Tab 5:</strong> Architecture (business case)</li>
+        <li><strong>Tab 6:</strong> Testing (safety + SLA)</li>
+        <li><strong>Tab 7:</strong> Admin Console (decision matrix)</li>
+        <li><strong>Tab 8:</strong> Task Backlog (sprint planning)</li>
+        <li><strong>Tab 9:</strong> Data Flow (cross-engine deps)</li>
+      </ol>
+    </div>
+    <!-- USER -->
+    <div style="background: linear-gradient(135deg, #064e3b 0%, #047857 100%); padding: 20px; border-radius: 10px; border: 2px solid #10b981;">
+      <h2 style="color: #6ee7b7; margin: 0 0 12px 0;">👤 User (End-user / Customer)</h2>
+      <p style="color: #d1fae5; font-size: 13px; margin-bottom: 12px;">ถ้าคุณอยากเข้าใจว่าเกิดอะไรขึ้น (ภาษาง่าย)</p>
+      <ol style="color: #a7f3d0; font-size: 13px; line-height: 1.8; padding-left: 18px; margin: 0;">
+        <li><strong>Tab 2:</strong> Audit (3 Q&A + analogies)</li>
+        <li><strong>Tab 3:</strong> Incident (what happened)</li>
+        <li><strong>Tab 4:</strong> Execution (what changes)</li>
+        <li><strong>Tab 5:</strong> Architecture (layman terms)</li>
+        <li><strong>Tab 6:</strong> Testing (how safe)</li>
+        <li style="opacity: 0.5;">Tab 1, 7, 8, 9: N/A (internal)</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- 4-QUADRANT PATTERN -->
+  <h2 style="color: #fbbf24; margin-top: 40px;">🎯 4-Quadrant Pattern (Standard)</h2>
+  <p style="color: #94a3b8;">ทุก content section ใช้ 4 quadrants เพื่อให้ผู้อ่านทุก role เข้าถึงได้:</p>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px;">
+    <div style="background: #1e3a8a; padding: 16px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+      <h3 style="color: #93c5fd; margin: 0 0 8px 0;">👨‍💻 Dev Section</h3>
+      <p style="color: #dbeafe; font-size: 13px; margin: 0;">Task list · Code patterns · CI/CD pipeline · Quality gates · Test plan</p>
+    </div>
+    <div style="background: #581c87; padding: 16px; border-radius: 8px; border-left: 4px solid #a855f7;">
+      <h3 style="color: #d8b4fe; margin: 0 0 8px 0;">💼 PM Section</h3>
+      <p style="color: #ede9fe; font-size: 13px; margin: 0;">Priority · Sprint 90-day · Team allocation · Budget · Risk · ROI</p>
+    </div>
+    <div style="background: #064e3b; padding: 16px; border-radius: 8px; border-left: 4px solid #10b981;">
+      <h3 style="color: #6ee7b7; margin: 0 0 8px 0;">👤 User Section</h3>
+      <p style="color: #d1fae5; font-size: 13px; margin: 0;">Analogies · Visual diagrams · 3 Q&A · Plain language (no jargon)</p>
+    </div>
+    <div style="background: #7c2d12; padding: 16px; border-radius: 8px; border-left: 4px solid #f97316;">
+      <h3 style="color: #fed7aa; margin: 0 0 8px 0;">📊 All (Cross-team)</h3>
+      <p style="color: #ffedd5; font-size: 13px; margin: 0;">Overview · Stats · Executive summary · Decision tree</p>
+    </div>
+  </div>
 </div>
 
 </html>
