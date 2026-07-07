@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin MSP Recovery — LikePoint</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: 'Inter', -apple-system, sans-serif; background: #f8fafc; }
+  .sidebar { background: #1e293b; color: #e2e8f0; }
+  .sidebar-item:hover { background: #334155; }
+  .sidebar-item.active { background: #3b82f6; }
+  .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .form-input { width: 100%; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; }
+  .form-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+  .layer-tab { padding: 10px 16px; cursor: pointer; border-bottom: 3px solid transparent; }
+  .layer-tab.active { border-bottom-color: #3b82f6; color: #3b82f6; font-weight: 600; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500; }
+  .progress-bar { height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; }
+  .btn-primary { background: #3b82f6; color: white; padding: 10px 20px; border-radius: 8px; font-weight: 600; }
+  .btn-primary:hover { background: #2563eb; }
+  .btn-success { background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; font-weight: 600; }
+  .btn-success:hover { background: #059669; }
+  .btn-danger { background: #ef4444; color: white; padding: 10px 20px; border-radius: 8px; font-weight: 600; }
+  .btn-danger:hover { background: #dc2626; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<div class="flex">
+  <!-- Sidebar -->
+  <aside class="sidebar w-60 min-h-screen p-4">
+    <div class="text-lg font-bold mb-6">🎯 LikePoint Admin</div>
+    <nav class="space-y-1 text-sm">
+      <a href="#" class="sidebar-item block px-3 py-2 rounded">🏠 Dashboard</a>
+      <a href="#" class="sidebar-item block px-3 py-2 rounded">👥 Customer 360</a>
+      <a href="#" class="sidebar-item block px-3 py-2 rounded">🔧 Operations</a>
+      <a href="#" class="sidebar-item block px-3 py-2 rounded">💸 Transfer Point</a>
+      <a href="#" class="sidebar-item block px-3 py-2 rounded">📊 Identity Queue</a>
+      <a href="#" class="sidebar-item block px-3 py-2 rounded">📋 Audit Log</a>
+      <div class="border-t border-gray-600 my-3"></div>
+      <a href="#" class="sidebar-item active block px-3 py-2 rounded">🆘 MSP Recovery</a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 p-6">
+
+    <!-- Header -->
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-900">🆘 MSP Recovery Tool</h1>
+      <p class="text-sm text-gray-600">กู้คืน wallet MSP หลังสมาชิกเปลี่ยนเบอร์โทร (Phase A: Quick Win)</p>
+    </div>
+
+    <!-- Step 1: Search -->
+    <div class="card mb-4">
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">1</div>
+        <h2 class="text-sm font-semibold text-gray-700">ค้นหาสมาชิก</h2>
+      </div>
+      <div class="flex gap-2">
+        <input type="text" id="search-phone" class="form-input flex-1" 
+               placeholder="📱 เบอร์โทรศัพท์ (เช่น 088-1234-5678)">
+        <button onclick="searchMember()" class="btn-primary">🔍 ค้นหา</button>
+      </div>
+    </div>
+
+    <!-- Member Found (Hidden by default) -->
+    <div id="member-found" class="card mb-4" style="display: none;">
+      
+      <!-- Member Summary -->
+      <div class="flex items-start gap-4 pb-4 border-b border-gray-200">
+        <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-2xl">🧑</div>
+        <div class="flex-1">
+          <div class="text-lg font-bold text-gray-900" id="member-name">สมชาย ใจดี</div>
+          <div class="text-xs text-gray-500 font-mono" id="member-uid">Person UID: usr_01HXY...ABCDEF</div>
+          <div class="mt-2 flex items-center gap-2">
+            <span class="text-xs text-gray-500">Trust Score:</span>
+            <div class="progress-bar w-24"><div class="progress-fill bg-green-500" style="width: 78%"></div></div>
+            <span class="text-xs font-bold text-green-600">78/100 🟢</span>
+          </div>
+        </div>
+        <div>
+          <span class="badge bg-red-100 text-red-700">⚠️ Wallet Mismatch Detected</span>
+        </div>
+      </div>
+
+      <!-- Layer Tabs -->
+      <div class="flex border-b border-gray-200 mt-4">
+        <div class="layer-tab active" onclick="showLayer('L3')">L3 Contact</div>
+        <div class="layer-tab" onclick="showLayer('L2')">L2 Wallet</div>
+        <div class="layer-tab" onclick="showLayer('L4')">L4 Relationship</div>
+      </div>
+
+      <!-- L3 Contact -->
+      <div id="layer-L3" class="layer-content pt-4">
+        <table class="w-full text-sm">
+          <tbody>
+            <tr class="border-b border-gray-100">
+              <td class="py-3 text-gray-500 w-1/3">📱 เบอร์เก่า (Old)</td>
+              <td class="py-3"><span class="font-mono text-gray-400 line-through">088-1234-5678</span> <span class="badge bg-red-100 text-red-700">DEACTIVATED</span></td>
+            </tr>
+            <tr>
+              <td class="py-3 text-gray-500">📱 เบอร์ใหม่ (New)</td>
+              <td class="py-3"><span class="font-mono font-bold">099-9876-5432</span> <span class="badge bg-green-100 text-green-700">✅ Primary</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- L2 Wallet -->
+      <div id="layer-L2" class="layer-content hidden pt-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-red-50 rounded p-3">
+            <div class="text-xs text-gray-600">Old Wallet (ID: wlt_old_8x9y)</div>
+            <div class="text-lg font-bold text-red-700">8,200 P <span class="badge bg-red-100 text-red-700 text-xs">🔒 LOCKED</span></div>
+            <div class="text-xs text-gray-500 mt-1">ปลดล็อกเมื่อ: 5 ก.ค. 2569</div>
+          </div>
+          <div class="bg-green-50 rounded p-3">
+            <div class="text-xs text-gray-600">New Wallet (ID: wlt_new_abc)</div>
+            <div class="text-lg font-bold text-green-700">0 P <span class="badge bg-green-100 text-green-700 text-xs">✅ ACTIVE</span></div>
+            <div class="text-xs text-gray-500 mt-1">สร้างเมื่อ: 5 ก.ค. 2569</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- L4 Relationship -->
+      <div id="layer-L4" class="layer-content hidden pt-4">
+        <div class="text-sm text-gray-600">
+          Active in 1 tenant: <strong>Café Amazon</strong> (Gold tier)
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Recovery Action (Hidden by default) -->
+    <div id="recovery-action" class="card mb-4" style="display: none;">
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">2</div>
+        <h2 class="text-sm font-semibold text-gray-700">Recovery Action</h2>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="text-xs text-gray-600">MSP Balance to Transfer (P)</label>
+          <input type="number" id="transfer-amount" class="form-input" value="8200" min="0" max="8200">
+          <div class="text-xs text-gray-500 mt-1">Max: 8,200 P (Old wallet balance)</div>
+        </div>
+
+        <div>
+          <label class="text-xs text-gray-600">Unlock Reason (PDPA)</label>
+          <select id="unlock-reason" class="form-input">
+            <option>Phone changed</option>
+            <option>Wallet locked</option>
+            <option>Customer request</option>
+            <option>Other (specify in notes)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-xs text-gray-600">Consent Reference (PDPA log)</label>
+          <input type="text" id="consent-ref" class="form-input" placeholder="CONSENT-2026-07-07-XXX" value="CONSENT-2026-07-07-001">
+        </div>
+
+        <div>
+          <label class="text-xs text-gray-600">Notes (optional)</label>
+          <textarea id="notes" class="form-input" rows="2" placeholder="เพิ่มบันทึกเพิ่มเติม..."></textarea>
+        </div>
+
+        <div class="bg-amber-50 border-l-4 border-amber-500 p-3 rounded">
+          <div class="text-sm text-amber-800">
+            <strong>⚠️ คำเตือน:</strong> การกู้คืน wallet จะโอน point จาก Old wallet → New wallet และ deactivate Old wallet
+            ทุก action จะถูกบันทึกใน audit log (PDPA)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: 2FA + Execute -->
+    <div id="execute-action" class="card" style="display: none;">
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold">3</div>
+        <h2 class="text-sm font-semibold text-gray-700">ยืนยันตัวตน + Execute</h2>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="text-xs text-gray-600">2FA Code (TOTP)</label>
+          <input type="text" id="totp-code" class="form-input" placeholder="6-digit code" maxlength="6">
+          <div class="text-xs text-gray-500 mt-1">🔒 ต้องใส่รหัส 2FA เพื่อยืนยัน</div>
+        </div>
+
+        <div class="flex gap-2">
+          <button onclick="executeRecovery()" class="btn-success flex-1">✅ Execute Recovery</button>
+          <button onclick="cancelRecovery()" class="btn-danger">❌ Cancel</button>
+        </div>
+
+        <div class="text-xs text-gray-500 text-center">
+          ⏱️ Soft delete: 7 วัน (rollback ได้)
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Result -->
+    <div id="success-result" class="card" style="display: none;">
+      <div class="text-center">
+        <div class="text-6xl mb-3">✅</div>
+        <h2 class="text-xl font-bold text-green-600 mb-2">Recovery สำเร็จ!</h2>
+        <div class="text-sm text-gray-600 mb-4">
+          โอน <strong>8,200 BUpoint</strong> จาก Old wallet → New wallet เรียบร้อย
+        </div>
+        <div class="bg-green-50 rounded p-3 text-left text-xs">
+          <div>• <strong>Audit Log ID:</strong> AUD-2026-07-07-XXX</div>
+          <div>• <strong>Recovery Time:</strong> <span id="recovery-time">3 นาที 12 วินาที</span></div>
+          <div>• <strong>Rollback Until:</strong> 14 ก.ค. 2569</div>
+        </div>
+        <button onclick="resetForm()" class="mt-4 btn-primary">🔄 ทำรายการใหม่</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+let step = 0;
+
+function searchMember() {
+  const phone = document.getElementById('search-phone').value;
+  if (!phone || phone.length < 10) {
+    alert('❌ กรุณากรอกเบอร์โทรศัพท์ให้ครบ');
+    return;
+  }
+  
+  // Mock: show member found
+  document.getElementById('member-found').style.display = 'block';
+  document.getElementById('recovery-action').style.display = 'block';
+  document.getElementById('execute-action').style.display = 'block';
+  step = 3;
+}
+
+function showLayer(id) {
+  document.querySelectorAll('.layer-content').forEach(l => l.classList.add('hidden'));
+  document.querySelectorAll('.layer-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('layer-' + id).classList.remove('hidden');
+  event.target.classList.add('active');
+}
+
+function executeRecovery() {
+  const totp = document.getElementById('totp-code').value;
+  if (!totp || totp.length !== 6) {
+    alert('❌ กรุณากรอก 2FA code 6 หลัก');
+    return;
+  }
+  
+  // Mock: success
+  document.getElementById('recovery-action').style.display = 'none';
+  document.getElementById('execute-action').style.display = 'none';
+  document.getElementById('success-result').style.display = 'block';
+  document.getElementById('recovery-time').textContent = '3 นาที 12 วินาที (จาก 30-60 นาที)';
+}
+
+function cancelRecovery() {
+  if (confirm('❌ ยกเลิก Recovery นี้?')) {
+    resetForm();
+  }
+}
+
+function resetForm() {
+  document.getElementById('search-phone').value = '';
+  document.getElementById('member-found').style.display = 'none';
+  document.getElementById('recovery-action').style.display = 'none';
+  document.getElementById('execute-action').style.display = 'none';
+  document.getElementById('success-result').style.display = 'none';
+  document.getElementById('totp-code').value = '';
+}
+</script>
+
+</body>
+</html>
