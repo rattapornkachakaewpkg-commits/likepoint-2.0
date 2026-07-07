@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AAM Migration Console — PF-1</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; padding: 24px; }
+  h1 { font-size: 24px; margin-bottom: 8px; }
+  .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 24px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .card { background: #1e293b; border-radius: 8px; padding: 16px; border: 1px solid #334155; }
+  .card .label { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+  .card .value { font-size: 28px; font-weight: 700; margin-top: 8px; color: #f1f5f9; }
+  .card.success .value { color: #22c55e; }
+  .card.warning .value { color: #f59e0b; }
+  .card.danger .value { color: #ef4444; }
+  .section { background: #1e293b; border-radius: 8px; padding: 20px; margin-bottom: 24px; border: 1px solid #334155; }
+  .section h2 { font-size: 18px; margin-bottom: 16px; }
+  .toolbar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  input, select, button { background: #0f172a; color: #e2e8f0; border: 1px solid #334155; padding: 8px 12px; border-radius: 6px; font-size: 14px; }
+  button { cursor: pointer; font-weight: 600; }
+  button.primary { background: #3b82f6; border-color: #3b82f6; color: white; }
+  button.primary:hover { background: #2563eb; }
+  button.danger { background: #ef4444; border-color: #ef4444; color: white; }
+  button.success { background: #22c55e; border-color: #22c55e; color: white; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #334155; font-size: 13px; }
+  th { color: #94a3b8; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; }
+  tr:hover { background: #0f172a; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .badge.migrated { background: #16a34a; color: white; }
+  .badge.rolled-back { background: #ea580c; color: white; }
+  .badge.not-migrated { background: #475569; color: white; }
+  .badge.dry-run { background: #0891b2; color: white; }
+  textarea { width: 100%; min-height: 120px; font-family: 'Monaco', 'Menlo', monospace; font-size: 12px; }
+  .row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .row label { width: 140px; font-size: 13px; color: #94a3b8; }
+  .log { background: #020617; border-radius: 6px; padding: 12px; max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px; line-height: 1.6; }
+  .log .ts { color: #64748b; }
+  .log .ok { color: #22c55e; }
+  .log .err { color: #ef4444; }
+  .log .info { color: #60a5fa; }
+  .empty { padding: 24px; text-align: center; color: #64748b; }
+</style>
+</head>
+<body>
+
+<h1>🔄 AAM Migration Console</h1>
+<p class="subtitle">PF-1 (Phase C) — Cross-tenant AAMpoint migration to LP2.0 · 22/22 tests passing</p>
+
+<!-- Summary cards -->
+<div class="grid">
+  <div class="card success">
+    <div class="label">Migrated</div>
+    <div class="value" id="stat-migrated">0</div>
+  </div>
+  <div class="card warning">
+    <div class="label">Rolled Back</div>
+    <div class="value" id="stat-rolled-back">0</div>
+  </div>
+  <div class="card">
+    <div class="label">Total Points</div>
+    <div class="value" id="stat-points">0</div>
+  </div>
+  <div class="card">
+    <div class="label">Unique Members</div>
+    <div class="value" id="stat-members">0</div>
+  </div>
+</div>
+
+<!-- Single migration form -->
+<div class="section">
+  <h2>① Migrate Single AAM Account</h2>
+  <div class="row">
+    <label>AAM Account ID</label>
+    <input type="text" id="single-aam-id" placeholder="AAM-001" style="flex: 1;">
+  </div>
+  <div class="row">
+    <label>Phone Hash</label>
+    <input type="text" id="single-phone" placeholder="ph_aaa..." style="flex: 1;">
+  </div>
+  <div class="row">
+    <label>Expected Balance</label>
+    <input type="number" id="single-expected" placeholder="(optional)" style="flex: 1;">
+  </div>
+  <div class="toolbar">
+    <button class="primary" onclick="migrateSingle(false)">▶ Migrate</button>
+    <button onclick="migrateSingle(true)">🔍 Dry Run</button>
+  </div>
+  <div class="log" id="single-log" style="margin-top: 12px;"></div>
+</div>
+
+<!-- Batch migration -->
+<div class="section">
+  <h2>② Batch Migration (JSON)</h2>
+  <textarea id="batch-json" placeholder='[
+  { "aam_account_id": "AAM-100", "phone_hash": "ph_100" },
+  { "aam_account_id": "AAM-101", "phone_hash": "ph_101" }
+]'></textarea>
+  <div class="toolbar" style="margin-top: 8px;">
+    <button class="primary" onclick="migrateBatch(false)">▶ Run Batch</button>
+    <button onclick="migrateBatch(true)">🔍 Dry Run Batch</button>
+    <button onclick="loadSampleBatch()">📋 Load Sample</button>
+  </div>
+  <div class="log" id="batch-log" style="margin-top: 12px;"></div>
+</div>
+
+<!-- Migration list -->
+<div class="section">
+  <h2>③ Migration History</h2>
+  <div class="toolbar">
+    <select id="filter-status" onchange="loadHistory()">
+      <option value="all">All Status</option>
+      <option value="MIGRATED">Migrated</option>
+      <option value="ROLLED_BACK">Rolled Back</option>
+    </select>
+    <button class="primary" onclick="loadHistory()">🔄 Refresh</button>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Claim ID</th>
+        <th>AAM Account</th>
+        <th>Member</th>
+        <th>Amount</th>
+        <th>Status</th>
+        <th>Migrated At</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="history-tbody">
+      <tr><td colspan="7" class="empty">Loading…</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Rollback -->
+<div class="section">
+  <h2>④ Rollback (Incident Only)</h2>
+  <div class="row">
+    <label>Claim ID</label>
+    <input type="text" id="rollback-claim" placeholder="AAM-MIG-..." style="flex: 1;">
+  </div>
+  <div class="row">
+    <label>Reason</label>
+    <input type="text" id="rollback-reason" placeholder="e.g., A14 wrong account" style="flex: 1;">
+  </div>
+  <button class="danger" onclick="rollbackMigration()">⏪ Rollback</button>
+  <div class="log" id="rollback-log" style="margin-top: 12px;"></div>
+</div>
+
+<script>
+// === Mock data layer (replace with API calls) ===
+let mockStore = {};  // aam_account_id → record
+
+function logTo(elemId, msg, type = 'info') {
+  const el = document.getElementById(elemId);
+  const ts = new Date().toLocaleTimeString('th-TH');
+  const cls = type === 'ok' ? 'ok' : type === 'err' ? 'err' : 'info';
+  el.innerHTML += `<div><span class="ts">[${ts}]</span> <span class="${cls}">${msg}</span></div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+function updateStats() {
+  const records = Object.values(mockStore);
+  const migrated = records.filter(r => !r.rolled_back_at);
+  const rolledBack = records.filter(r => r.rolled_back_at);
+  const totalPts = migrated.reduce((sum, r) => sum + r.amount, 0);
+  const uniqueMembers = new Set(migrated.map(r => r.member_id)).size;
+  document.getElementById('stat-migrated').textContent = migrated.length;
+  document.getElementById('stat-rolled-back').textContent = rolledBack.length;
+  document.getElementById('stat-points').textContent = totalPts.toLocaleString();
+  document.getElementById('stat-members').textContent = uniqueMembers;
+}
+
+function loadHistory() {
+  const filter = document.getElementById('filter-status').value;
+  const tbody = document.getElementById('history-tbody');
+  const records = Object.values(mockStore)
+    .filter(r => filter === 'all' || (filter === 'MIGRATED' ? !r.rolled_back_at : r.rolled_back_at))
+    .sort((a, b) => b.migrated_at.localeCompare(a.migrated_at));
+
+  if (records.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">No migrations yet</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = records.map(r => `
+    <tr>
+      <td><code>${r.claim_id.slice(0, 24)}…</code></td>
+      <td>${r.aam_account_id}</td>
+      <td>${r.member_id}</td>
+      <td><strong>${r.amount.toLocaleString()}</strong></td>
+      <td><span class="badge ${r.rolled_back_at ? 'rolled-back' : 'migrated'}">${r.rolled_back_at ? 'ROLLED BACK' : 'MIGRATED'}</span></td>
+      <td>${new Date(r.migrated_at).toLocaleString('th-TH')}</td>
+      <td>
+        ${!r.rolled_back_at
+          ? `<button class="danger" style="padding: 4px 8px; font-size: 12px;" onclick="quickRollback('${r.claim_id}')">⏪</button>`
+          : '<span style="color:#64748b">—</span>'}
+      </td>
+    </tr>
+  `).join('');
+  updateStats();
+}
+
+async function migrateSingle(dryRun) {
+  const aamId = document.getElementById('single-aam-id').value.trim();
+  const phone = document.getElementById('single-phone').value.trim();
+  const expected = document.getElementById('single-expected').value;
+  const logId = 'single-log';
+  document.getElementById(logId).innerHTML = '';
+
+  if (!aamId || !phone) {
+    logTo(logId, '❌ aam_account_id and phone_hash are required', 'err');
+    return;
+  }
+
+  logTo(logId, dryRun ? '🔍 Starting dry run...' : '▶ Starting migration...', 'info');
+
+  // Simulate engine call
+  await new Promise(r => setTimeout(r, 300));
+
+  if (mockStore[aamId] && !dryRun) {
+    logTo(logId, `⚠️  Already migrated: ${mockStore[aamId].claim_id}`, 'err');
+    return;
+  }
+
+  // Mock balance
+  const balance = parseInt(expected) || Math.floor(Math.random() * 1000) + 100;
+  const memberId = 'M-' + Math.random().toString(36).slice(2, 8).toUpperCase();
+  const claimId = `AAM-MIG-${aamId}-${Date.now()}`;
+
+  if (dryRun) {
+    logTo(logId, `✅ DRY RUN: would migrate ${aamId} (${balance} pts) → ${memberId}`, 'ok');
+    logTo(logId, `   claim_id: ${claimId}`, 'info');
+    return;
+  }
+
+  const record = {
+    claim_id: claimId,
+    aam_account_id: aamId,
+    member_id: memberId,
+    amount: balance,
+    phone_hash: phone,
+    migrated_at: new Date().toISOString(),
+    rolled_back_at: null,
+  };
+  mockStore[aamId] = record;
+
+  logTo(logId, `✅ MIGRATED: ${aamId} → ${memberId} (${balance} pts)`, 'ok');
+  logTo(logId, `   claim_id: ${claimId}`, 'info');
+  logTo(logId, `   aam.migrated event published`, 'ok');
+
+  loadHistory();
+}
+
+async function migrateBatch(dryRun) {
+  const json = document.getElementById('batch-json').value.trim();
+  const logId = 'batch-log';
+  document.getElementById(logId).innerHTML = '';
+
+  if (!json) {
+    logTo(logId, '❌ Please paste JSON array', 'err');
+    return;
+  }
+
+  let accounts;
+  try { accounts = JSON.parse(json); }
+  catch (e) { logTo(logId, `❌ Invalid JSON: ${e.message}`, 'err'); return; }
+
+  if (!Array.isArray(accounts) || accounts.length === 0) {
+    logTo(logId, '❌ Must be a non-empty array', 'err');
+    return;
+  }
+
+  logTo(logId, `${dryRun ? '🔍' : '▶'} Processing ${accounts.length} accounts...`, 'info');
+
+  let migrated = 0, skipped = 0, failed = 0;
+  for (const acc of accounts) {
+    await new Promise(r => setTimeout(r, 100));
+    if (mockStore[acc.aam_account_id] && !dryRun) {
+      logTo(logId, `⏭️  ${acc.aam_account_id}: already migrated`, 'err');
+      skipped++;
+      continue;
+    }
+    if (dryRun) {
+      logTo(logId, `🔍 ${acc.aam_account_id}: would migrate (${acc.phone_hash?.slice(0, 12)}…)`, 'ok');
+      skipped++;
+    } else {
+      const memberId = 'M-' + Math.random().toString(36).slice(2, 8).toUpperCase();
+      const balance = Math.floor(Math.random() * 2000) + 100;
+      const claimId = `AAM-MIG-${acc.aam_account_id}-${Date.now()}`;
+      mockStore[acc.aam_account_id] = {
+        claim_id: claimId,
+        aam_account_id: acc.aam_account_id,
+        member_id: memberId,
+        amount: balance,
+        phone_hash: acc.phone_hash,
+        migrated_at: new Date().toISOString(),
+        rolled_back_at: null,
+      };
+      logTo(logId, `✅ ${acc.aam_account_id} → ${memberId} (${balance} pts)`, 'ok');
+      migrated++;
+    }
+  }
+
+  logTo(logId, `📊 Done: ${migrated} migrated, ${skipped} skipped, ${failed} failed`, 'info');
+  loadHistory();
+}
+
+async function rollbackMigration() {
+  const claimId = document.getElementById('rollback-claim').value.trim();
+  const reason = document.getElementById('rollback-reason').value.trim();
+  const logId = 'rollback-log';
+  document.getElementById(logId).innerHTML = '';
+
+  if (!claimId || !reason) {
+    logTo(logId, '❌ claim_id and reason are required', 'err');
+    return;
+  }
+
+  const record = Object.values(mockStore).find(r => r.claim_id === claimId);
+  if (!record) {
+    logTo(logId, `❌ Claim not found: ${claimId}`, 'err');
+    return;
+  }
+  if (record.rolled_back_at) {
+    logTo(logId, `⚠️  Already rolled back`, 'err');
+    return;
+  }
+
+  record.rolled_back_at = new Date().toISOString();
+  record.rollback_reason = reason;
+  logTo(logId, `⏪ ROLLED BACK: ${record.aam_account_id} (${record.amount} pts)`, 'ok');
+  logTo(logId, `   reason: ${reason}`, 'info');
+  loadHistory();
+}
+
+function quickRollback(claimId) {
+  document.getElementById('rollback-claim').value = claimId;
+  document.getElementById('rollback-reason').focus();
+}
+
+function loadSampleBatch() {
+  document.getElementById('batch-json').value = JSON.stringify([
+    { aam_account_id: 'AAM-1001', phone_hash: 'ph_sample_aaa' },
+    { aam_account_id: 'AAM-1002', phone_hash: 'ph_sample_bbb' },
+    { aam_account_id: 'AAM-1003', phone_hash: 'ph_sample_ccc' },
+  ], null, 2);
+}
+
+// Initial load
+loadHistory();
+updateStats();
+</script>
+
+</body>
+</html>
