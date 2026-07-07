@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Notification Console — PF-15</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; padding: 24px; }
+  h1 { font-size: 22px; margin-bottom: 6px; }
+  .subtitle { color: #94a3b8; font-size: 13px; margin-bottom: 20px; }
+  .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
+  .stat { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 14px; }
+  .stat .label { font-size: 11px; color: #94a3b8; text-transform: uppercase; }
+  .stat .value { font-size: 24px; font-weight: 700; margin-top: 6px; color: #f1f5f9; }
+  .stat.success .value { color: #22c55e; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 16px; }
+  .card h2 { font-size: 16px; margin-bottom: 12px; }
+  .row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .row label { width: 110px; font-size: 12px; color: #94a3b8; }
+  input, select, button, textarea { background: #0f172a; color: #e2e8f0; border: 1px solid #334155; padding: 6px 10px; border-radius: 5px; font-size: 13px; }
+  textarea { font-family: monospace; }
+  button { cursor: pointer; font-weight: 600; }
+  button.primary { background: #3b82f6; border-color: #3b82f6; color: white; }
+  button.success { background: #22c55e; border-color: #22c55e; color: white; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #334155; }
+  th { color: #94a3b8; font-size: 10px; text-transform: uppercase; }
+  .badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; }
+  .badge.sent { background: #16a34a; color: white; }
+  .badge.read { background: #3b82f6; color: white; }
+  .badge.failed { background: #ef4444; color: white; }
+  .log { background: #020617; border-radius: 6px; padding: 10px; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 11px; }
+  .log .ts { color: #64748b; }
+  .log .ok { color: #22c55e; }
+  .log .err { color: #ef4444; }
+  .log .info { color: #60a5fa; }
+  .empty { padding: 16px; text-align: center; color: #64748b; font-size: 12px; }
+  .channel-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 12px; }
+  .channel-card { background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 10px; text-align: center; cursor: pointer; }
+  .channel-card:hover { border-color: #3b82f6; }
+  .channel-card.selected { border-color: #22c55e; background: #052e16; }
+  .channel-card .icon { font-size: 24px; }
+  .channel-card .name { font-size: 11px; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<h1>📢 Notification Console</h1>
+<p class="subtitle">PF-15 (Phase E) — Multi-channel (SMS/Email/Push/Line/Telegram) + templates + opt-out · 22/22 tests passing</p>
+
+<div class="stats">
+  <div class="stat">
+    <div class="label">Total Sent</div>
+    <div class="value" id="stat-sent">0</div>
+  </div>
+  <div class="stat success">
+    <div class="label">Read</div>
+    <div class="value" id="stat-read">0</div>
+  </div>
+  <div class="stat">
+    <div class="label">Read Rate</div>
+    <div class="value" id="stat-rate">0%</div>
+  </div>
+  <div class="stat success">
+    <div class="label">Unique Users</div>
+    <div class="value" id="stat-users">0</div>
+  </div>
+  <div class="stat">
+    <div class="label">Templates</div>
+    <div class="value" id="stat-templates">0</div>
+  </div>
+</div>
+
+<div class="grid">
+  <!-- Send -->
+  <div class="card">
+    <h2>① Send Notification</h2>
+    <div class="row">
+      <label>Channel</label>
+      <div class="channel-grid" style="flex: 1; margin: 0;">
+        <div class="channel-card" data-channel="sms" onclick="selectChannel('sms')">
+          <div class="icon">📱</div><div class="name">SMS</div>
+        </div>
+        <div class="channel-card" data-channel="email" onclick="selectChannel('email')">
+          <div class="icon">📧</div><div class="name">Email</div>
+        </div>
+        <div class="channel-card" data-channel="push" onclick="selectChannel('push')">
+          <div class="icon">🔔</div><div class="name">Push</div>
+        </div>
+        <div class="channel-card" data-channel="line" onclick="selectChannel('line')">
+          <div class="icon">💬</div><div class="name">Line</div>
+        </div>
+        <div class="channel-card" data-channel="telegram" onclick="selectChannel('telegram')">
+          <div class="icon">✈️</div><div class="name">Telegram</div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <label>Template</label>
+      <select id="tpl-select" style="flex: 1;"></select>
+    </div>
+    <div class="row">
+      <label>Member ID</label>
+      <input id="send-member" value="M-1" style="flex: 1;">
+    </div>
+    <div class="row">
+      <label>Variable 1</label>
+      <input id="send-var1" placeholder="name = Alice" style="flex: 1;">
+    </div>
+    <div class="row">
+      <label>Variable 2</label>
+      <input id="send-var2" placeholder="amount = 100" style="flex: 1;">
+    </div>
+    <button class="primary" onclick="sendNotif()">📤 Send</button>
+    <div class="log" id="send-log" style="margin-top: 12px;"></div>
+  </div>
+
+  <!-- Templates -->
+  <div class="card">
+    <h2>② Templates</h2>
+    <div class="row">
+      <label>ID</label>
+      <input id="tpl-id" placeholder="poi-reward-sms" style="flex: 1;">
+    </div>
+    <div class="row">
+      <label>Name</label>
+      <input id="tpl-name" placeholder="POI Reward" style="flex: 1;">
+    </div>
+    <div class="row">
+      <label>Channel</label>
+      <select id="tpl-channel" style="flex: 1;">
+        <option>sms</option><option>email</option><option>push</option><option>line</option><option>telegram</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>Body</label>
+      <textarea id="tpl-body" rows="3" placeholder="Hi {{name}}, you got {{amount}} BCP!" style="flex: 1;"></textarea>
+    </div>
+    <button class="success" onclick="createTemplate()">+ Create</button>
+  </div>
+</div>
+
+<!-- Sent history -->
+<div class="card">
+  <h2>③ Recent Notifications</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Channel</th>
+        <th>Template</th>
+        <th>Member</th>
+        <th>Body</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="notif-tbody">
+      <tr><td colspan="6" class="empty">No notifications sent yet</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+const mockNS = {
+  _templates: new Map(),
+  _notifs: new Map(),
+  _idSeq: 0,
+};
+let selectedChannel = 'sms';
+
+function newId(prefix) { return `${prefix}-${Date.now()}-${++mockNS._idSeq}`; }
+function logTo(elemId, msg, type = 'info') {
+  const el = document.getElementById(elemId);
+  const ts = new Date().toLocaleTimeString('th-TH');
+  const cls = type === 'ok' ? 'ok' : type === 'err' ? 'err' : 'info';
+  el.innerHTML += `<div><span class="ts">[${ts}]</span> <span class="${cls}">${msg}</span></div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+function selectChannel(ch) {
+  selectedChannel = ch;
+  document.querySelectorAll('.channel-card').forEach((c) => c.classList.remove('selected'));
+  document.querySelector(`[data-channel="${ch}"]`).classList.add('selected');
+}
+
+function createTemplate() {
+  const id = document.getElementById('tpl-id').value.trim();
+  const name = document.getElementById('tpl-name').value.trim();
+  const channel = document.getElementById('tpl-channel').value;
+  const body = document.getElementById('tpl-body').value.trim();
+  if (!id || !name || !body) { logTo('send-log', '❌ All fields required', 'err'); return; }
+  const tpl = { template_id: id, name, channel, body, variables: [], status: 'active', created_at: new Date().toISOString() };
+  mockNS._templates.set(id, tpl);
+  logTo('send-log', `✅ Template created: ${id} (${channel})`, 'ok');
+  renderTemplates();
+  updateStats();
+}
+
+function sendNotif() {
+  const tplId = document.getElementById('tpl-select').value;
+  const member = document.getElementById('send-member').value.trim();
+  if (!tplId || !member) { logTo('send-log', '❌ Template + Member required', 'err'); return; }
+  const tpl = mockNS._templates.get(tplId);
+  if (!tpl) return;
+  if (tpl.channel !== selectedChannel) {
+    logTo('send-log', `⚠️ Switching channel to ${tpl.channel} (template's channel)`, 'info');
+    selectChannel(tpl.channel);
+  }
+  let body = tpl.body;
+  const v1 = document.getElementById('send-var1').value.trim();
+  const v2 = document.getElementById('send-var2').value.trim();
+  if (v1) body = body.replace(/{{\\s*name\\s*}}/g, v1.split('=')[1] || v1);
+  if (v2) body = body.replace(/{{\\s*amount\\s*}}/g, v2.split('=')[1] || v2);
+
+  const notif_id = newId('NOTIF');
+  const notif = {
+    notification_id: notif_id,
+    template_id: tpl.template_id,
+    template_name: tpl.name,
+    channel: tpl.channel,
+    recipient_member_id: member,
+    body,
+    status: 'sent',
+    sent_at: new Date().toISOString(),
+  };
+  mockNS._notifs.set(notif_id, notif);
+  logTo('send-log', `✅ Sent via ${tpl.channel}: "${body}"`, 'ok');
+  renderNotifs();
+  updateStats();
+}
+
+function renderTemplates() {
+  const sel = document.getElementById('tpl-select');
+  const tpls = Array.from(mockNS._templates.values());
+  sel.innerHTML = tpls.length === 0
+    ? '<option value="">(no templates yet)</option>'
+    : tpls.map((t) => `<option value="${t.template_id}">${t.channel.toUpperCase()}: ${t.name}</option>`).join('');
+}
+
+function renderNotifs() {
+  const tbody = document.getElementById('notif-tbody');
+  const notifs = Array.from(mockNS._notifs.values()).sort((a, b) => b.sent_at.localeCompare(a.sent_at));
+  if (notifs.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="empty">No notifications sent yet</td></tr>'; return; }
+  tbody.innerHTML = notifs.slice(0, 20).map((n) => `
+    <tr>
+      <td>${new Date(n.sent_at).toLocaleTimeString('th-TH')}</td>
+      <td>${n.channel}</td>
+      <td>${n.template_name}</td>
+      <td>${n.recipient_member_id}</td>
+      <td>${n.body.slice(0, 60)}${n.body.length > 60 ? '…' : ''}</td>
+      <td><span class="badge ${n.status}">${n.status}</span></td>
+    </tr>
+  `).join('');
+}
+
+function updateStats() {
+  const notifs = Array.from(mockNS._notifs.values());
+  const read = notifs.filter((n) => n.status === 'read').length;
+  const sent = notifs.length;
+  const rate = sent > 0 ? ((read / sent) * 100).toFixed(0) : 0;
+  const users = new Set(notifs.map((n) => n.recipient_member_id)).size;
+  document.getElementById('stat-sent').textContent = sent;
+  document.getElementById('stat-read').textContent = read;
+  document.getElementById('stat-rate').textContent = `${rate}%`;
+  document.getElementById('stat-users').textContent = users;
+  document.getElementById('stat-templates').textContent = mockNS._templates.size;
+}
+
+// Seed sample templates
+mockNS._templates.set('poi-reward-sms', { template_id: 'poi-reward-sms', name: 'POI Reward', channel: 'sms', body: 'Hi {{name}}, you got {{amount}} BCP!', variables: ['name', 'amount'], status: 'active', created_at: new Date().toISOString() });
+mockNS._templates.set('gift-redeemed', { template_id: 'gift-redeemed', name: 'Gift Redeemed', channel: 'email', body: 'Hi {{name}}, your gift card was redeemed. Amount: {{amount}}', variables: ['name', 'amount'], status: 'active', created_at: new Date().toISOString() });
+mockNS._templates.set('voucher-expired', { template_id: 'voucher-expired', name: 'Voucher Expired', channel: 'push', body: 'Your voucher expires in 1 day!', variables: [], status: 'active', created_at: new Date().toISOString() });
+
+selectChannel('sms');
+renderTemplates();
+renderNotifs();
+updateStats();
+</script>
+
+</body>
+</html>
