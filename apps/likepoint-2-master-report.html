@@ -173,6 +173,9 @@
   <button class="main-tab tab-8" onclick="showMain(8)">
     <span class="icon">📋</span>Tab 8: Task for Dev
   </button>
+  <button class="main-tab tab-9" onclick="showMain(9)">
+    <span class="icon">🌊</span>Tab 9: Data Flow
+  </button>
 </div>
 
 <!-- ==================== TAB 1: STANDARDS ==================== -->
@@ -2482,6 +2485,168 @@ window.addEventListener('load', () => {
     <div style="text-align: center; font-size: 1.2rem; color: #fbbf24; font-weight: bold;">Total: 24 tasks · ~52 days effort</div>
     <div style="margin-top: 12px; font-size: 13px; color: #94a3b8;">📌 ที่มา: Phase A (Original QW) + Phase B PF-2 (15+ bugs) + Phase E gaps + LikePoint v2.1 audit items + Optional PFs (23-29)</div>
   </div>
+</div>
+
+<!-- ==================== TAB 9: DATA FLOW ==================== -->
+<div id="tab9" class="main-content" style="display:none;">
+  <h2>🌊 Tab 9: Data Flow — ข้อมูล DATA แต่ละกระบวนการอยู่ที่ไหน</h2>
+  <p style="margin-bottom: 20px; color: #94a3b8;">แผนผังแสดงการไหลของข้อมูลระหว่าง engines + DB + external systems · แบ่งเป็น 4 layers: User → Engine → Storage → External</p>
+
+  <!-- 1. USER JOURNEY DATA FLOW -->
+  <h2 style="color: #fbbf24; margin-top: 30px;">1️⃣ User Journey Data Flow (Top-level)</h2>
+  <pre style="background: #020617; color: #d1fae5; padding: 16px; border-radius: 8px; font-size: 12px; line-height: 1.6; overflow-x: auto;">
+User (Browser/Mobile)
+   │
+   ├─→ 🛡️ SessionGuard (PF-14) ─→ validateToken() + validateSession()
+   │       │
+   │       ├─ invalid → return 401
+   │       └─ valid → continue
+   │
+   ├─→ 💎 SubscriptionEngine (PF-9) ─→ subscribe/renew/cancel
+   │       │
+   │       ├─→ 💰 Credit/Debit token (MemberStore)
+   │       ├─→ 🔔 NotificationService (PF-15) → send to member
+   │       └─→ 📝 AuditEngine (PF-5) → log SUBSCRIPTION_*
+   │
+   ├─→ 🎰 LottoEngine (PF-10) ─→ buyTicket/draw
+   │       │
+   │       ├─→ 💰 Debit ticket price (TokenEngine)
+   │       ├─→ 🎁 Credit prize to winner (TokenEngine)
+   │       ├─→ 🔔 Notify winner (PF-15)
+   │       └─→ 📝 Audit LOTTO_TICKET_PURCHASED + LOTTO_DRAWN
+   │
+   ├─→ 🎁 GiftCardEngine (PF-11) ─→ createCard/redeem
+   │       │
+   │       ├─→ 💰 Charge 1% fee + card amount (TokenEngine)
+   │       ├─→ 💰 Credit card amount to redeemer
+   │       └─→ 📝 Audit GIFT_CARD_*
+   │
+   ├─→ 🎫 VoucherEngine (PF-12) ─→ createVoucher/redeem
+   │       │
+   │       ├─→ 💰 Discount credit (TokenEngine)
+   │       └─→ 📝 Audit VOUCHER_*
+   │
+   ├─→ 🏛️ KYCEngine (PF-16) ─→ submitApplication
+   │       │
+   │       ├─→ 📄 Document upload (DocumentStore)
+   │       ├─→ 👤 Auto-assign reviewer (ReviewerStore, round-robin)
+   │       ├─→ 🔔 Notify reviewer (PF-15)
+   │       └─→ 📝 Audit KYC_*
+   │
+   └─→ 🎯 POIEngine (PF-7) ─→ trigger
+           │
+           ├─→ 💰 Credit reward (TokenEngine)
+           ├─→ 🔔 Notify member (PF-15)
+           └─→ 📝 Audit POI_TRIGGERED
+  </pre>
+
+  <!-- 2. CROSS-ENGINE EVENT FLOW -->
+  <h2 style="color: #fbbf24; margin-top: 30px;">2️⃣ Cross-Engine Event Flow (EventBus)</h2>
+  <pre style="background: #020617; color: #93c5fd; padding: 16px; border-radius: 8px; font-size: 12px; line-height: 1.6; overflow-x: auto;">
+Engine A (publish)                EventBus (PF-4)              Engine B (subscribe)
+─────────────              ─────────────────              ──────────────────
+LottoEngine:draw() ────publish───→ lotto.drawn ──────────→ NotificationService:send()
+                                                                  │
+AAMMigration:migrate() ──publish─→ aam.migrated ────────→ WalletEngine:reconcile()
+                                                                  │
+GiftCard:create() ──────publish───→ gift_card.created ─────→ ReportingEngine:aggregate()
+                                                                  │
+Voucher:redeem() ──────publish────→ voucher.redeemed ─────→ ReportingEngine:trackConversion()
+                                                                  │
+KYC:approved() ────────publish────→ kyc.approved ─────────→ MemberService:updateTier()
+                                                                  │
+POI:triggered() ──────publish─────→ poi.triggered ─────────→ ReportingEngine:trackEngagement()
+                                                                  │
+Sub:cancelled() ──────publish─────→ sub.cancelled ────────→ NotificationService:send("sub-cancelled")
+                                                                  │
+All events ──────────────────────→ AuditEngine:log() (PF-5) → audit_log table
+  </pre>
+
+  <!-- 3. STORAGE LAYER DATA FLOW -->
+  <h2 style="color: #fbbf24; margin-top: 30px;">3️⃣ Storage Layer Data Flow (Tables → Stores)</h2>
+  <pre style="background: #020617; color: #fed7aa; padding: 16px; border-radius: 8px; font-size: 12px; line-height: 1.6; overflow-x: auto;">
+ENGINE                                       STORAGE LAYER
+─────────                                    ─────────────
+MerchantEngine (PF-6) ──────────────────→ merchants · merchant_tokens · poi_rules
+                                            (1:many token, 1:many rule)
+
+SubscriptionEngine (PF-9) ────────────→ member_subscriptions · subscription_billing
+                                            (1:1 per member, 1:many billing)
+
+POIEngine (PF-7) ──────────────────────→ poi_rules · poi_triggers
+                                            (rules: 1:many merchant, triggers: 1:many member)
+
+LottoEngine (PF-10) ───────────────────→ lotto_rounds · lotto_tickets · lotto_draws
+                                            (1 round:many tickets, 1:1 draw)
+
+GiftCardEngine (PF-11) ────────────────→ gift_cards · gift_card_transactions
+                                            (1:1 per code, 1:many txn)
+
+VoucherEngine (PF-12) ─────────────────→ vouchers · voucher_redemptions
+
+KYCEngine (PF-16) ─────────────────────→ kyc_reviewers · kyc_applications · kyc_documents · kyc_reviews
+                                            (1:many reviewers, 1:many apps per member)
+
+FXEngine (PF-8) ──────────────────────→ fx_rates · country_currency
+
+NotificationService (PF-15) ─────────→ notification_templates · notifications · notification_preferences
+
+AuditEngine (PF-5) ──────────────────→ audit_log (EVERY action!)
+                                            (partitioned by year for 7-year retention PDPA)
+
+SessionGuard (PF-14) ────────────────→ sessions (in-memory + DB) · request_idempotency
+
+ReportingEngine (PF-17) ──────────────→ report_cache (5 min TTL) + views (v_daily_mrr, v_funnel_overview, etc.)
+
+Notification Preference (PF-15) ────→ notification_preferences (member_id, channels, opt_out, language)
+
+RecoveryEngine (PF-19) ──────────────→ recovery_requests · locked_until · security_questions
+
+MFAEngine (PF-20) ───────────────────→ mfa_factors · mfa_recovery_codes · trusted_devices
+  </pre>
+
+  <!-- 4. EXTERNAL INTEGRATION DATA FLOW -->
+  <h2 style="color: #fbbf24; margin-top: 30px;">4️⃣ External Integration Data Flow (Providers)</h2>
+  <pre style="background: #020617; color: #fca5a5; padding: 16px; border-radius: 8px; font-size: 12px; line-height: 1.6; overflow-x: auto;">
+ENGINE                       PROVIDER              EXTERNAL SERVICE
+─────────                     ────────              ───────────────
+NotificationService:send() ──→ sms ──────────────→ Twilio ──→ 📱 Member's Phone
+NotificationService:send() ──→ email ───────────→ SendGrid ──→ 📧 Member's Email
+NotificationService:send() ──→ push ───────────→ FCM ──→ 🔔 Member's Device
+NotificationService:send() ──→ line ───────────→ Line Notify ──→ 💬 Member's Line
+NotificationService:send() ──→ telegram ───────→ Telegram Bot ──→ ✈️ Member's Chat
+
+FXEngine:refresh() ────────→ provider ────────→ xe.com / ECB ──→ 💱 FX Rates (cached 5min)
+
+RecoveryEngine:requestOTP() → sms ──────────────→ Twilio ──→ 📱 Member's Phone
+MFAEngine:enrollTOTP() ─────→ (no external) ──→ Member's Authenticator App
+MFAEngine:enrollBiometric() → device SDK ───────→ Member's Device (TouchID/FaceID)
+
+ReportingEngine:aggregate() → (no external) ──→ audit_log → 📊 Dashboard (UI)
+  </pre>
+
+  <!-- 5. DATA FLOW MATRIX -->
+  <h2 style="color: #fbbf24; margin-top: 30px;">5️⃣ Data Flow Matrix (Engine → Storage)</h2>
+  <table style="width: 100%; border-collapse: collapse; color: #e2e8f0; font-size: 13px;">
+    <thead><tr style="background: #0f172a;"><th style="padding: 8px; text-align: left;">Engine</th><th style="padding: 8px; text-align: left;">Reads From</th><th style="padding: 8px; text-align: left;">Writes To</th><th style="padding: 8px; text-align: left;">Emits Event</th></tr></thead>
+    <tbody>
+      <tr><td style="padding: 6px; border-bottom: 1px solid #334155;">Merchant (PF-6)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">merchants</td><td style="padding: 6px; border-bottom: 1px solid #334155;">merchants, merchant_tokens, poi_rules</td><td style="padding: 6px; border-bottom: 1px solid #334155;">merchant.onboarded, token.created</td></tr>
+      <tr><td style="padding: 6px; border-bottom: 1px solid #334155;">POI (PF-7)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">poi_rules, members</td><td style="padding: 6px; border-bottom: 1px solid #334155;">poi_triggers, members.wallet</td><td style="padding: 6px; border-bottom: 1px solid #334155;">poi.triggered</td></tr>
+      <tr><td style="padding: 6px; border-bottom: 1px solid #334155;">FX (PF-8)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">fx_rates, country_currency</td><td style="padding: 6px; border-bottom: 1px solid #334155;">fx_rates (refresh)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">fx.rate_changed</td></tr>
+      <tr><td style="padding: 6px; border-bottom: 1px solid #334155;">Sub (PF-9)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">member_subscriptions, plans</td><td style="padding: 6px; border-bottom: 1px solid #334155;">member_subscriptions, subscription_billing</td><td style="padding: 6px; border-bottom: 1px solid #334155;">sub.created, sub.renewed, sub.cancelled</td></tr>
+      <tr><td style="padding: 6px; border-bottom: 1px solid #334155;">Lotto (PF-10)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">lotto_rounds</td><td style="padding: 6px; border-bottom: 1px solid #334155;">lotto_rounds, lotto_tickets, lotto_draws</td><td style="padding: 6px; border-bottom: 1px solid #334155;">lotto.drawn, lotto.ticket_purchased</td></tr>
+      <tr><td style="padding: 6px; border-bottom: 1px solid #334155;">Gift Card (PF-11)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">gift_cards</td><td style="padding: 6px; border-bottom: 1px solid #334155;">gift_cards, gift_card_transactions, members.wallet</td><td style="padding: 6px; border-bottom: 1px solid #334155;">gift_card.created, gift_card.redeemed</td></tr>
+      <tr><td style="padding: 6px; border-bottom: 1px solid #334155;">Voucher (PF-12)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">vouchers</td><td style="padding: 6px; border-bottom: 1px solid #334155;">voucher_redemptions, members.wallet</td><td style="padding: 6px; border-bottom: 1px solid #334155;">voucher.redeemed, voucher.voided</td></tr>
+      <tr><td style="padding: 6px; border-bottom: 1px solid #334155;">Notification (PF-15)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">notification_templates, notification_preferences</td><td style="padding: 6px; border-bottom: 1px solid #334155;">notifications</td><td style="padding: 6px; border-bottom: 1px solid #334155;">notification.sent</td></tr>
+      <tr><td style="padding: 6px; border-bottom: 1px solid #334155;">KYC (PF-16)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">kyc_reviewers</td><td style="padding: 6px; border-bottom: 1px solid #334155;">kyc_applications, kyc_documents, kyc_reviews, members.tier</td><td style="padding: 6px; border-bottom: 1px solid #334155;">kyc.application_submitted, kyc.approved</td></tr>
+      <tr><td style="padding: 6px; border-bottom: 1px solid #334155;">Reporting (PF-17)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">audit_log (EVERY engine)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">report_cache (5min TTL)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">-</td></tr>
+      <tr><td style="padding: 6px; border-bottom: 1px solid #334155;">i18n (PF-18)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">i18n_translations</td><td style="padding: 6px; border-bottom: 1px solid #334155;">- (read-only)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">-</td></tr>
+      <tr><td style="padding: 6px; border-bottom: 1px solid #334155;">Recovery (PF-19)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">members, recovery_requests</td><td style="padding: 6px; border-bottom: 1px solid #334155;">recovery_requests, members.locked_until</td><td style="padding: 6px; border-bottom: 1px solid #334155;">password.reset</td></tr>
+      <tr><td style="padding: 6px; border-bottom: 1px solid #334155;">MFA (PF-20)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">mfa_factors, mfa_recovery_codes, trusted_devices</td><td style="padding: 6px; border-bottom: 1px solid #334155;">mfa_factors, trusted_devices</td><td style="padding: 6px; border-bottom: 1px solid #334155;">mfa.factor_enrolled</td></tr>
+      <tr><td style="padding: 6px; border-bottom: 1px solid #334155;">Audit (PF-5)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">(event bus from ALL engines)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">audit_log (partitioned by year)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">- (consumer only)</td></tr>
+      <tr><td style="padding: 6px; border-bottom: 1px solid #334155;">SessionGuard (PF-14)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">sessions, request_idempotency</td><td style="padding: 6px; border-bottom: 1px solid #334155;">sessions (in-memory + DB)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">session.created, session.destroyed</td></tr>
+    </tbody>
+  </table>
 </div>
 
 </html>
