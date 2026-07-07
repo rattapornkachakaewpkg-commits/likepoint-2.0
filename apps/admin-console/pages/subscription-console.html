@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Subscription Console — PF-9</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; padding: 24px; }
+  h1 { font-size: 22px; margin-bottom: 6px; }
+  .subtitle { color: #94a3b8; font-size: 13px; margin-bottom: 20px; }
+  .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
+  .stat { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 14px; }
+  .stat .label { font-size: 11px; color: #94a3b8; text-transform: uppercase; }
+  .stat .value { font-size: 24px; font-weight: 700; margin-top: 6px; color: #f1f5f9; }
+  .stat.success .value { color: #22c55e; }
+  .stat.warning .value { color: #f59e0b; }
+  .stat.danger .value { color: #ef4444; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 16px; }
+  .card h2 { font-size: 16px; margin-bottom: 12px; }
+  .row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .row label { width: 130px; font-size: 12px; color: #94a3b8; }
+  input, select, button { background: #0f172a; color: #e2e8f0; border: 1px solid #334155; padding: 6px 10px; border-radius: 5px; font-size: 13px; }
+  button { cursor: pointer; font-weight: 600; }
+  button.primary { background: #3b82f6; border-color: #3b82f6; color: white; }
+  button.success { background: #22c55e; border-color: #22c55e; color: white; }
+  button.danger { background: #ef4444; border-color: #ef4444; color: white; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #334155; }
+  th { color: #94a3b8; font-size: 10px; text-transform: uppercase; }
+  .badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; }
+  .badge.active { background: #16a34a; color: white; }
+  .badge.trial { background: #3b82f6; color: white; }
+  .badge.past_due { background: #f59e0b; color: white; }
+  .badge.cancelled { background: #475569; color: white; }
+  .badge.expired { background: #ef4444; color: white; }
+  .log { background: #020617; border-radius: 6px; padding: 10px; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 11px; }
+  .log .ts { color: #64748b; }
+  .log .ok { color: #22c55e; }
+  .log .err { color: #ef4444; }
+  .log .info { color: #60a5fa; }
+  .empty { padding: 16px; text-align: center; color: #64748b; font-size: 12px; }
+  .plan-card { background: #0f172a; border: 2px solid #334155; border-radius: 8px; padding: 16px; cursor: pointer; transition: all 0.2s; }
+  .plan-card:hover { border-color: #3b82f6; }
+  .plan-card.selected { border-color: #22c55e; background: #052e16; }
+  .plan-card .name { font-size: 18px; font-weight: 700; }
+  .plan-card .price { font-size: 28px; font-weight: 800; color: #f1f5f9; margin: 8px 0; }
+  .plan-card .price small { font-size: 12px; color: #94a3b8; font-weight: 400; }
+  .plan-card ul { list-style: none; font-size: 12px; color: #cbd5e1; margin-top: 8px; }
+  .plan-card li { padding: 3px 0; }
+  .plan-card li::before { content: "✅ "; }
+  .plan-card .badge { background: #3b82f6; color: white; }
+  .plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<h1>💎 Subscription Console</h1>
+<p class="subtitle">PF-9 (Phase E) — Recurring revenue: Free / Basic ฿10 / Pro ฿99 · 25/25 tests passing</p>
+
+<div class="stats">
+  <div class="stat success">
+    <div class="label">Active</div>
+    <div class="value" id="stat-active">0</div>
+  </div>
+  <div class="stat">
+    <div class="label">Trial</div>
+    <div class="value" id="stat-trial">0</div>
+  </div>
+  <div class="stat warning">
+    <div class="label">Past Due</div>
+    <div class="value" id="stat-past-due">0</div>
+  </div>
+  <div class="stat danger">
+    <div class="label">Cancelled</div>
+    <div class="value" id="stat-cancelled">0</div>
+  </div>
+  <div class="stat success">
+    <div class="label">MRR (THB)</div>
+    <div class="value" id="stat-mrr">0</div>
+  </div>
+</div>
+
+<!-- Plan picker -->
+<div class="card" style="margin-bottom: 16px;">
+  <h2>① เลือกแผน</h2>
+  <div class="plans-grid">
+    <div class="plan-card" data-plan="free" onclick="selectPlan('free')">
+      <div class="name">Free</div>
+      <div class="price">฿0 <small>/ เดือน</small></div>
+      <ul>
+        <li>basic_poi (รายวัน)</li>
+        <li>daily_claim</li>
+      </ul>
+    </div>
+    <div class="plan-card selected" data-plan="basic" onclick="selectPlan('basic')">
+      <div class="name">Basic <span class="badge">แนะนำ</span></div>
+      <div class="price">฿10 <small>/ เดือน (ทดลองใช้ 7 วันฟรี)</small></div>
+      <ul>
+        <li>lotto_weekly (หวยรายสัปดาห์)</li>
+        <li>poi_2x (คะแนนคูณ 2)</li>
+        <li>ad_free (ไม่มีโฆษณา)</li>
+      </ul>
+    </div>
+    <div class="plan-card" data-plan="pro" onclick="selectPlan('pro')">
+      <div class="name">Pro <span class="badge">⭐</span></div>
+      <div class="price">฿99 <small>/ เดือน (ทดลองใช้ 7 วันฟรี)</small></div>
+      <ul>
+        <li>lotto_daily (หวยทุกวัน)</li>
+        <li>poi_5x (คะแนนคูณ 5)</li>
+        <li>premium_poi (กิจกรรมพิเศษ)</li>
+        <li>priority_support</li>
+      </ul>
+    </div>
+  </div>
+  <div class="row">
+    <label>Member ID</label>
+    <input id="member-id" value="M-1" style="flex: 1;">
+  </div>
+  <div class="row">
+    <label>Payment</label>
+    <select id="payment-method" style="flex: 1;">
+      <option value="promptpay">PromptPay</option>
+      <option value="credit_card">Credit Card</option>
+      <option value="truemoney">TrueMoney</option>
+    </select>
+  </div>
+  <button class="primary" onclick="subscribe()">▶ Subscribe</button>
+  <div class="log" id="sub-log" style="margin-top: 12px;"></div>
+</div>
+
+<!-- Active subscriptions -->
+<div class="card">
+  <h2>② Active Subscriptions</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Subscription ID</th>
+        <th>Member</th>
+        <th>Plan</th>
+        <th>Status</th>
+        <th>Period End</th>
+        <th>Days Left</th>
+        <th>Auto-renew</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="subs-tbody">
+      <tr><td colspan="8" class="empty">No subscriptions yet</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+// === Mock state ===
+const mockStore = {
+  _subs: new Map(),
+  _plans: {
+    free: { plan_id: 'free', name: 'Free', price_thb: 0, trial_days: 0, features: ['basic_poi', 'daily_claim'] },
+    basic: { plan_id: 'basic', name: 'Basic', price_thb: 10, trial_days: 7, features: ['lotto_weekly', 'poi_2x', 'ad_free'] },
+    pro: { plan_id: 'pro', name: 'Pro', price_thb: 99, trial_days: 7, features: ['lotto_daily', 'poi_5x', 'ad_free', 'premium_poi', 'priority_support'] },
+  },
+  _idSeq: 0,
+};
+
+let selectedPlan = 'basic';
+
+function newId(prefix) { return `${prefix}-${Date.now()}-${++mockStore._idSeq}`; }
+
+function logTo(elemId, msg, type = 'info') {
+  const el = document.getElementById(elemId);
+  const ts = new Date().toLocaleTimeString('th-TH');
+  const cls = type === 'ok' ? 'ok' : type === 'err' ? 'err' : 'info';
+  el.innerHTML += `<div><span class="ts">[${ts}]</span> <span class="${cls}">${msg}</span></div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+function selectPlan(plan) {
+  selectedPlan = plan;
+  document.querySelectorAll('.plan-card').forEach((c) => c.classList.remove('selected'));
+  document.querySelector(`[data-plan="${plan}"]`).classList.add('selected');
+}
+
+function subscribe() {
+  const memberId = document.getElementById('member-id').value.trim();
+  const method = document.getElementById('payment-method').value;
+  if (!memberId) { logTo('sub-log', '❌ Member ID required', 'err'); return; }
+
+  const plan = mockStore._plans[selectedPlan];
+  const now = new Date();
+  const trial = plan.trial_days > 0 && plan.price_thb > 0;
+  const periodEnd = new Date(now);
+  periodEnd.setDate(periodEnd.getDate() + (trial ? plan.trial_days : 30));
+
+  const sub = {
+    subscription_id: newId('SUB'),
+    member_id: memberId,
+    plan_id: plan.plan_id,
+    status: trial ? 'trial' : 'active',
+    started_at: now.toISOString(),
+    current_period_start: now.toISOString(),
+    current_period_end: periodEnd.toISOString(),
+    next_billing_at: periodEnd.toISOString(),
+    trial_ends_at: trial ? periodEnd.toISOString() : null,
+    auto_renew: true,
+    payment_method: method,
+    price_thb: plan.price_thb,
+    features: plan.features,
+  };
+  mockStore._subs.set(sub.subscription_id, sub);
+
+  logTo('sub-log', `✅ Subscribed: ${memberId} → ${plan.name} (${sub.status})`, 'ok');
+  logTo('sub-log', `   Period end: ${periodEnd.toLocaleString('th-TH')}`, 'info');
+  logTo('sub-log', `   Features: ${plan.features.join(', ')}`, 'info');
+  if (plan.price_thb > 0 && !trial) logTo('sub-log', `   Charged: ฿${plan.price_thb}`, 'info');
+  else if (trial) logTo('sub-log', `   🎁 Trial period: ${plan.trial_days} days`, 'ok');
+
+  renderSubs();
+  updateStats();
+}
+
+function cancelSub(subId, immediate) {
+  const sub = mockStore._subs.get(subId);
+  if (!sub) return;
+  sub.auto_renew = false;
+  if (immediate) {
+    sub.status = 'cancelled';
+    sub.cancelled_at = new Date().toISOString();
+    logTo('sub-log', `⏪ Cancelled immediately: ${sub.member_id}`, 'info');
+  } else {
+    logTo('sub-log', `⏸️ Will cancel at end of period: ${sub.member_id}`, 'info');
+  }
+  renderSubs();
+  updateStats();
+}
+
+function renderSubs() {
+  const tbody = document.getElementById('subs-tbody');
+  const subs = Array.from(mockStore._subs.values());
+  if (subs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty">No subscriptions yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML = subs.map((s) => {
+    const daysLeft = Math.max(0, Math.ceil((new Date(s.current_period_end) - Date.now()) / 86400000));
+    return `
+      <tr>
+        <td><code>${s.subscription_id.slice(0, 18)}…</code></td>
+        <td>${s.member_id}</td>
+        <td><strong>${s.plan_id}</strong> (฿${s.price_thb})</td>
+        <td><span class="badge ${s.status}">${s.status}</span></td>
+        <td>${new Date(s.current_period_end).toLocaleDateString('th-TH')}</td>
+        <td>${daysLeft}</td>
+        <td>${s.auto_renew ? '✅' : '❌'}</td>
+        <td>${s.status !== 'cancelled' ? `<button class="danger" style="padding:2px 6px;font-size:11px;" onclick="cancelSub('${s.subscription_id}', true)">⏪</button>` : '—'}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function updateStats() {
+  const subs = Array.from(mockStore._subs.values());
+  document.getElementById('stat-active').textContent = subs.filter((s) => s.status === 'active').length;
+  document.getElementById('stat-trial').textContent = subs.filter((s) => s.status === 'trial').length;
+  document.getElementById('stat-past-due').textContent = subs.filter((s) => s.status === 'past_due').length;
+  document.getElementById('stat-cancelled').textContent = subs.filter((s) => s.status === 'cancelled').length;
+  const mrr = subs.filter((s) => s.status === 'active' || s.status === 'trial').reduce((sum, s) => sum + s.price_thb, 0);
+  document.getElementById('stat-mrr').textContent = mrr.toLocaleString();
+}
+
+// Init
+renderSubs();
+updateStats();
+</script>
+
+</body>
+</html>
