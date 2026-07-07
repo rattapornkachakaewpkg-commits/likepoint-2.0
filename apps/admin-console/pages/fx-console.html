@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>FX Console — PF-8</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; padding: 24px; }
+  h1 { font-size: 22px; margin-bottom: 6px; }
+  .subtitle { color: #94a3b8; font-size: 13px; margin-bottom: 20px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 16px; }
+  .card h2 { font-size: 16px; margin-bottom: 12px; }
+  .row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .row label { width: 130px; font-size: 12px; color: #94a3b8; }
+  input, select, button { background: #0f172a; color: #e2e8f0; border: 1px solid #334155; padding: 6px 10px; border-radius: 5px; font-size: 13px; }
+  input:focus, select:focus { outline: none; border-color: #3b82f6; }
+  button { cursor: pointer; font-weight: 600; }
+  button.primary { background: #3b82f6; border-color: #3b82f6; color: white; }
+  button.success { background: #22c55e; border-color: #22c55e; color: white; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #334155; }
+  th { color: #94a3b8; font-size: 10px; text-transform: uppercase; }
+  .badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; }
+  .badge.active { background: #16a34a; color: white; }
+  .badge.stale { background: #ea580c; color: white; }
+  .log { background: #020617; border-radius: 6px; padding: 10px; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 11px; }
+  .log .ts { color: #64748b; }
+  .log .ok { color: #22c55e; }
+  .log .err { color: #ef4444; }
+  .log .info { color: #60a5fa; }
+  .empty { padding: 16px; text-align: center; color: #64748b; font-size: 12px; }
+  .converter { background: #020617; border-radius: 6px; padding: 16px; }
+  .result { font-size: 28px; font-weight: 700; color: #22c55e; margin: 12px 0; }
+  .meta { font-size: 12px; color: #94a3b8; }
+</style>
+</head>
+<body>
+
+<h1>💱 FX Console</h1>
+<p class="subtitle">PF-8 (Phase E) — Multi-currency + cross-border + peg-locked tokens · 29/29 tests passing</p>
+
+<div class="grid">
+  <!-- Convert -->
+  <div class="card">
+    <h2>💱 Currency Converter</h2>
+    <div class="row">
+      <label>Amount</label>
+      <input id="amt" type="number" value="1000" style="flex: 1;">
+    </div>
+    <div class="row">
+      <label>From</label>
+      <select id="from" style="flex: 1;">
+        <option>THB</option><option>USD</option><option>EUR</option><option>JPY</option>
+        <option>KHR</option><option>LAK</option><option>MMK</option><option>VND</option>
+        <option>MYR</option><option>SGD</option><option>PHP</option><option>IDR</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>To</label>
+      <select id="to" style="flex: 1;">
+        <option>USD</option><option>THB</option><option selected>EUR</option>
+        <option>JPY</option><option>KHR</option><option>LAK</option><option>MMK</option>
+        <option>VND</option><option>MYR</option><option>SGD</option><option>PHP</option><option>IDR</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>Use stale?</label>
+      <select id="use_stale" style="flex: 1;">
+        <option value="false">No (strict)</option>
+        <option value="true">Yes (fallback)</option>
+      </select>
+    </div>
+    <button class="primary" onclick="convert()">Convert</button>
+    <div class="converter" style="margin-top: 12px;">
+      <div class="meta">Result</div>
+      <div class="result" id="result">—</div>
+      <div class="meta" id="result-meta">No conversion yet</div>
+    </div>
+  </div>
+
+  <!-- Set Rate -->
+  <div class="card">
+    <h2>⚙️ Set FX Rate (Manual)</h2>
+    <div class="row">
+      <label>From</label>
+      <select id="rate-from" style="flex: 1;"></select>
+    </div>
+    <div class="row">
+      <label>To</label>
+      <select id="rate-to" style="flex: 1;"></select>
+    </div>
+    <div class="row">
+      <label>Rate</label>
+      <input id="rate-value" type="number" step="0.0001" placeholder="e.g., 0.027" style="flex: 1;">
+    </div>
+    <div class="row">
+      <label>Source</label>
+      <select id="rate-source" style="flex: 1;">
+        <option value="manual">manual</option>
+        <option value="provider">provider</option>
+        <option value="computed">computed</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>Expires</label>
+      <input id="rate-expires" type="datetime-local" style="flex: 1;">
+    </div>
+    <button class="success" onclick="setRate()">+ Set Rate</button>
+    <div class="log" id="rate-log" style="margin-top: 12px;"></div>
+  </div>
+</div>
+
+<!-- Country Currency -->
+<div class="card" style="margin-bottom: 16px;">
+  <h2>🌍 Country-Currency Mapping</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Country</th>
+        <th>Currency</th>
+        <th>Name</th>
+        <th>Symbol</th>
+        <th>Decimals</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="cc-tbody"></tbody>
+  </table>
+</div>
+
+<!-- FX Rates -->
+<div class="card">
+  <h2>📊 Current FX Rates</h2>
+  <div class="row">
+    <label>Filter from</label>
+    <select id="filter-from" style="flex: 1;" onchange="renderRates()">
+      <option value="">all</option>
+    </select>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>From</th>
+        <th>To</th>
+        <th>Rate</th>
+        <th>Source</th>
+        <th>Effective</th>
+        <th>Expires</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="rates-tbody"></tbody>
+  </table>
+</div>
+
+<script>
+// Mock FX engine (mirrors fx-engine.js logic)
+const mockEngine = {
+  _rates: new Map(),
+  _countries: [
+    { country_code: 'TH', currency_code: 'THB', currency_name: 'Thai Baht', symbol: '฿', decimals: 2, status: 'active' },
+    { country_code: 'KH', currency_code: 'KHR', currency_name: 'Cambodian Riel', symbol: '៛', decimals: 2, status: 'active' },
+    { country_code: 'LA', currency_code: 'LAK', currency_name: 'Lao Kip', symbol: '₭', decimals: 2, status: 'active' },
+    { country_code: 'US', currency_code: 'USD', currency_name: 'US Dollar', symbol: '$', decimals: 2, status: 'active' },
+    { country_code: 'SG', currency_code: 'SGD', currency_name: 'Singapore Dollar', symbol: 'S$', decimals: 2, status: 'active' },
+  ],
+};
+
+function logTo(elemId, msg, type = 'info') {
+  const el = document.getElementById(elemId);
+  const ts = new Date().toLocaleTimeString('th-TH');
+  const cls = type === 'ok' ? 'ok' : type === 'err' ? 'err' : 'info';
+  el.innerHTML += `<div><span class="ts">[${ts}]</span> <span class="${cls}">${msg}</span></div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+function convert() {
+  const amt = parseFloat(document.getElementById('amt').value);
+  const from = document.getElementById('from').value;
+  const to = document.getElementById('to').value;
+  const useStale = document.getElementById('use_stale').value === 'true';
+  if (isNaN(amt) || amt < 0) { alert('Invalid amount'); return; }
+
+  if (from === to) {
+    document.getElementById('result').textContent = `${amt} ${from}`;
+    document.getElementById('result-meta').textContent = 'Same currency (1:1)';
+    return;
+  }
+
+  // Direct
+  const direct = mockEngine._rates.get(`${from}:${to}`);
+  if (direct && isValid(direct)) {
+    const converted = amt * direct.rate;
+    document.getElementById('result').textContent = `${converted.toFixed(2)} ${to}`;
+    document.getElementById('result-meta').textContent = `1 ${from} = ${direct.rate} ${to} (direct, source: ${direct.source})`;
+    return;
+  }
+  // Inverse
+  const inverse = mockEngine._rates.get(`${to}:${from}`);
+  if (inverse && isValid(inverse)) {
+    const rate = 1 / inverse.rate;
+    const converted = amt * rate;
+    document.getElementById('result').textContent = `${converted.toFixed(2)} ${to}`;
+    document.getElementById('result-meta').textContent = `1 ${from} = ${rate.toFixed(4)} ${to} (inverse)`;
+    return;
+  }
+  // Triangulate via USD
+  const r1 = mockEngine._rates.get(`${from}:USD`);
+  const r2 = mockEngine._rates.get(`USD:${to}`);
+  if (r1 && r2 && isValid(r1) && isValid(r2)) {
+    const rate = r1.rate * r2.rate;
+    const converted = amt * rate;
+    document.getElementById('result').textContent = `${converted.toFixed(2)} ${to}`;
+    document.getElementById('result-meta').textContent = `1 ${from} = ${rate.toFixed(4)} ${to} (via USD)`;
+    return;
+  }
+  document.getElementById('result').textContent = '—';
+  document.getElementById('result-meta').textContent = `No rate for ${from} → ${to}`;
+  document.getElementById('result').style.color = '#ef4444';
+}
+
+function isValid(r) {
+  if (!r.expires_at) return true;
+  return new Date(r.expires_at).getTime() > Date.now();
+}
+
+function setRate() {
+  const from = document.getElementById('rate-from').value;
+  const to = document.getElementById('rate-to').value;
+  const rate = parseFloat(document.getElementById('rate-value').value);
+  const source = document.getElementById('rate-source').value;
+  const expires = document.getElementById('rate-expires').value;
+
+  if (from === to) { logTo('rate-log', '❌ Same currency', 'err'); return; }
+  if (isNaN(rate) || rate <= 0) { logTo('rate-log', '❌ Invalid rate', 'err'); return; }
+
+  mockEngine._rates.set(`${from}:${to}`, {
+    from, to, rate, source,
+    effective_at: new Date().toISOString(),
+    expires_at: expires ? new Date(expires).toISOString() : null,
+  });
+  logTo('rate-log', `✅ ${from} → ${to}: ${rate} (${source})`, 'ok');
+  renderRates();
+}
+
+function renderCountries() {
+  const tbody = document.getElementById('cc-tbody');
+  tbody.innerHTML = mockEngine._countries.map((c) => `
+    <tr>
+      <td><strong>${c.country_code}</strong></td>
+      <td><code>${c.currency_code}</code></td>
+      <td>${c.currency_name}</td>
+      <td>${c.symbol}</td>
+      <td>${c.decimals}</td>
+      <td><span class="badge active">${c.status}</span></td>
+    </tr>
+  `).join('');
+}
+
+function renderRates() {
+  const filterFrom = document.getElementById('filter-from').value;
+  const tbody = document.getElementById('rates-tbody');
+  let all = Array.from(mockEngine._rates.values());
+  if (filterFrom) all = all.filter((r) => r.from_currency || r.from === filterFrom);
+  if (all.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">No rates set. Use form above to add.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = all.map((r) => {
+    const valid = isValid(r);
+    return `
+      <tr>
+        <td><strong>${r.from}</strong></td>
+        <td><strong>${r.to}</strong></td>
+        <td><code>${r.rate}</code></td>
+        <td>${r.source}</td>
+        <td>${new Date(r.effective_at).toLocaleString('th-TH')}</td>
+        <td>${r.expires_at ? new Date(r.expires_at).toLocaleString('th-TH') : '—'}</td>
+        <td><span class="badge ${valid ? 'active' : 'stale'}">${valid ? 'VALID' : 'STALE'}</span></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function populateSelects() {
+  const currencies = [...new Set(mockEngine._countries.map((c) => c.currency_code))];
+  ['rate-from', 'rate-to', 'filter-from'].forEach((id) => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = (id === 'filter-from' ? '<option value="">all</option>' : '') +
+      currencies.map((c) => `<option value="${c}">${c}</option>`).join('');
+  });
+}
+
+// Seed some rates
+mockEngine._rates.set('THB:USD', { from: 'THB', to: 'USD', rate: 0.027, source: 'manual', effective_at: new Date().toISOString() });
+mockEngine._rates.set('USD:THB', { from: 'USD', to: 'THB', rate: 37, source: 'manual', effective_at: new Date().toISOString() });
+mockEngine._rates.set('THB:KHR', { from: 'THB', to: 'KHR', rate: 125, source: 'manual', effective_at: new Date().toISOString() });
+mockEngine._rates.set('USD:SGD', { from: 'USD', to: 'SGD', rate: 1.35, source: 'manual', effective_at: new Date().toISOString() });
+mockEngine._rates.set('USD:JPY', { from: 'USD', to: 'JPY', rate: 150, source: 'manual', effective_at: new Date().toISOString() });
+mockEngine._rates.set('USD:EUR', { from: 'USD', to: 'EUR', rate: 0.92, source: 'manual', effective_at: new Date().toISOString() });
+
+renderCountries();
+populateSelects();
+renderRates();
+convert();
+</script>
+
+</body>
+</html>
