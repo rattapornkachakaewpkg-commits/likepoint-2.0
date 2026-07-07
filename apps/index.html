@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🟢 Phase A: Quick Win — LikePoint 2.0</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: 'Inter', -apple-system, sans-serif; background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); min-height: 100vh; }
+  .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: all 0.2s; }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
+  .btn { display: inline-block; padding: 12px 24px; border-radius: 8px; font-weight: 600; text-decoration: none; }
+  .btn-primary { background: #3b82f6; color: white; }
+  .btn-primary:hover { background: #2563eb; }
+  .btn-success { background: #10b981; color: white; }
+  .btn-success:hover { background: #059669; }
+  .btn-purple { background: #8b5cf6; color: white; }
+  .btn-purple:hover { background: #7c3aed; }
+</style>
+</head>
+<body class="p-6">
+<div class="max-w-5xl mx-auto">
+
+  <!-- Header -->
+  <div class="text-center mb-8">
+    <h1 class="text-4xl font-bold text-gray-900 mb-2">🟢 Phase A: Quick Win</h1>
+    <p class="text-lg text-gray-600">LikePoint 2.0 — MSP Integration Tools</p>
+    <p class="text-sm text-gray-500 mt-2">Deployed: 7 กรกฎาคม 2569 | Commit: <code>7f00a0f</code> | Branch: main</p>
+  </div>
+
+  <!-- Quick Win Status -->
+  <div class="card mb-6">
+    <h2 class="text-xl font-bold text-gray-900 mb-3">✅ Quick Win Status</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="text-center">
+        <div class="text-3xl font-bold text-green-600">QW-1</div>
+        <div class="text-xs text-gray-600 mt-1">Risk-based BCT</div>
+        <div class="badge bg-green-100 text-green-700 mt-1 text-xs">Ready</div>
+      </div>
+      <div class="text-center">
+        <div class="text-3xl font-bold text-green-600">QW-2</div>
+        <div class="text-xs text-gray-600 mt-1">Admin Recovery</div>
+        <div class="badge bg-green-100 text-green-700 mt-1 text-xs">Ready</div>
+      </div>
+      <div class="text-center">
+        <div class="text-3xl font-bold text-green-600">QW-3</div>
+        <div class="text-xs text-gray-600 mt-1">Hold Queue</div>
+        <div class="badge bg-green-100 text-green-700 mt-1 text-xs">Ready</div>
+      </div>
+      <div class="text-center">
+        <div class="text-3xl font-bold text-blue-600">REQ-1</div>
+        <div class="text-xs text-gray-600 mt-1">Buy Point Form</div>
+        <div class="badge bg-blue-100 text-blue-700 mt-1 text-xs">Ready</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tools Grid -->
+  <div class="grid md:grid-cols-2 gap-6 mb-6">
+
+    <!-- Buy Point Form -->
+    <div class="card">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-2xl">💰</div>
+        <div>
+          <h3 class="text-lg font-bold text-gray-900">Buy Point Form</h3>
+          <p class="text-xs text-gray-500">REQ-1: ฟอร์มซื้อ BUpoint</p>
+        </div>
+      </div>
+      <p class="text-sm text-gray-600 mb-4">
+        ใส่ "จำนวนเงินบาท" → ระบบคำนวณ BUpoint + LAK + USD อัตโนมัติ พร้อม Risk Tier indicator
+      </p>
+      <ul class="text-xs text-gray-600 mb-4 space-y-1">
+        <li>✅ Real-time preview 3 currencies</li>
+        <li>✅ Risk tier (🟢 &lt; 1K / 🟡 1-10K / 🔴 &gt; 10K)</li>
+        <li>✅ Audit log (PDPA)</li>
+        <li>✅ Mobile-responsive</li>
+      </ul>
+      <a href="mini-like/forms/buy-point.html" class="btn btn-success w-full text-center">เปิดฟอร์ม →</a>
+    </div>
+
+    <!-- Admin Recovery -->
+    <div class="card">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-2xl">🆘</div>
+        <div>
+          <h3 class="text-lg font-bold text-gray-900">Admin MSP Recovery</h3>
+          <p class="text-xs text-gray-500">QW-2: กู้คืน wallet หลังเปลี่ยนเบอร์</p>
+        </div>
+      </div>
+      <p class="text-sm text-gray-600 mb-4">
+        Search phone → auto-detect wallet mismatch → 2FA verify → execute (PDPA compliant)
+      </p>
+      <ul class="text-xs text-gray-600 mb-4 space-y-1">
+        <li>✅ Recovery time: &lt; 5 นาที (vs 30-60 นาที)</li>
+        <li>✅ 2FA + Soft delete 7 วัน</li>
+        <li>✅ Audit log (PDPA)</li>
+        <li>✅ Person 360 view (L1-L4)</li>
+      </ul>
+      <a href="admin-console/pages/msp-recovery.html" class="btn btn-primary w-full text-center">เปิด Admin Tool →</a>
+    </div>
+
+  </div>
+
+  <!-- Info Cards -->
+  <div class="grid md:grid-cols-3 gap-4 mb-6">
+
+    <div class="card">
+      <div class="text-2xl mb-2">🟢</div>
+      <h4 class="font-semibold text-sm text-gray-900 mb-1">LOW Risk</h4>
+      <p class="text-xs text-gray-600">&lt; 1,000 P</p>
+      <p class="text-xs text-green-600 font-semibold">Auto-stamp + แจกทันที</p>
+    </div>
+
+    <div class="card">
+      <div class="text-2xl mb-2">🟡</div>
+      <h4 class="font-semibold text-sm text-gray-900 mb-1">MEDIUM Risk</h4>
+      <p class="text-xs text-gray-600">1,000 - 10,000 P</p>
+      <p class="text-xs text-amber-600 font-semibold">Stamp + Auto-verify</p>
+    </div>
+
+    <div class="card">
+      <div class="text-2xl mb-2">🔴</div>
+      <h4 class="font-semibold text-sm text-gray-900 mb-1">HIGH Risk</h4>
+      <p class="text-xs text-gray-600">&gt; 10,000 P + เปลี่ยนเบอร์</p>
+      <p class="text-xs text-red-600 font-semibold">Manual Approve</p>
+    </div>
+
+  </div>
+
+  <!-- Spec & Docs -->
+  <div class="card mb-6">
+    <h3 class="text-lg font-bold text-gray-900 mb-3">📚 เอกสารอ้างอิง</h3>
+    <div class="space-y-2 text-sm">
+      <div class="flex items-center gap-2">
+        <span>📄</span>
+        <a href="https://github.com/rattapornkachakaewpkg-commits/likepoint-2.0/blob/main/docs/phase-a-implementation.md" class="text-blue-600 hover:underline">
+          Implementation Notes (phase-a-implementation.md)
+        </a>
+      </div>
+      <div class="flex items-center gap-2">
+        <span>📄</span>
+        <a href="https://github.com/rattapornkachakaewpkg-commits/likepoint-2.0/blob/main/sql/migrations/2026-07-07-phase-a-qw1-qw3.sql" class="text-blue-600 hover:underline">
+          SQL Migration (phase-a-qw1-qw3.sql)
+        </a>
+      </div>
+      <div class="flex items-center gap-2">
+        <span>🔗</span>
+        <a href="https://github.com/rattapornkachakaewpkg-commits/likepoint-2.0/tree/main/apps" class="text-blue-600 hover:underline">
+          Source Code on GitHub
+        </a>
+      </div>
+      <div class="flex items-center gap-2">
+        <span>🔀</span>
+        <a href="https://github.com/rattapornkachakaewpkg-commits/likepoint-2.0/pull/new/feature/phase-a-qw1-qw2" class="text-blue-600 hover:underline">
+          View Pull Request
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Back to Master Report -->
+  <div class="text-center">
+    <a href="https://ca49b450e4feba55-47-81-62-82.serveousercontent.com/likepoint-2-master-report.html#tab7-dev" 
+       class="btn btn-purple">📊 ดู Master Report (Tab 7 Dev)</a>
+  </div>
+
+  <!-- Footer -->
+  <div class="text-center mt-8 text-xs text-gray-500">
+    🐾 AliClaw — AI Co-Worker | Phase 2 (Implementer) | SSH Key: likepoint-2.0-deploy
+  </div>
+
+</div>
+</body>
+</html>
