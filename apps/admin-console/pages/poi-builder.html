@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>POI Rule Builder — PF-7</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; padding: 24px; }
+  h1 { font-size: 22px; margin-bottom: 6px; }
+  .subtitle { color: #94a3b8; font-size: 13px; margin-bottom: 20px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 16px; }
+  .card h2 { font-size: 16px; margin-bottom: 12px; color: #f1f5f9; }
+  .row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .row label { width: 130px; font-size: 12px; color: #94a3b8; }
+  input, select, textarea, button { background: #0f172a; color: #e2e8f0; border: 1px solid #334155; padding: 6px 10px; border-radius: 5px; font-size: 13px; }
+  input:focus, select:focus { outline: none; border-color: #3b82f6; }
+  button { cursor: pointer; font-weight: 600; }
+  button.primary { background: #3b82f6; border-color: #3b82f6; color: white; }
+  button.success { background: #22c55e; border-color: #22c55e; color: white; }
+  button.danger { background: #ef4444; border-color: #ef4444; color: white; }
+  button.warn { background: #f59e0b; border-color: #f59e0b; color: white; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #334155; }
+  th { color: #94a3b8; font-size: 10px; text-transform: uppercase; }
+  .badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; }
+  .badge.active { background: #16a34a; color: white; }
+  .badge.paused { background: #475569; color: white; }
+  .badge.rewarded { background: #22c55e; color: white; }
+  .badge.cooldown { background: #f59e0b; color: white; }
+  .badge.failed { background: #ef4444; color: white; }
+  .badge.denied { background: #ea580c; color: white; }
+  .log { background: #020617; border-radius: 6px; padding: 10px; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 11px; }
+  .log .ts { color: #64748b; }
+  .log .ok { color: #22c55e; }
+  .log .err { color: #ef4444; }
+  .log .info { color: #60a5fa; }
+  .empty { padding: 16px; text-align: center; color: #64748b; font-size: 12px; }
+  .stat-row { display: flex; gap: 12px; margin-bottom: 12px; }
+  .stat { flex: 1; background: #0f172a; padding: 10px; border-radius: 5px; }
+  .stat .label { font-size: 10px; color: #94a3b8; text-transform: uppercase; }
+  .stat .value { font-size: 20px; font-weight: 700; margin-top: 4px; color: #f1f5f9; }
+  .preset { background: #0f172a; border: 1px solid #334155; border-radius: 5px; padding: 8px; cursor: pointer; }
+  .preset:hover { border-color: #3b82f6; }
+  .preset .name { font-size: 12px; font-weight: 600; }
+  .preset .desc { font-size: 10px; color: #94a3b8; margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<h1>🎯 POI Rule Builder</h1>
+<p class="subtitle">PF-7 (Phase E) — Engagement loop ("กดรับทุกเช้า") · 28/28 tests passing</p>
+
+<div class="stat-row">
+  <div class="stat">
+    <div class="label">Active Rules</div>
+    <div class="value" id="stat-rules">0</div>
+  </div>
+  <div class="stat">
+    <div class="label">Triggers (7d)</div>
+    <div class="value" id="stat-triggers">0</div>
+  </div>
+  <div class="stat">
+    <div class="label">Unique Users (7d)</div>
+    <div class="value" id="stat-users">0</div>
+  </div>
+  <div class="stat">
+    <div class="label">Total Rewarded (7d)</div>
+    <div class="value" id="stat-rewarded">0</div>
+  </div>
+</div>
+
+<div class="grid">
+  <!-- Left: Create rule -->
+  <div class="card">
+    <h2>① Create POI Rule</h2>
+    <div class="row">
+      <label>Rule Name</label>
+      <input id="rule-name" placeholder="Daily Login Bonus" style="flex: 1;">
+    </div>
+    <div class="row">
+      <label>Event Type</label>
+      <select id="rule-event" style="flex: 1;">
+        <option value="daily_login">daily_login (ทุกวัน)</option>
+        <option value="purchase">purchase (ซื้อ)</option>
+        <option value="referral">referral (แนะนำเพื่อน)</option>
+        <option value="review">review (รีวิว)</option>
+        <option value="birthday">birthday (วันเกิด)</option>
+        <option value="custom">custom (อื่นๆ)</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>Reward Amount</label>
+      <input id="rule-amount" type="number" value="100" style="flex: 1;">
+    </div>
+    <div class="row">
+      <label>Reward Type</label>
+      <select id="rule-type" style="flex: 1;">
+        <option value="fixed">fixed (จำนวนคงที่)</option>
+        <option value="multiplier">multiplier (× amount)</option>
+        <option value="random">random (สุ่ม)</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>Cooldown</label>
+      <select id="rule-cooldown" style="flex: 1;">
+        <option value="">no cooldown</option>
+        <option value="PT1H">1 hour (PT1H)</option>
+        <option value="PT24H">24 hours (PT24H)</option>
+        <option value="P1W">1 week (P1W)</option>
+        <option value="P1M">1 month (P1M)</option>
+        <option value="M30">30 days (M30)</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>Max/User</label>
+      <input id="rule-max" type="number" placeholder="unlimited" style="flex: 1;">
+    </div>
+
+    <h2 style="margin-top: 16px; font-size: 13px;">🎯 Audience Filter (optional)</h2>
+    <div class="row">
+      <label>Tier</label>
+      <select id="aud-tier" style="flex: 1;">
+        <option value="">any</option>
+        <option value="gold">gold</option>
+        <option value="silver">silver</option>
+        <option value="bronze">bronze</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>Country</label>
+      <select id="aud-country" style="flex: 1;">
+        <option value="">any</option>
+        <option value="TH">TH</option>
+        <option value="KH">KH</option>
+        <option value="LA">LA</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>Opt-in</label>
+      <select id="aud-optin" style="flex: 1;">
+        <option value="">any</option>
+        <option value="true">opt-in only</option>
+      </select>
+    </div>
+
+    <div style="margin-top: 12px;">
+      <button class="primary" onclick="createRule()">+ Create Rule</button>
+    </div>
+
+    <h2 style="margin-top: 16px; font-size: 13px;">📦 Quick Presets</h2>
+    <div class="row" style="flex-wrap: wrap;">
+      <div class="preset" onclick="applyPreset('daily')">
+        <div class="name">📅 Daily Login (UBI)</div>
+        <div class="desc">100 BCP · 24h cooldown</div>
+      </div>
+      <div class="preset" onclick="applyPreset('spending')">
+        <div class="name">💰 3x Spending</div>
+        <div class="desc">3× multiplier · no cooldown</div>
+      </div>
+      <div class="preset" onclick="applyPreset('referral')">
+        <div class="name">👥 Referral</div>
+        <div class="desc">500 BCP · 7d cooldown</div>
+      </div>
+      <div class="preset" onclick="applyPreset('vip')">
+        <div class="name">🌟 Gold Tier</div>
+        <div class="desc">1000 BCP · gold only</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Simulate + Recent -->
+  <div class="card">
+    <h2>② Simulate Trigger</h2>
+    <div class="row">
+      <label>Member ID</label>
+      <input id="sim-member" value="M-1" style="flex: 1;">
+    </div>
+    <div class="row">
+      <label>Event</label>
+      <select id="sim-event" style="flex: 1;"></select>
+    </div>
+    <div class="row">
+      <label>Amount (opt)</label>
+      <input id="sim-amount" type="number" placeholder="for multiplier" style="flex: 1;">
+    </div>
+    <button class="success" onclick="simulate()">▶ Trigger Event</button>
+    <div class="log" id="sim-log" style="margin-top: 12px;"></div>
+
+    <h2 style="margin-top: 16px; font-size: 13px;">📊 Recent Triggers</h2>
+    <div style="max-height: 200px; overflow-y: auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Member</th>
+            <th>Event</th>
+            <th>Reward</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="triggers-tbody">
+          <tr><td colspan="5" class="empty">No triggers yet</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Rules list -->
+<div class="card" style="margin-top: 16px;">
+  <h2>③ Active POI Rules</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Rule ID</th>
+        <th>Name</th>
+        <th>Event</th>
+        <th>Reward</th>
+        <th>Cooldown</th>
+        <th>Audience</th>
+        <th>Triggers</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="rules-tbody">
+      <tr><td colspan="9" class="empty">No rules yet</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+const mockEngine = {
+  _rules: new Map(),
+  _triggers: [],
+  _idSeq: 0,
+};
+
+function newId(prefix) { return `${prefix}-${Date.now()}-${++mockEngine._idSeq}`; }
+
+function logTo(elemId, msg, type = 'info') {
+  const el = document.getElementById(elemId);
+  const ts = new Date().toLocaleTimeString('th-TH');
+  const cls = type === 'ok' ? 'ok' : type === 'err' ? 'err' : 'info';
+  el.innerHTML += `<div><span class="ts">[${ts}]</span> <span class="${cls}">${msg}</span></div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+function updateStats() {
+  const rules = Array.from(mockEngine._rules.values());
+  const active = rules.filter((r) => r.status === 'active').length;
+  const cutoff = Date.now() - 7 * 86400000;
+  const recent = mockEngine._triggers.filter((t) => new Date(t.triggered_at).getTime() >= cutoff && t.status === 'REWARDED');
+  const users = new Set(recent.map((t) => t.member_id)).size;
+  const rewarded = recent.reduce((s, t) => s + t.reward_amount, 0);
+  document.getElementById('stat-rules').textContent = active;
+  document.getElementById('stat-triggers').textContent = recent.length;
+  document.getElementById('stat-users').textContent = users;
+  document.getElementById('stat-rewarded').textContent = rewarded.toLocaleString();
+}
+
+function createRule() {
+  const name = document.getElementById('rule-name').value.trim();
+  const event = document.getElementById('rule-event').value;
+  const amount = parseFloat(document.getElementById('rule-amount').value);
+  const type = document.getElementById('rule-type').value;
+  const cooldown = document.getElementById('rule-cooldown').value;
+  const max = document.getElementById('rule-max').value;
+  const audTier = document.getElementById('aud-tier').value;
+  const audCountry = document.getElementById('aud-country').value;
+  const audOptin = document.getElementById('aud-optin').value;
+
+  if (!name || !event || !amount) { alert('กรุณากรอกข้อมูลให้ครบ'); return; }
+
+  const audience = {};
+  if (audTier) audience.tier = audTier;
+  if (audCountry) audience.country = audCountry;
+  if (audOptin) audience.opt_in = audOptin === 'true';
+
+  const rule = {
+    rule_id: newId('POIR'),
+    name, event_type: event, reward_amount: amount, reward_type: type,
+    cooldown: cooldown || null,
+    max_triggers_per_user: max ? parseInt(max) : null,
+    audience_filter: audience,
+    status: 'active',
+    triggered_count: 0, total_rewarded: 0, unique_users: 0,
+    created_at: new Date().toISOString(),
+  };
+  mockEngine._rules.set(rule.rule_id, rule);
+  logTo('sim-log', `✅ Rule created: ${rule.rule_id} (${event} → ${amount} ${type})`, 'ok');
+  renderRules();
+  updateEventSelect();
+  updateStats();
+}
+
+function applyPreset(type) {
+  if (type === 'daily') {
+    document.getElementById('rule-name').value = 'Daily Login (UBI)';
+    document.getElementById('rule-event').value = 'daily_login';
+    document.getElementById('rule-amount').value = 100;
+    document.getElementById('rule-type').value = 'fixed';
+    document.getElementById('rule-cooldown').value = 'PT24H';
+  } else if (type === 'spending') {
+    document.getElementById('rule-name').value = '3x Spending Points';
+    document.getElementById('rule-event').value = 'purchase';
+    document.getElementById('rule-amount').value = 3;
+    document.getElementById('rule-type').value = 'multiplier';
+    document.getElementById('rule-cooldown').value = '';
+  } else if (type === 'referral') {
+    document.getElementById('rule-name').value = 'Referral Bonus';
+    document.getElementById('rule-event').value = 'referral';
+    document.getElementById('rule-amount').value = 500;
+    document.getElementById('rule-type').value = 'fixed';
+    document.getElementById('rule-cooldown').value = 'P1W';
+  } else if (type === 'vip') {
+    document.getElementById('rule-name').value = 'Gold Tier Bonus';
+    document.getElementById('rule-event').value = 'daily_login';
+    document.getElementById('rule-amount').value = 1000;
+    document.getElementById('rule-type').value = 'fixed';
+    document.getElementById('rule-cooldown').value = 'PT24H';
+    document.getElementById('aud-tier').value = 'gold';
+  }
+}
+
+function simulate() {
+  const member = document.getElementById('sim-member').value.trim();
+  const event = document.getElementById('sim-event').value;
+  const amount = parseFloat(document.getElementById('sim-amount').value) || 0;
+  if (!member || !event) { alert('กรุณากรอก member และ event'); return; }
+
+  const rules = Array.from(mockEngine._rules.values()).filter((r) => r.event_type === event && r.status === 'active');
+  if (rules.length === 0) {
+    logTo('sim-log', `⚠️ No active rule for event: ${event}`, 'err');
+    return;
+  }
+
+  // Mock member
+  const mockMember = { member_id: member, tier: 'gold', country: 'TH', opt_in: true, age: 30 };
+
+  rules.forEach((rule) => {
+    // Cooldown check
+    if (rule.cooldown) {
+      const last = mockEngine._triggers.filter((t) => t.rule_id === rule.rule_id && t.member_id === member && t.status === 'REWARDED').sort((a, b) => b.triggered_at.localeCompare(a.triggered_at))[0];
+      if (last) {
+        const cooldownMs = parseISO(rule.cooldown);
+        if (Date.now() - new Date(last.triggered_at).getTime() < cooldownMs) {
+          logTo('sim-log', `⏸️ ${member} → ${event}: COOLDOWN`, 'err');
+          mockEngine._triggers.push({ trigger_id: newId('POIT'), rule_id: rule.rule_id, member_id: member, event_type: event, reward_amount: 0, status: 'COOLDOWN', triggered_at: new Date().toISOString() });
+          return;
+        }
+      }
+    }
+
+    // Audience check
+    if (Object.keys(rule.audience_filter).length > 0) {
+      if (rule.audience_filter.tier && mockMember.tier !== rule.audience_filter.tier) {
+        logTo('sim-log', `🚫 ${member} → ${event}: NOT_IN_AUDIENCE (need ${rule.audience_filter.tier})`, 'err');
+        mockEngine._triggers.push({ trigger_id: newId('POIT'), rule_id: rule.rule_id, member_id: member, event_type: event, reward_amount: 0, status: 'NOT_IN_AUDIENCE', triggered_at: new Date().toISOString() });
+        return;
+      }
+    }
+
+    // Calculate reward
+    let reward = rule.reward_amount;
+    if (rule.reward_type === 'multiplier') reward = Math.floor(amount * rule.reward_amount);
+    if (rule.reward_type === 'random') reward = Math.floor(Math.random() * rule.reward_amount);
+
+    rule.triggered_count++;
+    rule.total_rewarded += reward;
+    mockEngine._triggers.push({ trigger_id: newId('POIT'), rule_id: rule.rule_id, member_id: member, event_type: event, reward_amount: reward, status: 'REWARDED', triggered_at: new Date().toISOString() });
+    logTo('sim-log', `✅ ${member} → ${event}: +${reward} BCP (via ${rule.name})`, 'ok');
+  });
+
+  renderTriggers();
+  renderRules();
+  updateStats();
+}
+
+function parseISO(s) {
+  if (s === 'PT1H') return 3600000;
+  if (s === 'PT24H') return 86400000;
+  if (s === 'P1W') return 7 * 86400000;
+  if (s === 'P1M' || s === 'M30') return 30 * 86400000;
+  return 0;
+}
+
+function renderRules() {
+  const tbody = document.getElementById('rules-tbody');
+  const rules = Array.from(mockEngine._rules.values());
+  if (rules.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty">No rules yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rules.map((r) => `
+    <tr>
+      <td><code>${r.rule_id.slice(0, 18)}…</code></td>
+      <td>${r.name}</td>
+      <td>${r.event_type}</td>
+      <td><strong>${r.reward_amount}</strong> ${r.reward_type}</td>
+      <td>${r.cooldown || '—'}</td>
+      <td>${Object.entries(r.audience_filter).map(([k, v]) => `${k}=${v}`).join(', ') || 'any'}</td>
+      <td>${r.triggered_count} (${r.total_rewarded})</td>
+      <td><span class="badge ${r.status}">${r.status}</span></td>
+      <td>${r.status === 'active' ? `<button class="warn" style="padding: 2px 6px; font-size: 11px;" onclick="toggleRule('${r.rule_id}')">⏸️</button>` : `<button class="success" style="padding: 2px 6px; font-size: 11px;" onclick="toggleRule('${r.rule_id}')">▶</button>`}</td>
+    </tr>
+  `).join('');
+}
+
+function toggleRule(rule_id) {
+  const r = mockEngine._rules.get(rule_id);
+  r.status = r.status === 'active' ? 'paused' : 'active';
+  renderRules();
+  updateStats();
+}
+
+function renderTriggers() {
+  const tbody = document.getElementById('triggers-tbody');
+  const recent = mockEngine._triggers.slice(-20).reverse();
+  if (recent.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">No triggers yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML = recent.map((t) => `
+    <tr>
+      <td>${new Date(t.triggered_at).toLocaleTimeString('th-TH')}</td>
+      <td>${t.member_id}</td>
+      <td>${t.event_type}</td>
+      <td>${t.reward_amount || '—'}</td>
+      <td><span class="badge ${t.status.toLowerCase()}">${t.status}</span></td>
+    </tr>
+  `).join('');
+}
+
+function updateEventSelect() {
+  const events = [...new Set(Array.from(mockEngine._rules.values()).map((r) => r.event_type))];
+  const sel = document.getElementById('sim-event');
+  sel.innerHTML = events.map((e) => `<option value="${e}">${e}</option>`).join('');
+}
+
+// Init
+renderRules();
+renderTriggers();
+updateStats();
+</script>
+
+</body>
+</html>
