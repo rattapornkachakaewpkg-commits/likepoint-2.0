@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer 360 — LikePoint Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: 'Inter', sans-serif; background: #f8fafc; }
+  .sidebar { background: #1e293b; color: #e2e8f0; }
+  .sidebar-item:hover, .sidebar-item.active { background: #3b82f6; }
+  .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .layer-tab { padding: 10px 16px; cursor: pointer; border-bottom: 3px solid transparent; }
+  .layer-tab.active { border-bottom-color: #3b82f6; color: #3b82f6; font-weight: 600; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; }
+</style>
+</head>
+<body class="min-h-screen">
+<div class="flex">
+  <aside class="sidebar w-60 min-h-screen p-4">
+    <h1 class="text-lg font-bold mb-6">🎯 LikePoint Admin</h1>
+    <nav class="space-y-1 text-sm">
+      <a href="#" class="block px-3 py-2 rounded sidebar-item">🏠 Dashboard</a>
+      <a href="customer-360.html" class="block px-3 py-2 rounded sidebar-item active">👥 Customer 360</a>
+      <a href="merge-account.html" class="block px-3 py-2 rounded sidebar-item">🔀 Merge Account</a>
+      <a href="transfer-point.html" class="block px-3 py-2 rounded sidebar-item">💸 Transfer Point</a>
+      <a href="identity-queue.html" class="block px-3 py-2 rounded sidebar-item">📊 Identity Queue</a>
+      <a href="audit-log.html" class="block px-3 py-2 rounded sidebar-item">📋 Audit Log</a>
+      <a href="msp-recovery.html" class="block px-3 py-2 rounded sidebar-item">🆘 MSP Recovery</a>
+    </nav>
+  </aside>
+
+  <main class="flex-1 p-6">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">👥 Customer 360</h2>
+
+    <!-- Search -->
+    <div class="card mb-4">
+      <div class="flex gap-2">
+        <input type="text" id="search" placeholder="🔍 Search by phone, email, member_id..."
+               class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm">
+        <button onclick="searchCustomer()" class="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm">Search</button>
+      </div>
+    </div>
+
+    <!-- Profile -->
+    <div id="profile" class="card mb-4" style="display:none;">
+      <div class="flex items-start gap-4 pb-4 border-b border-gray-200">
+        <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-2xl">🧑</div>
+        <div class="flex-1">
+          <h3 class="text-lg font-bold text-gray-900">สมชาย ใจดี</h3>
+          <p class="text-xs text-gray-500 font-mono">usr_01HXY...ABCDEF</p>
+          <div class="mt-2 flex items-center gap-2">
+            <span class="text-xs text-gray-500">Trust Score:</span>
+            <div class="flex items-center gap-1">
+              <div class="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div class="h-full bg-green-500" style="width: 78%"></div>
+              </div>
+              <span class="text-xs font-bold text-green-600">78/100 🟢</span>
+            </div>
+            <span class="badge bg-blue-100 text-blue-700">KYC: LEVEL_1</span>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button class="text-xs bg-white border border-gray-300 px-3 py-1.5 rounded hover:bg-gray-50">✏️ Edit</button>
+          <button class="text-xs bg-blue-500 text-white px-3 py-1.5 rounded hover:bg-blue-600">🔀 Merge</button>
+        </div>
+      </div>
+
+      <div class="flex border-b border-gray-200 mt-4">
+        <div class="layer-tab active" onclick="showLayer('L1')">L1 Identity</div>
+        <div class="layer-tab" onclick="showLayer('L3')">L3 Contact</div>
+        <div class="layer-tab" onclick="showLayer('L2')">L2 Wallet</div>
+        <div class="layer-tab" onclick="showLayer('L4')">L4 Relationship</div>
+      </div>
+
+      <div id="layer-L1" class="layer-content pt-4">
+        <table class="w-full text-sm">
+          <tr class="border-b border-gray-100"><td class="py-3 text-gray-500 w-1/3">Display Name</td><td class="py-3">สมชาย ใจดี</td></tr>
+          <tr class="border-b border-gray-100"><td class="py-3 text-gray-500">Status</td><td class="py-3"><span class="badge bg-green-100 text-green-700">ACTIVE</span></td></tr>
+          <tr class="border-b border-gray-100"><td class="py-3 text-gray-500">Created</td><td class="py-3">12 มี.ค. 2568</td></tr>
+          <tr><td class="py-3 text-gray-500">Last Active</td><td class="py-3">5 นาทีที่แล้ว</td></tr>
+        </table>
+      </div>
+
+      <div id="layer-L3" class="layer-content hidden pt-4">
+        <div class="space-y-2">
+          <div class="p-3 bg-green-50 border border-green-200 rounded flex items-center gap-3">
+            <span>📱</span>
+            <div class="flex-1">
+              <div class="text-sm font-medium">088-1234-5678</div>
+              <div class="text-xs text-gray-500">Primary • Verified</div>
+            </div>
+            <span class="badge bg-green-100 text-green-700">✅ Active</span>
+          </div>
+          <div class="p-3 bg-white border border-gray-200 rounded flex items-center gap-3">
+            <span>📧</span>
+            <div class="flex-1">
+              <div class="text-sm font-medium">somchai@mail.com</div>
+              <div class="text-xs text-gray-500">Verified</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="layer-L2" class="layer-content hidden pt-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div class="p-4 bg-blue-50 rounded">
+            <div class="text-xs text-gray-600">Total Point</div>
+            <div class="text-2xl font-bold text-blue-700">12,450 P</div>
+            <div class="text-xs text-gray-500 mt-1">2 tenants</div>
+          </div>
+          <div class="p-4 bg-green-50 rounded">
+            <div class="text-xs text-gray-600">Active Wallet</div>
+            <div class="text-2xl font-bold text-green-700">1</div>
+            <div class="text-xs text-gray-500 mt-1">wlt_abc123</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="layer-L4" class="layer-content hidden pt-4">
+        <div class="space-y-2">
+          <div class="p-3 border border-gray-200 rounded flex justify-between">
+            <div><div class="text-sm font-medium">Café Amazon</div><div class="text-xs text-gray-500">Member since 12 มี.ค. 68</div></div>
+            <div class="text-right"><div class="text-sm font-bold">8,200 P</div><div class="text-xs">Gold tier</div></div>
+          </div>
+          <div class="p-3 border border-gray-200 rounded flex justify-between">
+            <div><div class="text-sm font-medium">The Mall</div><div class="text-xs text-gray-500">Member since 5 ก.ย. 68</div></div>
+            <div class="text-right"><div class="text-sm font-bold">4,250 P</div><div class="text-xs">Silver tier</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+function searchCustomer() { document.getElementById('profile').style.display = 'block'; }
+function showLayer(id) {
+  document.querySelectorAll('.layer-content').forEach(l => l.classList.add('hidden'));
+  document.querySelectorAll('.layer-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('layer-' + id).classList.remove('hidden');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

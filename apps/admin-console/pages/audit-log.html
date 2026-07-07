@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Audit Log — LikePoint Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>body{font-family:Inter,sans-serif;background:#f8fafc}.sidebar{background:#1e293b;color:#e2e8f0}.sidebar-item:hover,.sidebar-item.active{background:#3b82f6}.card{background:white;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px}</style>
+</head>
+<body class="min-h-screen">
+<div class="flex">
+  <aside class="sidebar w-60 min-h-screen p-4">
+    <h1 class="text-lg font-bold mb-6 text-white">🎯 LikePoint Admin</h1>
+    <nav class="space-y-1 text-sm">
+      <a href="customer-360.html" class="block px-3 py-2 rounded sidebar-item">👥 Customer 360</a>
+      <a href="merge-account.html" class="block px-3 py-2 rounded sidebar-item">🔀 Merge Account</a>
+      <a href="transfer-point.html" class="block px-3 py-2 rounded sidebar-item">💸 Transfer Point</a>
+      <a href="identity-queue.html" class="block px-3 py-2 rounded sidebar-item">📊 Identity Queue</a>
+      <a href="audit-log.html" class="block px-3 py-2 rounded sidebar-item active">📋 Audit Log</a>
+      <a href="msp-recovery.html" class="block px-3 py-2 rounded sidebar-item">🆘 MSP Recovery</a>
+    </nav>
+  </aside>
+
+  <main class="flex-1 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-2xl font-bold text-gray-900">📋 Audit Log</h2>
+      <div class="flex gap-2">
+        <select class="text-sm border border-gray-300 rounded px-3 py-1"><option>Today</option><option>Last 7 days</option></select>
+        <select class="text-sm border border-gray-300 rounded px-3 py-1"><option>All Actions</option><option>MERGE</option><option>TRANSFER</option></select>
+      </div>
+    </div>
+
+    <div class="space-y-3">
+      <div class="card border-l-4 border-blue-500">
+        <div class="flex justify-between mb-2">
+          <div class="text-xs text-gray-500">09:42</div>
+          <span class="badge bg-blue-100 text-blue-700">MERGE_ACCOUNT</span>
+        </div>
+        <div class="text-sm"><span class="font-semibold">👤 Admin: somsri@likepoint</span> merged usr_A ← usr_B</div>
+        <div class="text-xs text-gray-600 mt-1">Reason: "Customer reported duplicate"</div>
+        <div class="text-xs text-green-600 mt-1">✅ Success (12,450 P merged)</div>
+      </div>
+
+      <div class="card border-l-4 border-green-500">
+        <div class="flex justify-between mb-2">
+          <div class="text-xs text-gray-500">09:15</div>
+          <span class="badge bg-green-100 text-green-700">TRANSFER_POINT</span>
+        </div>
+        <div class="text-sm"><span class="font-semibold">👤 Admin: chai@likepoint</span> transferred 4,250 P</div>
+        <div class="text-xs text-gray-600 mt-1">Reason: "Compensation for service outage"</div>
+        <div class="text-xs text-green-600 mt-1">✅ Success</div>
+      </div>
+
+      <div class="card border-l-4 border-gray-400">
+        <div class="flex justify-between mb-2">
+          <div class="text-xs text-gray-500">08:50</div>
+          <span class="badge bg-gray-200 text-gray-700">IDENTITY_RESOLUTION (AUTO)</span>
+        </div>
+        <div class="text-sm"><span class="font-semibold">⚙️ System (auto)</span> auto-merged usr_E ← usr_F</div>
+        <div class="text-xs text-gray-600 mt-1">Confidence: 96% — above auto-merge threshold</div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

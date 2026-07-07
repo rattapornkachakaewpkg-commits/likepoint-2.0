@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Transfer Point — LikePoint Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>body{font-family:Inter,sans-serif;background:#f8fafc}.sidebar{background:#1e293b;color:#e2e8f0}.sidebar-item:hover,.sidebar-item.active{background:#3b82f6}.card{background:white;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px}</style>
+</head>
+<body class="min-h-screen">
+<div class="flex">
+  <aside class="sidebar w-60 min-h-screen p-4">
+    <h1 class="text-lg font-bold mb-6 text-white">🎯 LikePoint Admin</h1>
+    <nav class="space-y-1 text-sm">
+      <a href="customer-360.html" class="block px-3 py-2 rounded sidebar-item">👥 Customer 360</a>
+      <a href="merge-account.html" class="block px-3 py-2 rounded sidebar-item">🔀 Merge Account</a>
+      <a href="transfer-point.html" class="block px-3 py-2 rounded sidebar-item active">💸 Transfer Point</a>
+      <a href="identity-queue.html" class="block px-3 py-2 rounded sidebar-item">📊 Identity Queue</a>
+      <a href="audit-log.html" class="block px-3 py-2 rounded sidebar-item">📋 Audit Log</a>
+      <a href="msp-recovery.html" class="block px-3 py-2 rounded sidebar-item">🆘 MSP Recovery</a>
+    </nav>
+  </aside>
+
+  <main class="flex-1 p-6">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">💸 Transfer Point</h2>
+
+    <div class="card max-w-xl">
+      <div class="space-y-4">
+        <div>
+          <label class="text-xs text-gray-600">From (Source Member)</label>
+          <input type="text" placeholder="Search member..." class="w-full mt-1 px-3 py-2 border border-gray-300 rounded text-sm">
+        </div>
+        <div class="text-center text-2xl text-gray-400">↓</div>
+        <div>
+          <label class="text-xs text-gray-600">To (Destination Member)</label>
+          <input type="text" placeholder="Search member..." class="w-full mt-1 px-3 py-2 border border-gray-300 rounded text-sm">
+        </div>
+        <div>
+          <label class="text-xs text-gray-600">Amount (Point)</label>
+          <input type="number" placeholder="0" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded text-sm">
+          <div class="text-xs text-gray-500 mt-1">Max: 8,200 P (source balance)</div>
+        </div>
+        <div>
+          <label class="text-xs text-gray-600">Cross-Tenant Transfer?</label>
+          <div class="flex items-center gap-2 mt-1">
+            <input type="checkbox">
+            <span class="text-xs text-gray-700">Yes, transfer between tenants (exchange rate applies)</span>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs text-gray-600">Reason (required)</label>
+          <select class="w-full mt-1 px-3 py-2 border border-gray-300 rounded text-sm">
+            <option>Compensation for service outage</option>
+            <option>Customer service adjustment</option>
+            <option>Promotional bonus</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-2 p-3 bg-blue-50 rounded">
+          <input type="checkbox" checked>
+          <span class="text-xs text-gray-700">Require 2FA verification</span>
+        </div>
+        <button class="w-full py-2 bg-blue-500 text-white rounded text-sm">Confirm Transfer</button>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

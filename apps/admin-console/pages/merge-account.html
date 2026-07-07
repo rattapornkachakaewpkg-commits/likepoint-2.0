@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Merge Account — LikePoint Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>body{font-family:Inter,sans-serif;background:#f8fafc}.sidebar{background:#1e293b;color:#e2e8f0}.sidebar-item:hover,.sidebar-item.active{background:#3b82f6}.card{background:white;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px}</style>
+</head>
+<body class="min-h-screen">
+<div class="flex">
+  <aside class="sidebar w-60 min-h-screen p-4">
+    <h1 class="text-lg font-bold mb-6 text-white">🎯 LikePoint Admin</h1>
+    <nav class="space-y-1 text-sm">
+      <a href="customer-360.html" class="block px-3 py-2 rounded sidebar-item">👥 Customer 360</a>
+      <a href="merge-account.html" class="block px-3 py-2 rounded sidebar-item active">🔀 Merge Account</a>
+      <a href="transfer-point.html" class="block px-3 py-2 rounded sidebar-item">💸 Transfer Point</a>
+      <a href="identity-queue.html" class="block px-3 py-2 rounded sidebar-item">📊 Identity Queue</a>
+      <a href="audit-log.html" class="block px-3 py-2 rounded sidebar-item">📋 Audit Log</a>
+      <a href="msp-recovery.html" class="block px-3 py-2 rounded sidebar-item">🆘 MSP Recovery</a>
+    </nav>
+  </aside>
+
+  <main class="flex-1 p-6">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">🔀 Merge Account</h2>
+    <div class="bg-red-50 border-l-4 border-red-500 p-3 mb-4 rounded text-sm text-red-700">⚠️ This action is irreversible. All audit logs will be kept.</div>
+
+    <div class="card mb-4">
+      <h3 class="text-sm font-semibold text-gray-700 mb-3">Step 1: Select accounts to merge</h3>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="border-2 border-blue-500 rounded-lg p-4 bg-blue-50">
+          <div class="flex justify-between mb-2"><div class="text-sm font-semibold">Account A (Keep)</div><span class="badge bg-blue-500 text-white">⭐ Primary</span></div>
+          <div class="text-xs text-gray-500 font-mono">usr_01HXY...A</div>
+          <div class="text-sm font-medium">สมชาย ใจดี</div>
+          <div class="text-xs text-gray-600 mt-1">📱 088-1234-5678<br>💰 8,200 P<br>🏢 2 tenants</div>
+        </div>
+        <div class="border-2 border-red-300 rounded-lg p-4 bg-white">
+          <div class="flex justify-between mb-2"><div class="text-sm font-semibold">Account B (Merge)</div><span class="badge bg-red-100 text-red-700">🗑️ Will be merged</span></div>
+          <div class="text-xs text-gray-500 font-mono">usr_01HXY...B</div>
+          <div class="text-sm font-medium">Somsri</div>
+          <div class="text-xs text-gray-600 mt-1">📱 088-1234-5678<br>💰 4,250 P<br>🏢 1 tenants</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <h3 class="text-sm font-semibold text-gray-700 mb-3">Conflicts (3)</h3>
+      <div class="space-y-2">
+        <div class="p-3 bg-amber-50 border-l-4 border-amber-500 rounded text-sm">⚠️ Phone: Both have 088-1234-5678 → <strong>Keep A's</strong></div>
+        <div class="p-3 bg-amber-50 border-l-4 border-amber-500 rounded text-sm">⚠️ Point conflict: Both in Tenant A → <strong>Sum to 9,450 P</strong></div>
+        <div class="p-3 bg-amber-50 border-l-4 border-amber-500 rounded text-sm">⚠️ Email: A has, B has none → <strong>Keep A's</strong></div>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <h3 class="text-sm font-semibold text-gray-700 mb-3">Step 2: Reason (required)</h3>
+      <select class="w-full px-3 py-2 border border-gray-300 rounded text-sm mb-3">
+        <option>Customer reported duplicate</option>
+        <option>Auto-merge review approved</option>
+        <option>Manual data cleanup</option>
+      </select>
+      <textarea class="w-full px-3 py-2 border border-gray-300 rounded text-sm" rows="2" placeholder="Notes (optional)"></textarea>
+    </div>
+
+    <div class="flex justify-end gap-2">
+      <button class="px-4 py-2 border border-gray-300 rounded text-sm">Cancel</button>
+      <button class="px-4 py-2 bg-blue-500 text-white rounded text-sm">🔀 Confirm Merge</button>
+    </div>
+  </main>
+</div>
+</body>
+</html>

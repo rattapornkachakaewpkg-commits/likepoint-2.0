@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Identity Queue — LikePoint Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>body{font-family:Inter,sans-serif;background:#f8fafc}.sidebar{background:#1e293b;color:#e2e8f0}.sidebar-item:hover,.sidebar-item.active{background:#3b82f6}.card{background:white;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px}</style>
+</head>
+<body class="min-h-screen">
+<div class="flex">
+  <aside class="sidebar w-60 min-h-screen p-4">
+    <h1 class="text-lg font-bold mb-6 text-white">🎯 LikePoint Admin</h1>
+    <nav class="space-y-1 text-sm">
+      <a href="customer-360.html" class="block px-3 py-2 rounded sidebar-item">👥 Customer 360</a>
+      <a href="merge-account.html" class="block px-3 py-2 rounded sidebar-item">🔀 Merge Account</a>
+      <a href="transfer-point.html" class="block px-3 py-2 rounded sidebar-item">💸 Transfer Point</a>
+      <a href="identity-queue.html" class="block px-3 py-2 rounded sidebar-item active">📊 Identity Queue</a>
+      <a href="audit-log.html" class="block px-3 py-2 rounded sidebar-item">📋 Audit Log</a>
+      <a href="msp-recovery.html" class="block px-3 py-2 rounded sidebar-item">🆘 MSP Recovery</a>
+    </nav>
+  </aside>
+
+  <main class="flex-1 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-2xl font-bold text-gray-900">📊 Identity Resolution Queue</h2>
+      <span class="bg-red-500 text-white text-sm font-semibold px-3 py-1 rounded-full">47 pending</span>
+    </div>
+
+    <div class="space-y-4">
+      <div class="card">
+        <div class="flex items-center justify-between mb-3">
+          <div class="text-sm font-semibold">Candidate Pair #4521</div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-gray-500">Confidence:</span>
+            <div class="w-20 h-2 bg-gray-200 rounded-full overflow-hidden"><div class="h-full bg-green-500" style="width: 92%"></div></div>
+            <span class="text-sm font-bold text-green-600">92%</span>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div class="border border-gray-200 rounded p-3">
+            <div class="text-xs text-gray-500 font-mono">usr_01HXY...A</div>
+            <div class="text-sm font-medium">สมชาย</div>
+            <div class="text-xs text-gray-600">📱 088-xxx-1234 • Trust 78</div>
+          </div>
+          <div class="border border-gray-200 rounded p-3">
+            <div class="text-xs text-gray-500 font-mono">usr_01HXY...B</div>
+            <div class="text-sm font-medium">Somsri</div>
+            <div class="text-xs text-gray-600">📱 088-xxx-1234 • Trust 45</div>
+          </div>
+        </div>
+        <div class="bg-gray-50 p-3 rounded text-xs mb-3">
+          <strong>Matching signals (5/7):</strong> ✅ Phone ✅ Device ✅ IP ✅ Behavior ✅ Email • ❌ Name ❌ Geo
+        </div>
+        <div class="flex gap-2">
+          <button class="text-xs bg-white border border-gray-300 px-3 py-1.5 rounded">View</button>
+          <button class="text-xs bg-white border border-red-300 text-red-600 px-3 py-1.5 rounded">❌ Reject</button>
+          <button class="text-xs bg-blue-500 text-white px-3 py-1.5 rounded">🔀 Approve & Merge</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="flex items-center justify-between mb-3">
+          <div class="text-sm font-semibold">Candidate Pair #4520</div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-gray-500">Confidence:</span>
+            <div class="w-20 h-2 bg-gray-200 rounded-full overflow-hidden"><div class="h-full bg-amber-500" style="width: 88%"></div></div>
+            <span class="text-sm font-bold text-amber-600">88%</span>
+          </div>
+        </div>
+        <div class="text-xs text-gray-600 mb-3">📧 siriwan@mail vs sirwan@mail • Same device • 4 matching signals</div>
+        <div class="flex gap-2">
+          <button class="text-xs bg-white border border-gray-300 px-3 py-1.5 rounded">View</button>
+          <button class="text-xs bg-white border border-red-300 text-red-600 px-3 py-1.5 rounded">❌ Reject</button>
+          <button class="text-xs bg-blue-500 text-white px-3 py-1.5 rounded">🔀 Approve & Merge</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>
