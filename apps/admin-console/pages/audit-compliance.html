@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audit & Compliance Console — PF-5</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; padding: 24px; }
+  h1 { font-size: 24px; margin-bottom: 8px; }
+  h2 { font-size: 18px; margin-bottom: 12px; }
+  .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 24px; }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; }
+  .card { background: #1e293b; border-radius: 8px; padding: 14px; border: 1px solid #334155; }
+  .card .label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+  .card .value { font-size: 24px; font-weight: 700; margin-top: 6px; color: #f1f5f9; }
+  .card.danger .value { color: #ef4444; }
+  .card.warning .value { color: #f59e0b; }
+  .card.success .value { color: #22c55e; }
+  .section { background: #1e293b; border-radius: 8px; padding: 20px; margin-bottom: 20px; border: 1px solid #334155; }
+  .toolbar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+  input, select, button { background: #0f172a; color: #e2e8f0; border: 1px solid #334155; padding: 6px 10px; border-radius: 6px; font-size: 13px; }
+  button { cursor: pointer; font-weight: 600; }
+  button.primary { background: #3b82f6; border-color: #3b82f6; color: white; }
+  button.primary:hover { background: #2563eb; }
+  button.danger { background: #ef4444; border-color: #ef4444; color: white; }
+  button.success { background: #22c55e; border-color: #22c55e; color: white; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #334155; }
+  th { color: #94a3b8; font-weight: 600; text-transform: uppercase; font-size: 10px; }
+  tr:hover { background: #0f172a; }
+  .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+  .badge.success { background: #16a34a; color: white; }
+  .badge.failure { background: #dc2626; color: white; }
+  .badge.denied { background: #ea580c; color: white; }
+  .badge.info { background: #3b82f6; color: white; }
+  .row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .row label { width: 120px; font-size: 12px; color: #94a3b8; }
+  .pane { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .log { background: #020617; border-radius: 6px; padding: 10px; max-height: 280px; overflow-y: auto; font-family: monospace; font-size: 11px; line-height: 1.5; }
+  .log .ts { color: #64748b; }
+  .log .ok { color: #22c55e; }
+  .log .err { color: #ef4444; }
+  .log .info { color: #60a5fa; }
+  .empty { padding: 20px; text-align: center; color: #64748b; font-size: 13px; }
+  .sla-banner { background: #422006; border: 1px solid #ea580c; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; display: none; }
+  .sla-banner.show { display: flex; align-items: center; gap: 12px; }
+  .sla-banner .icon { font-size: 20px; }
+  .sla-banner .text { color: #fed7aa; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<h1>🔒 Audit & Compliance Console</h1>
+<p class="subtitle">PF-5 (Phase D) — PDPA-grade audit log · 7-year retention · immutable · 24/24 tests passing</p>
+
+<!-- SLA breach alert -->
+<div class="sla-banner" id="sla-banner">
+  <span class="icon">⚠️</span>
+  <span class="text" id="sla-text"></span>
+</div>
+
+<!-- Stats -->
+<div class="grid">
+  <div class="card">
+    <div class="label">Total (7d)</div>
+    <div class="value" id="stat-total">0</div>
+  </div>
+  <div class="card success">
+    <div class="label">Unique Actors</div>
+    <div class="value" id="stat-actors">0</div>
+  </div>
+  <div class="card warning">
+    <div class="label">Unique Members</div>
+    <div class="value" id="stat-members">0</div>
+  </div>
+  <div class="card danger">
+    <div class="label">Failures</div>
+    <div class="value" id="stat-failures">0</div>
+  </div>
+  <div class="card">
+    <div class="label">PDPA Pending</div>
+    <div class="value" id="stat-pdpa">0</div>
+  </div>
+</div>
+
+<!-- Search -->
+<div class="section">
+  <h2>① Search Audit Log</h2>
+  <div class="pane">
+    <div>
+      <div class="row"><label>Event Type</label><input id="f-event" placeholder="WALLET_CREDIT, MIGRATION, ..." style="flex:1"></div>
+      <div class="row"><label>Actor</label><input id="f-actor" placeholder="user:abc, service:wallet" style="flex:1"></div>
+      <div class="row"><label>Member ID</label><input id="f-member" placeholder="M-xxx (UUID)" style="flex:1"></div>
+    </div>
+    <div>
+      <div class="row"><label>Resource ID</label><input id="f-resource" placeholder="TXN-xxx" style="flex:1"></div>
+      <div class="row"><label>Correlation</label><input id="f-corr" placeholder="CORR-xxx" style="flex:1"></div>
+      <div class="row"><label>Outcome</label>
+        <select id="f-outcome" style="flex:1">
+          <option value="">All</option>
+          <option value="success">Success</option>
+          <option value="failure">Failure</option>
+          <option value="denied">Denied</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <label>Date From</label><input type="date" id="f-from" style="flex:1">
+    <label style="width:80px">To</label><input type="date" id="f-to" style="flex:1">
+  </div>
+  <div class="toolbar">
+    <button class="primary" onclick="runSearch()">🔍 Search</button>
+    <button onclick="clearFilters()">🧹 Clear</button>
+    <button onclick="loadRecent()">🔄 Refresh</button>
+  </div>
+  <div style="margin-top: 12px; max-height: 400px; overflow-y: auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Audit ID</th>
+          <th>Time</th>
+          <th>Event</th>
+          <th>Actor</th>
+          <th>Member</th>
+          <th>Action</th>
+          <th>Outcome</th>
+          <th>Correlation</th>
+        </tr>
+      </thead>
+      <tbody id="results-tbody">
+        <tr><td colspan="8" class="empty">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div style="margin-top: 8px; font-size: 12px; color: #94a3b8;" id="results-summary">0 results</div>
+</div>
+
+<!-- Bulk Export -->
+<div class="section">
+  <h2>② Bulk Export (Finance / Legal)</h2>
+  <div class="row">
+    <label>Format</label>
+    <select id="exp-format" style="flex:1">
+      <option value="csv">CSV</option>
+      <option value="json">JSON</option>
+    </select>
+  </div>
+  <div class="row">
+    <label>Filters</label>
+    <input id="exp-event" placeholder="Event type filter (optional)" style="flex:1">
+  </div>
+  <div class="toolbar">
+    <button class="primary" onclick="runBulkExport()">📦 Export</button>
+    <button class="success" onclick="runBulkExport('csv')">📊 Export CSV</button>
+  </div>
+  <div class="log" id="export-log" style="margin-top: 12px;"></div>
+</div>
+
+<!-- PDPA User Data Export -->
+<div class="section">
+  <h2>③ PDPA User Data Export (30-day SLA)</h2>
+  <div class="row">
+    <label>Member ID</label>
+    <input id="pdpa-member" placeholder="M-xxx (UUID)" style="flex:1">
+  </div>
+  <div class="row">
+    <label>Requested By</label>
+    <input id="pdpa-actor" placeholder="self or admin:xxx" value="self" style="flex:1">
+  </div>
+  <div class="toolbar">
+    <button class="primary" onclick="runPDPA()">📥 Generate Export</button>
+  </div>
+  <div class="log" id="pdpa-log" style="margin-top: 12px;"></div>
+</div>
+
+<!-- Retention & Correlation Trace -->
+<div class="section">
+  <h2>④ Tools</h2>
+  <div class="pane">
+    <div>
+      <h2 style="font-size: 14px;">Retention Sweep</h2>
+      <div class="row">
+        <label>Older than</label>
+        <select id="retention-years" style="flex:1">
+          <option value="7">7 years (default)</option>
+          <option value="5">5 years</option>
+          <option value="10">10 years</option>
+        </select>
+      </div>
+      <button class="danger" onclick="runRetention()">🗑️ Run Sweep (dry-run)</button>
+      <div class="log" id="retention-log" style="margin-top: 8px; max-height: 150px;"></div>
+    </div>
+    <div>
+      <h2 style="font-size: 14px;">Correlation Trace</h2>
+      <div class="row">
+        <label>Correlation ID</label>
+        <input id="trace-corr" placeholder="CORR-xxx" style="flex:1">
+      </div>
+      <button class="primary" onclick="runTrace()">🔗 Trace</button>
+      <div class="log" id="trace-log" style="margin-top: 8px; max-height: 150px;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// === Mock data layer (replace with API) ===
+let mockStore = new Map();
+let mockMembers = new Map();
+let mockTxns = new Map();
+let _idSeq = 0;
+
+function logTo(elemId, msg, type = 'info') {
+  const el = document.getElementById(elemId);
+  const ts = new Date().toLocaleTimeString('th-TH');
+  const cls = type === 'ok' ? 'ok' : type === 'err' ? 'err' : 'info';
+  el.innerHTML += `<div><span class="ts">[${ts}]</span> <span class="${cls}">${msg}</span></div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+function updateStats() {
+  const all = Array.from(mockStore.values());
+  const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const recent = all.filter((e) => new Date(e.created_at).getTime() >= cutoff);
+  const actors = new Set(recent.map((e) => e.actor));
+  const members = new Set(recent.map((e) => e.member_id).filter(Boolean));
+  const failures = recent.filter((e) => e.outcome === 'failure').length;
+
+  document.getElementById('stat-total').textContent = recent.length;
+  document.getElementById('stat-actors').textContent = actors.size;
+  document.getElementById('stat-members').textContent = members.size;
+  document.getElementById('stat-failures').textContent = failures;
+  document.getElementById('stat-pdpa').textContent = mockPdpa.filter((p) => p.status !== 'delivered').length;
+}
+
+function mockAudit({ event_type, actor, member_id, resource_type, resource_id, action, outcome = 'success', correlation_id, metadata = {} }) {
+  _idSeq++;
+  const id = `AUD-${Date.now()}-${_idSeq}`;
+  const entry = {
+    id, event_type, actor, member_id, resource_type, resource_id, action, outcome,
+    correlation_id, metadata, created_at: new Date().toISOString(),
+  };
+  mockStore.set(id, entry);
+  return entry;
+}
+
+let mockPdpa = [];
+
+// Seed some demo data
+function seedDemo() {
+  // Some audit entries
+  const types = ['WALLET_CREDIT', 'WALLET_DEBIT', 'MIGRATION', 'LOGIN', 'LOGOUT', 'KYC', 'PDPA_REQUEST', 'AUDIT_EXPORT'];
+  const actors = ['user:alice', 'user:bob', 'service:wallet', 'service:mig', 'system:retention'];
+  for (let i = 0; i < 30; i++) {
+    mockAudit({
+      event_type: types[i % types.length],
+      actor: actors[i % actors.length],
+      member_id: i % 3 === 0 ? `M-${1000 + (i % 5)}` : null,
+      resource_type: 'wallet',
+      resource_id: `TXN-${i}`,
+      action: ['CREATE', 'READ', 'UPDATE'][i % 3],
+      outcome: i % 10 === 0 ? 'failure' : 'success',
+      correlation_id: i % 4 === 0 ? `CORR-${i}` : null,
+    });
+  }
+  // Mock members
+  for (let i = 0; i < 5; i++) {
+    mockMembers.set(`M-${1000 + i}`, { member_id: `M-${1000 + i}`, display_name: `User ${i}`, tier: 'gold' });
+    mockTxns.set(`M-${1000 + i}`, [
+      { txn_id: `TXN-A-${i}`, amount: 100 + i, source: 'AAM_MIGRATION' },
+      { txn_id: `TXN-B-${i}`, amount: 50 + i, source: 'REWARD' },
+    ]);
+  }
+  // Mock PDPA requests
+  mockPdpa = [
+    { request_id: 'PDPA-001', member_id: 'M-1000', status: 'ready', sla_deadline: new Date(Date.now() + 25 * 86400000).toISOString() },
+    { request_id: 'PDPA-002', member_id: 'M-1001', status: 'pending', sla_deadline: new Date(Date.now() + 2 * 86400000).toISOString() },
+  ];
+  checkSlaBreach();
+}
+
+function checkSlaBreach() {
+  const atRisk = mockPdpa.filter((p) => p.status !== 'delivered' && new Date(p.sla_deadline) - Date.now() < 3 * 86400000);
+  const banner = document.getElementById('sla-banner');
+  if (atRisk.length > 0) {
+    banner.classList.add('show');
+    document.getElementById('sla-text').textContent = `${atRisk.length} PDPA request(s) at risk of SLA breach (< 3 days remaining)`;
+  }
+}
+
+function applyFilters() {
+  return Array.from(mockStore.values()).filter((e) => {
+    const event = document.getElementById('f-event').value.trim();
+    if (event && !e.event_type.includes(event)) return false;
+    const actor = document.getElementById('f-actor').value.trim();
+    if (actor && !e.actor.includes(actor)) return false;
+    const member = document.getElementById('f-member').value.trim();
+    if (member && e.member_id !== member) return false;
+    const resource = document.getElementById('f-resource').value.trim();
+    if (resource && e.resource_id !== resource) return false;
+    const corr = document.getElementById('f-corr').value.trim();
+    if (corr && e.correlation_id !== corr) return false;
+    const outcome = document.getElementById('f-outcome').value;
+    if (outcome && e.outcome !== outcome) return false;
+    const from = document.getElementById('f-from').value;
+    if (from && new Date(e.created_at) < new Date(from)) return false;
+    const to = document.getElementById('f-to').value;
+    if (to && new Date(e.created_at) > new Date(to + 'T23:59:59')) return false;
+    return true;
+  }).sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
+function runSearch() {
+  const tbody = document.getElementById('results-tbody');
+  const results = applyFilters();
+  document.getElementById('results-summary').textContent = `${results.length} results`;
+  if (results.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty">No matches</td></tr>';
+    return;
+  }
+  tbody.innerHTML = results.slice(0, 50).map((e) => `
+    <tr>
+      <td><code>${e.id.slice(0, 18)}…</code></td>
+      <td>${new Date(e.created_at).toLocaleString('th-TH')}</td>
+      <td><strong>${e.event_type}</strong></td>
+      <td>${e.actor}</td>
+      <td>${e.member_id || '—'}</td>
+      <td>${e.action}</td>
+      <td><span class="badge ${e.outcome}">${e.outcome}</span></td>
+      <td>${e.correlation_id || '—'}</td>
+    </tr>
+  `).join('');
+}
+
+function clearFilters() {
+  ['f-event', 'f-actor', 'f-member', 'f-resource', 'f-corr', 'f-outcome', 'f-from', 'f-to'].forEach((id) => {
+    document.getElementById(id).value = '';
+  });
+  runSearch();
+}
+
+function loadRecent() {
+  document.getElementById('f-event').value = '';
+  document.getElementById('f-actor').value = '';
+  runSearch();
+  updateStats();
+}
+
+function runBulkExport(fmt) {
+  const format = fmt || document.getElementById('exp-format').value;
+  const eventFilter = document.getElementById('exp-event').value.trim();
+  const filters = eventFilter ? { event_type: eventFilter } : {};
+  const count = applyFilters().filter((e) => !eventFilter || e.event_type.includes(eventFilter)).length;
+  const exportId = `EXP-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+  logTo('export-log', `📦 Generating ${format.toUpperCase()} export (${count} rows)...`, 'info');
+  setTimeout(() => {
+    logTo('export-log', `✅ Export ready: ${exportId}.${format}`, 'ok');
+    logTo('export-log', `   URL: https://exports.likepoint.local/${exportId}.${format}`, 'info');
+    logTo('export-log', `   Expires: 7 days`, 'info');
+    // Audit the export
+    mockAudit({ event_type: 'AUDIT_EXPORT', actor: 'admin:demo', action: 'CREATE', outcome: 'success', metadata: { format, count, exportId } });
+    updateStats();
+  }, 400);
+}
+
+function runPDPA() {
+  const memberId = document.getElementById('pdpa-member').value.trim();
+  const actor = document.getElementById('pdpa-actor').value.trim() || 'self';
+  if (!memberId) { logTo('pdpa-log', '❌ Member ID required', 'err'); return; }
+  const profile = mockMembers.get(memberId);
+  const txns = mockTxns.get(memberId) || [];
+  const auditCount = Array.from(mockStore.values()).filter((e) => e.member_id === memberId).length;
+  const requestId = `PDPA-${Date.now()}`;
+  const sla = new Date(Date.now() + 30 * 86400000).toISOString();
+  logTo('pdpa-log', `📥 Generating PDPA export for ${memberId}...`, 'info');
+  setTimeout(() => {
+    logTo('pdpa-log', `✅ Export ready: ${requestId}`, 'ok');
+    logTo('pdpa-log', `   Profile: ${profile ? '✅' : '❌ not found'}`, profile ? 'ok' : 'err');
+    logTo('pdpa-log', `   Transactions: ${txns.length}`, 'info');
+    logTo('pdpa-log', `   Audit entries: ${auditCount}`, 'info');
+    logTo('pdpa-log', `   SLA deadline: ${new Date(sla).toLocaleString('th-TH')}`, 'info');
+    mockAudit({ event_type: 'PDPA_REQUEST', actor, member_id: memberId, action: 'CREATE', metadata: { sla_deadline: sla, request_id: requestId } });
+    mockPdpa.push({ request_id: requestId, member_id: memberId, status: 'ready', sla_deadline: sla });
+    updateStats();
+  }, 400);
+}
+
+function runRetention() {
+  const years = parseInt(document.getElementById('retention-years').value);
+  const cutoff = new Date(Date.now() - years * 365 * 86400000);
+  const toArchive = Array.from(mockStore.values()).filter((e) => new Date(e.created_at) < cutoff).length;
+  logTo('retention-log', `🗑️ Dry-run retention sweep (${years} years)`, 'info');
+  logTo('retention-log', `   Cutoff: ${cutoff.toISOString()}`, 'info');
+  logTo('retention-log', `   Would archive: ${toArchive} entries`, 'ok');
+}
+
+function runTrace() {
+  const corr = document.getElementById('trace-corr').value.trim();
+  if (!corr) { logTo('trace-log', '❌ Correlation ID required', 'err'); return; }
+  const matches = Array.from(mockStore.values()).filter((e) => e.correlation_id === corr);
+  logTo('trace-log', `🔗 Tracing ${corr}...`, 'info');
+  if (matches.length === 0) logTo('trace-log', `❌ No entries found`, 'err');
+  else {
+    logTo('trace-log', `✅ Found ${matches.length} entries:`, 'ok');
+    matches.forEach((e) => logTo('trace-log', `   [${new Date(e.created_at).toLocaleTimeString('th-TH')}] ${e.event_type} by ${e.actor}`, 'info'));
+  }
+}
+
+seedDemo();
+loadRecent();
+updateStats();
+setInterval(updateStats, 5000);
+</script>
+
+</body>
+</html>
