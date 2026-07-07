@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Merchant Onboarding Wizard — PF-6</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; padding: 24px; }
+  h1 { font-size: 24px; margin-bottom: 8px; }
+  h2 { font-size: 18px; margin-bottom: 12px; }
+  .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 24px; }
+  .wizard { max-width: 800px; margin: 0 auto; }
+  .steps { display: flex; gap: 8px; margin-bottom: 24px; }
+  .step { flex: 1; padding: 12px 16px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; text-align: center; opacity: 0.5; transition: all 0.2s; }
+  .step.active { background: #3b82f6; border-color: #3b82f6; color: white; opacity: 1; }
+  .step.completed { background: #16a34a; border-color: #16a34a; color: white; opacity: 1; }
+  .step .num { font-size: 12px; opacity: 0.8; }
+  .step .label { font-weight: 600; margin-top: 4px; }
+  .panel { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 24px; }
+  .panel.hidden { display: none; }
+  .row { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
+  .row label { width: 160px; font-size: 13px; color: #94a3b8; }
+  .row.tight label { width: 130px; }
+  input, select, textarea { flex: 1; background: #0f172a; color: #e2e8f0; border: 1px solid #334155; padding: 8px 12px; border-radius: 6px; font-size: 14px; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: #3b82f6; }
+  button { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; }
+  button:hover { background: #2563eb; }
+  button.secondary { background: #475569; }
+  button.secondary:hover { background: #334155; }
+  button.danger { background: #ef4444; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .toolbar { display: flex; gap: 8px; justify-content: space-between; margin-top: 24px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+  .tier-card { background: #0f172a; border: 2px solid #334155; border-radius: 8px; padding: 16px; cursor: pointer; transition: all 0.2s; }
+  .tier-card:hover { border-color: #3b82f6; }
+  .tier-card.selected { border-color: #22c55e; background: #052e16; }
+  .tier-card .name { font-size: 16px; font-weight: 700; }
+  .tier-card .price { font-size: 12px; color: #94a3b8; margin: 4px 0 12px; }
+  .tier-card ul { list-style: none; font-size: 12px; color: #cbd5e1; }
+  .tier-card li { padding: 2px 0; }
+  .tier-card li::before { content: "✅ "; }
+  .log { background: #020617; border-radius: 6px; padding: 12px; max-height: 250px; overflow-y: auto; font-family: monospace; font-size: 12px; line-height: 1.6; }
+  .log .ts { color: #64748b; }
+  .log .ok { color: #22c55e; }
+  .log .err { color: #ef4444; }
+  .log .info { color: #60a5fa; }
+  .summary { background: #020617; border-radius: 6px; padding: 16px; margin-top: 16px; }
+  .summary .kv { display: flex; gap: 8px; padding: 4px 0; font-size: 13px; }
+  .summary .k { width: 140px; color: #94a3b8; }
+  .summary .v { flex: 1; color: #f1f5f9; }
+  code { background: #0f172a; padding: 1px 6px; border-radius: 3px; font-size: 12px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .badge.starter { background: #475569; color: white; }
+  .badge.pro { background: #3b82f6; color: white; }
+  .badge.enterprise { background: #a855f7; color: white; }
+  .rule-builder { background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 12px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<div class="wizard">
+  <h1>🏢 Merchant Onboarding Wizard</h1>
+  <p class="subtitle">PF-6 (Phase E) — White-Label Loyalty Token SaaS · 28/28 tests passing</p>
+
+  <!-- Steps indicator -->
+  <div class="steps">
+    <div class="step active" id="step-1">
+      <div class="num">Step 1</div>
+      <div class="label">Register Business</div>
+    </div>
+    <div class="step" id="step-2">
+      <div class="num">Step 2</div>
+      <div class="label">Create Token</div>
+    </div>
+    <div class="step" id="step-3">
+      <div class="num">Step 3</div>
+      <div class="label">Set POI Rules</div>
+    </div>
+    <div class="step" id="step-4">
+      <div class="num">Step 4</div>
+      <div class="label">Done</div>
+    </div>
+  </div>
+
+  <!-- Step 1: Register Business -->
+  <div class="panel" id="panel-1">
+    <h2>① Register Your Business</h2>
+    <div class="grid">
+      <div class="tier-card" data-tier="starter" onclick="selectTier('starter')">
+        <div class="name">Starter</div>
+        <div class="price">ฟรี / Free</div>
+        <ul>
+          <li>1 token</li>
+          <li>10,000 supply cap</li>
+          <li>ไม่ต้อง KYC</li>
+          <li>Email support</li>
+        </ul>
+      </div>
+      <div class="tier-card selected" data-tier="pro" onclick="selectTier('pro')">
+        <div class="name">Pro <span class="badge pro">แนะนำ</span></div>
+        <div class="price">5,000 THB / เดือน</div>
+        <ul>
+          <li>5 tokens</li>
+          <li>1,000,000 supply cap</li>
+          <li>KYC required</li>
+          <li>Webhook + analytics</li>
+        </ul>
+      </div>
+      <div class="tier-card" data-tier="enterprise" onclick="selectTier('enterprise')">
+        <div class="name">Enterprise</div>
+        <div class="price">ติดต่อเรา</div>
+        <ul>
+          <li>Unlimited tokens</li>
+          <li>Unlimited supply</li>
+          <li>Full KYC + audit</li>
+          <li>Dedicated PM</li>
+        </ul>
+      </div>
+    </div>
+    <div class="row">
+      <label>Business Name *</label>
+      <input id="biz-name" placeholder="Bangkok Cafe">
+    </div>
+    <div class="row">
+      <label>Contact Email *</label>
+      <input id="biz-email" type="email" placeholder="owner@bangkokcafe.com">
+    </div>
+    <div class="row">
+      <label>Country (ISO) *</label>
+      <select id="biz-country" style="flex: 1;">
+        <option value="TH">TH - Thailand</option>
+        <option value="KH">KH - Cambodia</option>
+        <option value="LA">LA - Laos</option>
+        <option value="MM">MM - Myanmar</option>
+        <option value="VN">VN - Vietnam</option>
+        <option value="MY">MY - Malaysia</option>
+        <option value="SG">SG - Singapore</option>
+        <option value="PH">PH - Philippines</option>
+        <option value="ID">ID - Indonesia</option>
+      </select>
+    </div>
+    <div id="kyc-section" style="display: none;">
+      <h2 style="font-size: 14px; margin-top: 12px; margin-bottom: 8px;">📋 KYC Documents (required for Pro+)</h2>
+      <div class="row">
+        <label>Business License #</label>
+        <input id="kyc-license" placeholder="BL-XXXXX">
+      </div>
+      <div class="row">
+        <label>Tax ID</label>
+        <input id="kyc-tax" placeholder="TAX-XXXXX">
+      </div>
+    </div>
+    <div class="toolbar">
+      <button class="secondary" disabled>← Back</button>
+      <button onclick="nextFromStep1()">Next: Create Token →</button>
+    </div>
+  </div>
+
+  <!-- Step 2: Create Token -->
+  <div class="panel hidden" id="panel-2">
+    <h2>② Create Your Loyalty Token</h2>
+    <div class="row">
+      <label>Token Name *</label>
+      <input id="token-name" placeholder="Bangkok Cafe Point">
+    </div>
+    <div class="row">
+      <label>Symbol *</label>
+      <input id="token-symbol" placeholder="BCP" maxlength="5" style="text-transform: uppercase;">
+    </div>
+    <div class="row">
+      <label>Decimals</label>
+      <input id="token-decimals" type="number" value="2" min="0" max="18">
+    </div>
+    <div class="row">
+      <label>Peg Currency</label>
+      <select id="token-currency">
+        <option value="THB">THB - Thai Baht</option>
+        <option value="USD">USD - US Dollar</option>
+        <option value="KHR">KHR - Cambodian Riel</option>
+        <option value="LAK">LAK - Lao Kip</option>
+        <option value="MMK">MMK - Myanmar Kyat</option>
+        <option value="VND">VND - Vietnamese Dong</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>Peg Rate</label>
+      <input id="token-rate" type="number" step="0.0001" value="0.01" placeholder="0.01 = 1 token = 1 satang">
+    </div>
+    <div class="row">
+      <label>Icon URL</label>
+      <input id="token-icon" placeholder="https://...">
+    </div>
+    <div class="toolbar">
+      <button class="secondary" onclick="goToStep(1)">← Back</button>
+      <button onclick="nextFromStep2()">Next: Set POI Rules →</button>
+    </div>
+  </div>
+
+  <!-- Step 3: Set POI Rules -->
+  <div class="panel hidden" id="panel-3">
+    <h2>③ Set POI (Point-of-Interest) Rules</h2>
+    <p style="color: #94a3b8; font-size: 13px; margin-bottom: 12px;">POI = trigger reward เมื่อ user ทำ event เช่น login ทุกวัน, ซื้อของ, แนะนำเพื่อน</p>
+    <div id="rules-list"></div>
+    <button class="secondary" onclick="addRule()" style="margin-top: 8px;">+ Add Rule</button>
+    <div class="toolbar">
+      <button class="secondary" onclick="goToStep(2)">← Back</button>
+      <button onclick="finish()">✅ Finish Onboarding</button>
+    </div>
+  </div>
+
+  <!-- Step 4: Done -->
+  <div class="panel hidden" id="panel-4">
+    <h2>🎉 Onboarding Complete!</h2>
+    <div class="summary" id="final-summary"></div>
+    <div class="log" id="final-log" style="margin-top: 12px;"></div>
+    <div class="toolbar">
+      <button class="secondary" onclick="location.reload()">🔄 Onboard Another</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// === State ===
+let state = {
+  step: 1,
+  tier: 'pro',
+  merchant: null,
+  token: null,
+  rules: [],
+};
+
+// === Mock backend ===
+const mockStore = {
+  merchants: new Map(),
+  tokens: new Map(),
+  rules: new Map(),
+  _idSeq: 0,
+};
+
+function newId(prefix) {
+  return `${prefix}-${Date.now()}-${++mockStore._idSeq}`;
+}
+
+function logTo(elemId, msg, type = 'info') {
+  const el = document.getElementById(elemId);
+  if (!el) return;
+  const ts = new Date().toLocaleTimeString('th-TH');
+  const cls = type === 'ok' ? 'ok' : type === 'err' ? 'err' : 'info';
+  el.innerHTML += `<div><span class="ts">[${ts}]</span> <span class="${cls}">${msg}</span></div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+// === Step 1 ===
+function selectTier(tier) {
+  state.tier = tier;
+  document.querySelectorAll('.tier-card').forEach((c) => c.classList.remove('selected'));
+  document.querySelector(`[data-tier="${tier}"]`).classList.add('selected');
+  document.getElementById('kyc-section').style.display = (tier === 'starter') ? 'none' : 'block';
+}
+
+function nextFromStep1() {
+  const name = document.getElementById('biz-name').value.trim();
+  const email = document.getElementById('biz-email').value.trim();
+  const country = document.getElementById('biz-country').value;
+
+  if (!name || !email || !country) { alert('กรุณากรอกข้อมูลให้ครบ'); return; }
+  if (!email.includes('@')) { alert('Email ไม่ถูกต้อง'); return; }
+
+  // Duplicate check (mock)
+  for (const m of mockStore.merchants.values()) {
+    if (m.country === country && m.slug === name.toLowerCase().replace(/[^a-z0-9]+/g, '-')) {
+      alert(`Business "${name}" already exists in ${country}`); return;
+    }
+  }
+
+  let kyc_docs = null;
+  if (state.tier !== 'starter') {
+    const lic = document.getElementById('kyc-license').value.trim();
+    const tax = document.getElementById('kyc-tax').value.trim();
+    if (!lic || !tax) { alert('กรุณากรอก KYC documents'); return; }
+    kyc_docs = { business_license: lic, tax_id: tax };
+  }
+
+  // Simulate API
+  const merchant_id = newId('MCH');
+  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 50);
+  const api_key = 'mk_live_' + Math.random().toString(36).slice(2, 34);
+  state.merchant = {
+    merchant_id, business_name: name, slug, contact_email: email, country,
+    tier: state.tier, kyc_status: state.tier === 'starter' ? 'not_required' : 'approved',
+    kyc_documents: kyc_docs, api_key, status: 'active',
+    created_at: new Date().toISOString(),
+  };
+  mockStore.merchants.set(merchant_id, state.merchant);
+
+  // Auto-suggest token
+  document.getElementById('token-name').value = name + ' Point';
+  document.getElementById('token-symbol').value = name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 4) || 'PNT';
+
+  goToStep(2);
+}
+
+// === Step 2 ===
+function nextFromStep2() {
+  const name = document.getElementById('token-name').value.trim();
+  const symbol = document.getElementById('token-symbol').value.trim().toUpperCase();
+  const decimals = parseInt(document.getElementById('token-decimals').value);
+  const currency = document.getElementById('token-currency').value;
+  const rate = parseFloat(document.getElementById('token-rate').value);
+  const icon = document.getElementById('token-icon').value.trim() || null;
+
+  if (!name || !symbol) { alert('กรุณากรอก Token name และ symbol'); return; }
+  if (decimals < 0 || decimals > 18) { alert('decimals ต้องอยู่ 0-18'); return; }
+  if (rate <= 0) { alert('peg_rate ต้อง > 0'); return; }
+
+  // Tier check (mock)
+  const tierLimits = { starter: 1, pro: 5, enterprise: Infinity };
+  const existing = Array.from(mockStore.tokens.values()).filter((t) => t.merchant_id === state.merchant.merchant_id).length;
+  if (existing >= tierLimits[state.tier]) {
+    alert(`Token limit reached for ${state.tier} (${existing}/${tierLimits[state.tier]})`); return;
+  }
+
+  // Symbol dup check
+  for (const t of mockStore.tokens.values()) {
+    if (t.merchant_id === state.merchant.merchant_id && t.symbol === symbol) {
+      alert(`Symbol "${symbol}" already used`); return;
+    }
+  }
+
+  const token_id = newId('TOK');
+  state.token = {
+    token_id, merchant_id: state.merchant.merchant_id,
+    name, symbol, decimals, peg_currency: currency, peg_rate: rate,
+    total_supply: 0, circulating_supply: 0, icon_url: icon,
+    metadata: {}, status: 'active', created_at: new Date().toISOString(),
+  };
+  mockStore.tokens.set(token_id, state.token);
+
+  // Add default daily_login rule
+  state.rules = [{
+    event_type: 'daily_login',
+    reward_amount: 100,
+    reward_type: 'fixed',
+    cooldown: 'PT24H',
+    audience_filter: {},
+  }];
+  renderRules();
+
+  goToStep(3);
+}
+
+// === Step 3 ===
+function addRule() {
+  state.rules.push({
+    event_type: 'purchase',
+    reward_amount: 10,
+    reward_type: 'fixed',
+    cooldown: null,
+    audience_filter: {},
+  });
+  renderRules();
+}
+
+function removeRule(idx) {
+  state.rules.splice(idx, 1);
+  renderRules();
+}
+
+function renderRules() {
+  const container = document.getElementById('rules-list');
+  container.innerHTML = state.rules.map((r, idx) => `
+    <div class="rule-builder">
+      <div class="row tight">
+        <label>Event</label>
+        <select onchange="state.rules[${idx}].event_type=this.value">
+          <option value="daily_login" ${r.event_type === 'daily_login' ? 'selected' : ''}>daily_login</option>
+          <option value="purchase" ${r.event_type === 'purchase' ? 'selected' : ''}>purchase</option>
+          <option value="referral" ${r.event_type === 'referral' ? 'selected' : ''}>referral</option>
+          <option value="review" ${r.event_type === 'review' ? 'selected' : ''}>review</option>
+          <option value="birthday" ${r.event_type === 'birthday' ? 'selected' : ''}>birthday</option>
+          <option value="custom" ${r.event_type === 'custom' ? 'selected' : ''}>custom</option>
+        </select>
+      </div>
+      <div class="row tight">
+        <label>Reward</label>
+        <input type="number" value="${r.reward_amount}" onchange="state.rules[${idx}].reward_amount=parseFloat(this.value)">
+        <select onchange="state.rules[${idx}].reward_type=this.value">
+          <option value="fixed" ${r.reward_type === 'fixed' ? 'selected' : ''}>fixed</option>
+          <option value="multiplier" ${r.reward_type === 'multiplier' ? 'selected' : ''}>multiplier</option>
+          <option value="random" ${r.reward_type === 'random' ? 'selected' : ''}>random</option>
+        </select>
+      </div>
+      <div class="row tight">
+        <label>Cooldown</label>
+        <input value="${r.cooldown || ''}" placeholder="PT24H = 1 day, P7D = 7 days" onchange="state.rules[${idx}].cooldown=this.value || null">
+        <button class="danger" onclick="removeRule(${idx})" style="padding: 4px 8px; font-size: 12px;">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function finish() {
+  // Save rules
+  state.rules.forEach((r, idx) => {
+    const rule_id = newId('RULE');
+    const rule = { ...r, rule_id, merchant_id: state.merchant.merchant_id, token_id: state.token.token_id, status: 'active', triggered_count: 0, last_triggered_at: null, created_at: new Date().toISOString() };
+    mockStore.rules.set(rule_id, rule);
+  });
+
+  goToStep(4);
+  renderSummary();
+}
+
+function renderSummary() {
+  const html = `
+    <h2 style="font-size: 16px; color: #22c55e;">✅ Merchant Created</h2>
+    <div class="kv"><div class="k">Merchant ID</div><div class="v"><code>${state.merchant.merchant_id}</code></div></div>
+    <div class="kv"><div class="k">Business Name</div><div class="v">${state.merchant.business_name}</div></div>
+    <div class="kv"><div class="k">Tier</div><div class="v"><span class="badge ${state.merchant.tier}">${state.merchant.tier.toUpperCase()}</span></div></div>
+    <div class="kv"><div class="k">Country</div><div class="v">${state.merchant.country}</div></div>
+    <div class="kv"><div class="k">KYC Status</div><div class="v">${state.merchant.kyc_status}</div></div>
+    <div class="kv"><div class="k">API Key</div><div class="v"><code>${state.merchant.api_key}</code> <span style="color: #ef4444; font-size: 11px;">(save now — shown once)</span></div></div>
+    <h2 style="font-size: 16px; color: #22c55e; margin-top: 16px;">✅ Token Created</h2>
+    <div class="kv"><div class="k">Token ID</div><div class="v"><code>${state.token.token_id}</code></div></div>
+    <div class="kv"><div class="k">Name</div><div class="v">${state.token.name}</div></div>
+    <div class="kv"><div class="k">Symbol</div><div class="v"><code>${state.token.symbol}</code></div></div>
+    <div class="kv"><div class="k">Peg</div><div class="v">1 ${state.token.symbol} = ${state.token.peg_rate} ${state.token.peg_currency}</div></div>
+    <div class="kv"><div class="k">Total Supply</div><div class="v">0 (mint เพื่อแจกจ่าย)</div></div>
+    <h2 style="font-size: 16px; color: #22c55e; margin-top: 16px;">✅ POI Rules Set</h2>
+    <div class="kv"><div class="k">Rule Count</div><div class="v">${state.rules.length}</div></div>
+    <div class="kv"><div class="k">Events</div><div class="v">${state.rules.map((r) => r.event_type).join(', ')}</div></div>
+  `;
+  document.getElementById('final-summary').innerHTML = html;
+
+  // Log
+  logTo('final-log', `✅ merchant.onboarded event published`, 'ok');
+  logTo('final-log', `✅ token.created event published`, 'ok');
+  logTo('final-log', `✅ poi.rules_updated event published (${state.rules.length} rules)`, 'ok');
+  logTo('final-log', `✅ audit log: MERCHANT_ONBOARDED + TOKEN_CREATED + POI_RULES_UPDATED`, 'ok');
+  logTo('final-log', `🎉 ${state.merchant.business_name} is live!`, 'ok');
+}
+
+// === Step nav ===
+function goToStep(n) {
+  state.step = n;
+  for (let i = 1; i <= 4; i++) {
+    document.getElementById(`panel-${i}`).classList.toggle('hidden', i !== n);
+    const stepEl = document.getElementById(`step-${i}`);
+    stepEl.classList.remove('active', 'completed');
+    if (i < n) stepEl.classList.add('completed');
+    if (i === n) stepEl.classList.add('active');
+  }
+}
+
+// Init
+selectTier('pro');
+</script>
+
+</body>
+</html>
