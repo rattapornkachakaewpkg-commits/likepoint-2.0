@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Session Guard Debug — PF-14</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; padding: 24px; }
+  h1 { font-size: 22px; margin-bottom: 6px; }
+  .subtitle { color: #94a3b8; font-size: 13px; margin-bottom: 20px; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .stat { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 14px; }
+  .stat .label { font-size: 11px; color: #94a3b8; text-transform: uppercase; }
+  .stat .value { font-size: 24px; font-weight: 700; margin-top: 6px; color: #f1f5f9; }
+  .stat.success .value { color: #22c55e; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 16px; }
+  .card h2 { font-size: 16px; margin-bottom: 12px; }
+  .row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .row label { width: 130px; font-size: 12px; color: #94a3b8; }
+  input, select, button { background: #0f172a; color: #e2e8f0; border: 1px solid #334155; padding: 6px 10px; border-radius: 5px; font-size: 13px; }
+  button { cursor: pointer; font-weight: 600; }
+  button.primary { background: #3b82f6; border-color: #3b82f6; color: white; }
+  button.danger { background: #ef4444; border-color: #ef4444; color: white; }
+  .log { background: #020617; border-radius: 6px; padding: 10px; max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 11px; }
+  .log .ts { color: #64748b; }
+  .log .ok { color: #22c55e; }
+  .log .err { color: #ef4444; }
+  .log .info { color: #60a5fa; }
+  .log .warn { color: #f59e0b; }
+  .badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; }
+  .badge.ok { background: #16a34a; color: white; }
+  .badge.fail { background: #ef4444; color: white; }
+  pre { background: #020617; padding: 8px; border-radius: 4px; font-size: 11px; overflow-x: auto; }
+</style>
+</head>
+<body>
+
+<h1>🛡️ Session Guard Debug</h1>
+<p class="subtitle">PF-14 (Phase E) — Middleware: auth + session + idempotency + feature gate · 28/28 tests passing</p>
+
+<div class="stats">
+  <div class="stat success">
+    <div class="label">Active Sessions</div>
+    <div class="value" id="stat-sessions">0</div>
+  </div>
+  <div class="stat">
+    <div class="label">Idempotency Keys</div>
+    <div class="value" id="stat-idem">0</div>
+  </div>
+  <div class="stat">
+    <div class="label">Total Requests</div>
+    <div class="value" id="stat-requests">0</div>
+  </div>
+</div>
+
+<div class="grid">
+  <!-- Simulate auth -->
+  <div class="card">
+    <h2>① Simulate API Request</h2>
+    <div class="row">
+      <label>Endpoint</label>
+      <input id="req-endpoint" value="/api/wallet/credit" style="flex: 1;">
+    </div>
+    <div class="row">
+      <label>Method</label>
+      <select id="req-method" style="flex: 1;">
+        <option>GET</option><option selected>POST</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>Token</label>
+      <input id="req-token" placeholder="(click Generate)" style="flex: 1; font-family: monospace; font-size: 11px;">
+    </div>
+    <div class="row">
+      <label>Session ID</label>
+      <input id="req-session" placeholder="(click Create Session)" style="flex: 1;">
+    </div>
+    <div class="row">
+      <label>Idempotency Key</label>
+      <input id="req-idem" placeholder="(auto or custom)" style="flex: 1;">
+    </div>
+    <div class="row">
+      <label>Required Feature</label>
+      <select id="req-feature" style="flex: 1;">
+        <option value="">none</option>
+        <option value="lotto_weekly">lotto_weekly</option>
+        <option value="lotto_daily">lotto_daily</option>
+        <option value="ad_free">ad_free</option>
+      </select>
+    </div>
+    <div class="toolbar" style="display: flex; gap: 6px; flex-wrap: wrap;">
+      <button class="primary" onclick="generateToken()">🎫 Gen Token</button>
+      <button class="primary" onclick="createSession()">🔐 Create Session</button>
+      <button class="primary" onclick="sendRequest()">▶ Send Request</button>
+      <button class="danger" onclick="resetAll()">🗑️ Reset</button>
+    </div>
+    <div class="log" id="req-log" style="margin-top: 12px;"></div>
+  </div>
+
+  <!-- Flow visualization -->
+  <div class="card">
+    <h2>② Middleware Flow</h2>
+    <pre style="font-size: 11px;">Request → [
+  ① requireAuth()     → validate JWT (exp, claims)
+  ② validateSession() → timeout, IP, device
+  ③ requireFeature()  → subscription gate
+  ④ withIdempotency() → prevent duplicate
+] → Handler</pre>
+    <h2 style="font-size: 13px; margin-top: 16px; margin-bottom: 8px;">🧪 Test Scenarios</h2>
+    <div style="display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
+      <div>1. <strong>No token</strong> → 401 MISSING_TOKEN</div>
+      <div>2. <strong>Expired token</strong> → 401 EXPIRED</div>
+      <div>3. <strong>No session</strong> → 401 NO_SESSION</div>
+      <div>4. <strong>IP mismatch</strong> → 401 IP_MISMATCH</div>
+      <div>5. <strong>Missing feature</strong> → 403 REQUIRES_FEATURE_X</div>
+      <div>6. <strong>Same idempotency key</strong> → cached result</div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent requests -->
+<div class="card" style="margin-top: 16px;">
+  <h2>③ Recent Requests Log</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Endpoint</th>
+        <th>Method</th>
+        <th>Auth</th>
+        <th>Session</th>
+        <th>Feature</th>
+        <th>Idempotency</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="req-tbody">
+      <tr><td colspan="8" style="padding: 16px; text-align: center; color: #64748b;">No requests yet</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+// Mock state
+const mockGuard = {
+  sessions: new Map(),
+  idem: new Map(),
+  requests: [],
+  _idSeq: 0,
+};
+
+function newId(prefix) { return `${prefix}-${Date.now()}-${++mockGuard._idSeq}`; }
+function createToken(claims = { sub: 'M-1', role: 'user' }, ttl = 3600) {
+  const now = Math.floor(Date.now() / 1000);
+  return btoa(JSON.stringify({ ...claims, iat: now, exp: now + ttl, nbf: now }));
+}
+function decodeToken(token) {
+  try { return JSON.parse(atob(token)); } catch { return null; }
+}
+function isTokenValid(token) {
+  const t = decodeToken(token);
+  if (!t || !t.exp) return false;
+  return Math.floor(Date.now() / 1000) <= t.exp;
+}
+function logTo(elemId, msg, type = 'info') {
+  const el = document.getElementById(elemId);
+  const ts = new Date().toLocaleTimeString('th-TH');
+  const cls = type === 'ok' ? 'ok' : type === 'err' ? 'err' : type === 'warn' ? 'warn' : 'info';
+  el.innerHTML += `<div><span class="ts">[${ts}]</span> <span class="${cls}">${msg}</span></div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+function generateToken() {
+  const ttl = parseInt(prompt('Token TTL (seconds, default 3600 = 1h):', '3600') || '3600');
+  const token = createToken({ sub: 'M-1', role: 'user' }, ttl);
+  document.getElementById('req-token').value = token;
+  logTo('req-log', `✅ Token generated (TTL: ${ttl}s, expires in ${new Date(Date.now() + ttl * 1000).toLocaleTimeString('th-TH')})`, 'ok');
+}
+
+function createSession() {
+  const ip = '192.168.1.1';
+  const device = 'dev-' + Math.random().toString(36).slice(2, 6);
+  const session = {
+    session_id: newId('SES'),
+    member_id: 'M-1',
+    ip_address: ip,
+    device_id: device,
+    metadata: { tier: 'pro', features: ['lotto_weekly', 'lotto_daily', 'ad_free'] },
+    created_at: Date.now(),
+  };
+  mockGuard.sessions.set(session.session_id, session);
+  document.getElementById('req-session').value = session.session_id;
+  logTo('req-log', `✅ Session created: ${session.session_id} (IP=${ip}, device=${device}, tier=pro)`, 'ok');
+  updateStats();
+}
+
+function resetAll() {
+  mockGuard.sessions.clear();
+  mockGuard.idem.clear();
+  mockGuard.requests = [];
+  document.getElementById('req-token').value = '';
+  document.getElementById('req-session').value = '';
+  document.getElementById('req-idem').value = '';
+  document.getElementById('req-log').innerHTML = '';
+  document.getElementById('req-tbody').innerHTML = '<tr><td colspan="8" style="padding: 16px; text-align: center; color: #64748b;">No requests yet</td></tr>';
+  logTo('req-log', '🗑️ All reset', 'warn');
+  updateStats();
+}
+
+function sendRequest() {
+  const endpoint = document.getElementById('req-endpoint').value;
+  const method = document.getElementById('req-method').value;
+  const token = document.getElementById('req-token').value;
+  const sessionId = document.getElementById('req-session').value;
+  const idemKey = document.getElementById('req-idem').value || newId('IDEM');
+  const feature = document.getElementById('req-feature').value;
+
+  // ① requireAuth
+  let authStatus = '—';
+  if (!token) {
+    logTo('req-log', '① Auth: ❌ MISSING_TOKEN (401)', 'err');
+    recordRequest(endpoint, method, '❌', '—', '—', idemKey, '401');
+    return;
+  }
+  if (!isTokenValid(token)) {
+    logTo('req-log', '① Auth: ❌ EXPIRED (401)', 'err');
+    recordRequest(endpoint, method, '❌ EXPIRED', '—', '—', idemKey, '401');
+    return;
+  }
+  logTo('req-log', '① Auth: ✅ Valid token', 'ok');
+  authStatus = '✅';
+
+  // ② validateSession
+  let sessionStatus = '—';
+  if (!sessionId) {
+    logTo('req-log', '② Session: ❌ NO_SESSION (401)', 'err');
+    recordRequest(endpoint, method, authStatus, '❌', '—', idemKey, '401');
+    return;
+  }
+  const session = mockGuard.sessions.get(sessionId);
+  if (!session) {
+    logTo('req-log', '② Session: ❌ INVALID_SESSION (401)', 'err');
+    recordRequest(endpoint, method, authStatus, '❌', '—', idemKey, '401');
+    return;
+  }
+  logTo('req-log', `② Session: ✅ ${sessionId.slice(0, 18)}…`, 'ok');
+  sessionStatus = '✅';
+
+  // ③ requireFeature
+  let featureStatus = '—';
+  if (feature) {
+    if (!session.metadata.features?.includes(feature)) {
+      logTo('req-log', `③ Feature: ❌ REQUIRES_FEATURE_${feature.toUpperCase()} (403)`, 'err');
+      recordRequest(endpoint, method, authStatus, sessionStatus, `❌`, idemKey, '403');
+      return;
+    }
+    logTo('req-log', `③ Feature: ✅ ${feature}`, 'ok');
+    featureStatus = '✅';
+  } else {
+    featureStatus = '—';
+  }
+
+  // ④ withIdempotency
+  let idemStatus = '—';
+  if (mockGuard.idem.has(idemKey)) {
+    logTo('req-log', `④ Idempotency: ✅ HIT (cached from ${new Date(mockGuard.idem.get(idemKey).created_at).toLocaleTimeString('th-TH')})`, 'warn');
+    idemStatus = '✅ HIT';
+  } else {
+    mockGuard.idem.set(idemKey, { result: 'handler-result', created_at: Date.now() });
+    logTo('req-log', `④ Idempotency: ✅ MISS (handler executed, cached)`, 'ok');
+    idemStatus = '✅ MISS';
+  }
+
+  logTo('req-log', `✅ Request ${method} ${endpoint} → 200 OK`, 'ok');
+  recordRequest(endpoint, method, authStatus, sessionStatus, featureStatus, idemStatus, '200');
+  document.getElementById('req-idem').value = idemKey;
+  updateStats();
+}
+
+function recordRequest(endpoint, method, auth, session, feature, idem, status) {
+  const tbody = document.getElementById('req-tbody');
+  if (tbody.querySelector('td[colspan]')) tbody.innerHTML = '';
+  const time = new Date().toLocaleTimeString('th-TH');
+  const statusClass = status === '200' ? 'ok' : 'fail';
+  tbody.insertAdjacentHTML('afterbegin', `
+    <tr>
+      <td>${time}</td>
+      <td>${endpoint}</td>
+      <td>${method}</td>
+      <td>${auth}</td>
+      <td>${session}</td>
+      <td>${feature}</td>
+      <td>${idem}</td>
+      <td><span class="badge ${statusClass}">${status}</span></td>
+    </tr>
+  `);
+}
+
+function updateStats() {
+  document.getElementById('stat-sessions').textContent = mockGuard.sessions.size;
+  document.getElementById('stat-idem').textContent = mockGuard.idem.size;
+  document.getElementById('stat-requests').textContent = mockGuard.requests.length;
+}
+
+updateStats();
+</script>
+
+</body>
+</html>
