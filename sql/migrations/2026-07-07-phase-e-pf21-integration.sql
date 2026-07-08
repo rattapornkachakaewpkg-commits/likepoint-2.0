@@ -1,0 +1,2 @@
+-- API Integration — PF-21 (Phase E)
+-- (No new tables — wraps existing PF-14 sessions + PF-13 utilities)

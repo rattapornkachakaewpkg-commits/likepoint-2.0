@@ -2438,89 +2438,188 @@ window.addEventListener('load', () => {
 <p style="text-align: center; color: #94a3b8;">Released: 7 กรกฎาคม 2569 · © 2026 Likepoint · All rights reserved</p>
 </section>
 </body>
-<!-- ==================== TAB 8: TASK FOR DEV (Consolidated Backlog) ==================== -->
+<!-- ==================== TAB 8: TASK FOR DEV (3-Group Roadmap) ==================== -->
 <div id="tab8" class="main-content" style="display:none;">
-  <h2>📋 Tab 8: Task Backlog for Dev — ประเด็นที่จะนำไปพัฒนาต่อ</h2>
-  <p style="margin-bottom: 20px; color: #94a3b8;">รวบรวมจาก Phase A → Phase E (22 cycles) + gaps ที่ build ไปแล้ว + optional next PFs · แบ่งตาม priority 4 ระดับ</p>
+  <h2>📋 Tab 8: Task Roadmap — งานที่ต้องพัฒนา (3 กลุ่มหลัก)</h2>
+  <p style="margin-bottom: 20px; color: #94a3b8;">อัปเดต 8 ก.ค. 2569 · จัดทำเพื่อคุยกับ Dev สำหรับ LikePoint 2.0 เวอร์ชั่นใหม่ · แบ่งเป็น 3 กลุ่ม: <strong style="color:#fca5a5;">🔧 ความเสถียร</strong> · <strong style="color:#93c5fd;">✨ ฟีเจอร์ใหม่</strong> · <strong style="color:#86efac;">🖥️ Admin Console</strong></p>
 
-  <div style="background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 6px solid #ef4444;">
-    <h2 style="color: #fecaca; margin: 0;">🚨 P0 - CRITICAL (ต้องทำก่อน Production Launch)</h2>
-    <p style="color: #fee2e2; font-size: 13px; margin: 6px 0 16px 0;">Production blocker · ส่งผลต่อ security/data integrity</p>
-    <table style="width: 100%; border-collapse: collapse; color: #fef2f2;">
-      <thead><tr style="background: rgba(0,0,0,0.3);"><th style="padding: 8px; text-align: left;">#</th><th style="padding: 8px; text-align: left;">Task</th><th style="padding: 8px; text-align: left;">Source</th><th style="padding: 8px; text-align: right;">Effort</th></tr></thead>
-      <tbody>
-        <tr><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">T-C01</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">Apply SessionGuard middleware (PF-21) to all 25 engines (refactor)</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">PF-21 gap</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d; text-align: right;">3 days</td></tr>
-        <tr><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">T-C02</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">Rotate 4 API keys + old Sentry DSN (hardcoded in v2.0 source)</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">LikePoint v2.1 audit</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d; text-align: right;">1 day</td></tr>
-        <tr><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">T-C03</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">Move Telegram bot token to env injection (security)</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">LikePoint v2.1 audit</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d; text-align: right;">0.5 day</td></tr>
-        <tr><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">T-C04</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">Fix remaining 110+ support-ops bugs (filter out from 150+ dump)</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">PF-2 dump</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d; text-align: right;">5 days</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div style="background: linear-gradient(135deg, #7c2d12 0%, #9a3412 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 6px solid #f97316;">
-    <h2 style="color: #fed7aa; margin: 0;">🔥 P1 - HIGH (ภายในเดือนแรกของ Launch)</h2>
-    <p style="color: #ffedd5; font-size: 13px; margin: 6px 0 16px 0;">User experience &amp; growth critical · เพิ่ม adoption + retention</p>
-    <table style="width: 100%; border-collapse: collapse; color: #fff7ed;">
-      <thead><tr style="background: rgba(0,0,0,0.3);"><th style="padding: 8px; text-align: left;">#</th><th style="padding: 8px; text-align: left;">Task</th><th style="padding: 8px; text-align: left;">Source</th><th style="padding: 8px; text-align: right;">Effort</th></tr></thead>
-      <tbody>
-        <tr><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">T-H01</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">Per-merchant B2B Dashboard (scoped analytics for Enterprise tier)</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">PF-23 optional</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12; text-align: right;">2 days</td></tr>
-        <tr><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">T-H02</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">NFT Profile + Community (Web3 username per Likepoint meeting 12/01/2023)</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">PF-24 optional</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12; text-align: right;">5 days</td></tr>
-        <tr><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">T-H03</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">DAM Engagement Engine (Daily Active Member tracking per Kowit vision)</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">PF-25 optional</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12; text-align: right;">3 days</td></tr>
-        <tr><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">T-H04</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">Server-side per-member auth (JWT) — replace x-api-key (security)</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">LikePoint v2.1 audit</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12; text-align: right;">4 days</td></tr>
-        <tr><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">T-H05</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">Deferred dependency majors: mobile_scanner 3→7, rive 0.11→0.14, permission_handler 10→12</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12;">LikePoint v2.1 audit</td><td style="padding: 8px; border-bottom: 1px solid #7c2d12; text-align: right;">3 days</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div style="background: linear-gradient(135deg, #78350f 0%, #92400e 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 6px solid #eab308;">
-    <h2 style="color: #fef3c7; margin: 0;">⚡ P2 - MEDIUM (ภายใน Q1/Q2 หลัง Launch)</h2>
-    <p style="color: #fef9c3; font-size: 13px; margin: 6px 0 16px 0;">Operational excellence &amp; growth experiments</p>
-    <table style="width: 100%; border-collapse: collapse; color: #fefce8;">
-      <thead><tr style="background: rgba(0,0,0,0.3);"><th style="padding: 8px; text-align: left;">#</th><th style="padding: 8px; text-align: left;">Task</th><th style="padding: 8px; text-align: left;">Source</th><th style="padding: 8px; text-align: right;">Effort</th></tr></thead>
-      <tbody>
-        <tr><td style="padding: 8px; border-bottom: 1px solid #78350f;">T-M01</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">Load test 10K concurrent users (validate SessionGuard + rate limit)</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">PF-28 optional</td><td style="padding: 8px; border-bottom: 1px solid #78350f; text-align: right;">3 days</td></tr>
-        <tr><td style="padding: 8px; border-bottom: 1px solid #78350f;">T-M02</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">External provider integrations (Twilio, SendGrid, FCM, Line, Telegram)</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">PF-29 optional</td><td style="padding: 8px; border-bottom: 1px solid #78350f; text-align: right;">2 days</td></tr>
-        <tr><td style="padding: 8px; border-bottom: 1px solid #78350f;">T-M03</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">Replace discontinued flutter_markdown + register-page overflow fix</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">LikePoint v2.1 audit</td><td style="padding: 8px; border-bottom: 1px solid #78350f; text-align: right;">1 day</td></tr>
-        <tr><td style="padding: 8px; border-bottom: 1px solid #78350f;">T-M04</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">A/B test reward amounts (POI/PF-7) for engagement optimization</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">PF-7 follow-up</td><td style="padding: 8px; border-bottom: 1px solid #78350f; text-align: right;">2 days</td></tr>
-        <tr><td style="padding: 8px; border-bottom: 1px solid #78350f;">T-M05</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">Add Unit tests for the 12 engine stubs not yet tested (mfa, recovery, etc.)</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">Quality gap</td><td style="padding: 8px; border-bottom: 1px solid #78350f; text-align: right;">3 days</td></tr>
-        <tr><td style="padding: 8px; border-bottom: 1px solid #78350f;">T-M06</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">Cron job automation (FX refresh, lotto draw, billing, retention sweep, report cache)</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">PF-17 deployment</td><td style="padding: 8px; border-bottom: 1px solid #78350f; text-align: right;">2 days</td></tr>
-        <tr><td style="padding: 8px; border-bottom: 1px solid #78350f;">T-M07</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">Implement MFA for admin console login (currently password-only)</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">PF-20 admin gap</td><td style="padding: 8px; border-bottom: 1px solid #78350f; text-align: right;">1 day</td></tr>
-        <tr><td style="padding: 8px; border-bottom: 1px solid #78350f;">T-M08</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">Real backend deployment (not just GitHub Pages admin consoles)</td><td style="padding: 8px; border-bottom: 1px solid #78350f;">PF-27 production</td><td style="padding: 8px; border-bottom: 1px solid #78350f; text-align: right;">5 days</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div style="background: linear-gradient(135deg, #064e3b 0%, #065f46 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 6px solid #22c55e;">
-    <h2 style="color: #bbf7d0; margin: 0;">🌱 P3 - LOW / Polish (Backlog)</h2>
-    <p style="color: #d1fae5; font-size: 13px; margin: 6px 0 16px 0;">Nice-to-have · code quality · technical debt</p>
-    <table style="width: 100%; border-collapse: collapse; color: #ecfdf5;">
-      <thead><tr style="background: rgba(0,0,0,0.3);"><th style="padding: 8px; text-align: left;">#</th><th style="padding: 8px; text-align: left;">Task</th><th style="padding: 8px; text-align: left;">Source</th><th style="padding: 8px; text-align: right;">Effort</th></tr></thead>
-      <tbody>
-        <tr><td style="padding: 8px; border-bottom: 1px solid #064e3b;">T-L01</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">Naming/typo cleanup (e.g., "promt/" → "prompt/", "transacion_history/")</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">LikePoint v2.1 audit</td><td style="padding: 8px; border-bottom: 1px solid #064e3b; text-align: right;">0.5 day</td></tr>
-        <tr><td style="padding: 8px; border-bottom: 1px solid #064e3b;">T-L02</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">Add ESLint + Prettier config for consistent code style</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">Quality</td><td style="padding: 8px; border-bottom: 1px solid #064e3b; text-align: right;">1 day</td></tr>
-        <tr><td style="padding: 8px; border-bottom: 1px solid #064e3b;">T-L03</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">Add CI/CD pipeline (GitHub Actions: test + lint + deploy)</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">DevOps</td><td style="padding: 8px; border-bottom: 1px solid #064e3b; text-align: right;">1 day</td></tr>
-        <tr><td style="padding: 8px; border-bottom: 1px solid #064e3b;">T-L04</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">Migration guide: Likepoint 1.0 → 2.0 (per-merchant onboarding)</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">Operations</td><td style="padding: 8px; border-bottom: 1px solid #064e3b; text-align: right;">1 day</td></tr>
-        <tr><td style="padding: 8px; border-bottom: 1px solid #064e3b;">T-L05</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">Add OpenAPI spec + SDK generation (for partner integrations)</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">API</td><td style="padding: 8px; border-bottom: 1px solid #064e3b; text-align: right;">2 days</td></tr>
-        <tr><td style="padding: 8px; border-bottom: 1px solid #064e3b;">T-L06</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">Caching layer (Redis) for hot reads (POI, lotto, gift card balances)</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">Performance</td><td style="padding: 8px; border-bottom: 1px solid #064e3b; text-align: right;">2 days</td></tr>
-        <tr><td style="padding: 8px; border-bottom: 1px solid #064e3b;">T-L07</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">Webhook system for partner integrations (e.g., merchant POS systems)</td><td style="padding: 8px; border-bottom: 1px solid #064e3b;">Integration</td><td style="padding: 8px; border-bottom: 1px solid #064e3b; text-align: right;">3 days</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div style="background: #1e293b; padding: 20px; border-radius: 10px; border: 2px solid #3b82f6;">
-    <h2 style="color: #93c5fd; margin: 0 0 12px 0;">📊 Task Summary</h2>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px;">
-      <div style="background: #0f172a; padding: 12px; border-radius: 6px; text-align: center;"><div style="font-size: 1.5rem; font-weight: bold; color: #ef4444;">4</div><div style="font-size: 0.85rem; color: #94a3b8;">P0 Critical</div></div>
-      <div style="background: #0f172a; padding: 12px; border-radius: 6px; text-align: center;"><div style="font-size: 1.5rem; font-weight: bold; color: #f97316;">5</div><div style="font-size: 0.85rem; color: #94a3b8;">P1 High</div></div>
-      <div style="background: #0f172a; padding: 12px; border-radius: 6px; text-align: center;"><div style="font-size: 1.5rem; font-weight: bold; color: #eab308;">8</div><div style="font-size: 0.85rem; color: #94a3b8;">P2 Medium</div></div>
-      <div style="background: #0f172a; padding: 12px; border-radius: 6px; text-align: center;"><div style="font-size: 1.5rem; font-weight: bold; color: #22c55e;">7</div><div style="font-size: 0.85rem; color: #94a3b8;">P3 Low</div></div>
+  <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 6px solid #3b82f6;">
+    <h2 style="color: #93c5fd; margin: 0 0 12px 0;">🎯 Quick Summary (สำหรับเปิดประชุม)</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px;">
+      <div style="background: #0f172a; padding: 12px; border-radius: 6px; text-align: center;">
+        <div style="font-size: 1.6rem; font-weight: bold; color: #fca5a5;">🔧 8</div>
+        <div style="font-size: 0.85rem; color: #94a3b8;">ความเสถียร (P0)</div>
+        <div style="font-size: 0.75rem; color: #64748b; margin-top:4px;">~3 เดือน</div>
+      </div>
+      <div style="background: #0f172a; padding: 12px; border-radius: 6px; text-align: center;">
+        <div style="font-size: 1.6rem; font-weight: bold; color: #93c5fd;">✨ 14</div>
+        <div style="font-size: 0.85rem; color: #94a3b8;">ฟีเจอร์ใหม่ (Engine)</div>
+        <div style="font-size: 0.75rem; color: #22c55e; margin-top:4px;">✅ Done · integrate</div>
+      </div>
+      <div style="background: #0f172a; padding: 12px; border-radius: 6px; text-align: center;">
+        <div style="font-size: 1.6rem; font-weight: bold; color: #86efac;">🖥️ 6 / 25</div>
+        <div style="font-size: 0.85rem; color: #94a3b8;">Admin ที่ยังขาด</div>
+        <div style="font-size: 0.75rem; color: #64748b; margin-top:4px;">19 หน้า deploy แล้ว</div>
+      </div>
+      <div style="background: #0f172a; padding: 12px; border-radius: 6px; text-align: center;">
+        <div style="font-size: 1.6rem; font-weight: bold; color: #fbbf24;">~3-4</div>
+        <div style="font-size: 0.85rem; color: #94a3b8;">เดือน · งบ ฿800K</div>
+        <div style="font-size: 0.75rem; color: #64748b; margin-top:4px;">2 Dev + 1 PM</div>
+      </div>
     </div>
-    <div style="text-align: center; font-size: 1.2rem; color: #fbbf24; font-weight: bold;">Total: 24 tasks · ~52 days effort</div>
-    <div style="margin-top: 12px; font-size: 13px; color: #94a3b8;">📌 ที่มา: Phase A (Original QW) + Phase B PF-2 (15+ bugs) + Phase E gaps + LikePoint v2.1 audit items + Optional PFs (23-29)</div>
   </div>
-</div>
 
-<!-- ==================== TAB 9: DATA FLOW ==================== -->
+  <!-- ====== GROUP 1: 🔧 ความเสถียร ====== -->
+  <div style="background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 6px solid #ef4444;">
+    <h2 style="color: #fecaca; margin: 0;">🔧 กลุ่มที่ 1 — ความเสถียร (P0 · Block Production)</h2>
+    <p style="color: #fee2e2; font-size: 13px; margin: 6px 0 16px 0;">ทำให้ระบบแข็งแรง ไม่ล่ม ไม่ผิดพลาด — ต้องทำก่อน Production Launch · 8 งาน</p>
+    <table style="width: 100%; border-collapse: collapse; color: #fef2f2;">
+      <thead><tr style="background: rgba(0,0,0,0.3);">
+        <th style="padding: 8px; text-align: left; width: 90px;">ID</th>
+        <th style="padding: 8px; text-align: left;">Task</th>
+        <th style="padding: 8px; text-align: left;">อธิบาย (ผู้ใช้)</th>
+        <th style="padding: 8px; text-align: left;">Source / File</th>
+        <th style="padding: 8px; text-align: right; width: 70px;">Effort</th>
+      </tr></thead>
+      <tbody>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">TASK-001</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">Wallet Duplicate Fix (UNIQUE + Race Condition Lock)</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">กัน "แต้มซ้ำ" — ระบบบันทึกแต้มซ้ำ 2 ครั้ง (คนกดซ้ำ + server ช้า) → ใส่ล็อกกันชน</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d; font-size: 11px;">root-cause-wallet-duplicate.md</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d; text-align: right;">M</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">TASK-002</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">Idempotency Key for Transaction API</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">กัน "กดปุ่มเดียวกัน 2 ครั้ง" → ระบบรู้ทันทีว่าเป็นคำสั่งเดิม</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d; font-size: 11px;">root-cause-wallet-duplicate.md</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d; text-align: right;">S</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">TASK-003</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">Migration: Legacy phone-based → UUID (MS24↔Mini Like↔PP7)</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">ย้ายข้อมูลเก่า → ใหม่ (100K-1M คน) 4 สัปดาห์: staging → dry-run → live → sunset</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d; font-size: 11px;">PF-1 / phase-c-pf1-aam-migration.md</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d; text-align: right;">L</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">TASK-004</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">Wallet Rebinding Engine (auto-rebind on phone change)</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">เปลี่ยนเบอร์ → wallet เก่าผูกกับ UUID อัตโนมัติ ไม่หาย</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d; font-size: 11px;">PF-2 / phase-b-pf2-feedback.md</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d; text-align: right;">M</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">TASK-005</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">Event-Driven Architecture: MS24 → SQS → Mini Like</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">ระบบแจ้งเตือนอัตโนมัติ — ถ้าฝั่งใดล่มจะไม่ค้าง (มี DLQ + replay)</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d; font-size: 11px;">PF-4 / phase-b-pf3-pf4.md</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d; text-align: right;">L</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">TASK-006</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">Audit Log retention 7 ปี (PDPA)</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">แยก partition ตามปี + dashboard ให้ DPO ตรวจ + แจ้งเตือนก่อนครบ 30 วัน</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d; font-size: 11px;">compliance-checklist.md</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d; text-align: right;">S</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">TASK-007</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">Consent Management: Record + Revoke API</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">ระบบบันทึก consent / ขอถอนความยินยอม</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d; font-size: 11px;">phase-e-pf14-session-guard.md</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d; text-align: right;">S</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">TASK-008</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">Phone masking (08x-xxx-xxxx) ทุก API response</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d;">แสดงเบอร์เป็น "08x-xxx-xxxx" ในทุกหน้า (PDPA)</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d; font-size: 11px;">compliance-checklist.md</td><td style="padding: 8px; border-bottom: 1px solid #7f1d1d; text-align: right;">XS</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ====== GROUP 2: ✨ ฟีเจอร์ใหม่ ====== -->
+  <div style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 6px solid #3b82f6;">
+    <h2 style="color: #bfdbfe; margin: 0;">✨ กลุ่มที่ 2 — ฟีเจอร์ใหม่ (Engine Build · 14 ตัว · Deploy แล้ว)</h2>
+    <p style="color: #dbeafe; font-size: 13px; margin: 6px 0 16px 0;">Engine ทั้งหมด build+test เสร็จแล้ว · เหลือ integrate เข้า production backend · 523 tests pass</p>
+    <table style="width: 100%; border-collapse: collapse; color: #eff6ff;">
+      <thead><tr style="background: rgba(0,0,0,0.3);">
+        <th style="padding: 8px; text-align: left; width: 80px;">ID</th>
+        <th style="padding: 8px; text-align: left;">ฟีเจอร์</th>
+        <th style="padding: 8px; text-align: left;">ใช้ทำอะไร (ผู้ใช้)</th>
+        <th style="padding: 8px; text-align: left; width: 220px;">Engine</th>
+        <th style="padding: 8px; text-align: right; width: 90px;">Tests</th>
+      </tr></thead>
+      <tbody>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">PF-6</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">White-Label Merchant</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">ร้านค้าสมัครเอง 3 tier (ฟรี/โปร/เอ็นเทอร์ไพรซ์) + ปรับโลโก้ + ตั้งกฎแต้มเอง</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; font-size: 11px;">merchant-engine.js</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; text-align: right; color: #22c55e;">28/28 ✅</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">PF-7</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">POI Marketing (โปรโมชั่นตามที่อยู่)</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">"ใกล้ Café Amazon มีคูปอง ฿50" — engagement รายวัน</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; font-size: 11px;">poi-engine.js</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; text-align: right; color: #22c55e;">28/28 ✅</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">PF-8</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">FX หลายสกุลเงิน (11 สกุล)</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">THB, USD, KHR, LAK, MMK, VND, MYR, SGD, PHP, IDR, AED — ขยาย ASEAN</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; font-size: 11px;">fx-engine.js</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; text-align: right; color: #22c55e;">29/29 ✅</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">PF-9</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">Subscription Engine</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">สมัครแพ็กเกจ Basic ฿10 / Pro ฿99 / Enterprise ฿999 — MRR ฿1.49M potential</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; font-size: 11px;">subscription-engine.js</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; text-align: right; color: #22c55e;">25/25 ✅</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">PF-10</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">Lotto &amp; Reward</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">หมุนวงล้อ/สุ่มแจกทุกสัปดาห์</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; font-size: 11px;">lotto-engine.js</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; text-align: right; color: #22c55e;">24/24 ✅</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">PF-11</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">Gift Card System</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">ซื้อบัตรของขวัญ + วันหมดอายุ + ใช้ได้หลาย tenant</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; font-size: 11px;">gift-card-engine.js</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; text-align: right; color: #22c55e;">24/24 ✅</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">PF-12</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">Voucher System</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">คูปองส่วนลด + เงื่อนไข + ติดตามการใช้</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; font-size: 11px;">voucher-engine.js</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; text-align: right; color: #22c55e;">24/24 ✅</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">PF-13</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">Top 5 Bug Fixes (Utilities)</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">Logger, IdempotencyLock, validateAmount, redactSensitive, TokenValidator</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; font-size: 11px;">bug-fixes.js</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; text-align: right; color: #22c55e;">24/24 ✅</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">PF-14</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">Session Guard Middleware</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">กันแอบใช้ session, ตรวจ IP/อุปกรณ์ผิด → logout อัตโนมัติ</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; font-size: 11px;">session-guard.js</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; text-align: right; color: #22c55e;">28/28 ✅</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">PF-15</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">Notification (5 channels)</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">SMS / Email / Push / LINE / Telegram</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; font-size: 11px;">notification-service.js</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; text-align: right; color: #22c55e;">22/22 ✅</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">PF-16</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">KYC Engine (L2/L3)</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">ตรวจตัวตนขั้นสูง B2B → manual review queue + SLA 48-72 ชม.</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; font-size: 11px;">kyc-engine.js</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; text-align: right; color: #22c55e;">23/23 ✅</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">PF-17</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">Reporting &amp; Analytics</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">MRR, retention, funnel, top merchants, KYC pipeline</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; font-size: 11px;">reporting-engine.js</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; text-align: right; color: #22c55e;">15/15 ✅</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">PF-18</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">i18n (4 ภาษา)</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">ไทย (หลัก) + อังกฤษ + เขมร + ลาว</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; font-size: 11px;">i18n-engine.js</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; text-align: right; color: #22c55e;">19/19 ✅</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">PF-19</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">Recovery Flow</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">ลืมรหัสผ่านกู้คืนได้ 4 ขั้น (OTP/email link/security Q) — ล็อก 15 นาทีหลังผิด 5 ครั้ง</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; font-size: 11px;">recovery-engine.js</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; text-align: right; color: #22c55e;">20/20 ✅</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">PF-20</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">MFA Enhancement</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">TOTP / SMS OTP / Biometric (fingerprint/face/voice) + recovery codes</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; font-size: 11px;">mfa-engine.js</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; text-align: right; color: #22c55e;">20/20 ✅</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">PF-21</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">API Integration Layer (Middleware)</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">Unified wrapper: auth + session + feature gate + idempotency + audit + logging</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; font-size: 11px;">api-integration.js</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; text-align: right; color: #22c55e;">12/12 ✅</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">PF-22</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">E2E Test + Production README</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a;">12 E2E tests + deployment guide + runbook + cron jobs</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; font-size: 11px;">README.md / e2e suite</td><td style="padding: 8px; border-bottom: 1px solid #1e3a8a; text-align: right; color: #22c55e;">12/12 ✅</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ====== GROUP 3: 🖥️ Admin Console ====== -->
+  <div style="background: linear-gradient(135deg, #14532d 0%, #166534 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 6px solid #22c55e;">
+    <h2 style="color: #bbf7d0; margin: 0;">🖥️ กลุ่มที่ 3 — หน้า Admin Console (19 deploy แล้ว · 6 ยังขาด)</h2>
+    <p style="color: #d1fae5; font-size: 13px; margin: 6px 0 16px 0;">เครื่องมือสำหรับเจ้าหน้าที่ — 6 หน้าที่ขาดต้องทำก่อน Phase A Complete</p>
+
+    <h3 style="color: #fde68a; margin: 12px 0 8px 0;">✅ Deployed แล้ว (19 หน้า)</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; margin-bottom: 16px;">
+      <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 13px;">🔧 MSP Recovery <span style="color:#94a3b8;">· recovery</span></div>
+      <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 13px;">🐛 Bug Fixes Dashboard <span style="color:#94a3b8;">· wallet-rebind-fixes</span></div>
+      <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 13px;">🔀 AAM Migration <span style="color:#94a3b8;">· aam-migration</span></div>
+      <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 13px;">🛡️ Audit Compliance <span style="color:#94a3b8;">· audit-engine</span></div>
+      <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 13px;">📜 Audit Log Viewer <span style="color:#94a3b8;">· audit-engine</span></div>
+      <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 13px;">👤 Customer 360 (legacy) <span style="color:#94a3b8;">· identity</span></div>
+      <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 13px;">💱 FX Console <span style="color:#94a3b8;">· fx-engine</span></div>
+      <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 13px;">🎁 Gift Card Console <span style="color:#94a3b8;">· gift-card</span></div>
+      <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 13px;">🌍 i18n Console <span style="color:#94a3b8;">· i18n</span></div>
+      <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 13px;">🪪 Identity Queue <span style="color:#94a3b8;">· identity</span></div>
+      <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 13px;">🏛️ KYC Console <span style="color:#94a3b8;">· kyc-engine</span></div>
+      <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 13px;">🎰 Lotto Console <span style="color:#94a3b8;">· lotto</span></div>
+      <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 13px;">🏪 Merchant Onboarding <span style="color:#94a3b8;">· merchant</span></div>
+      <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 13px;">🔗 Merge Account <span style="color:#94a3b8;">· identity</span></div>
+      <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 13px;">🔔 Notification Console <span style="color:#94a3b8;">· notif</span></div>
+      <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 13px;">📍 POI Builder <span style="color:#94a3b8;">· poi</span></div>
+      <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 13px;">📊 Reporting Dashboard <span style="color:#94a3b8;">· reporting</span></div>
+      <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 13px;">⚡ Reward Event Monitor <span style="color:#94a3b8;">· reward+bus</span></div>
+      <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 13px;">🔐 Session Debug <span style="color:#94a3b8;">· session-guard</span></div>
+      <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 13px;">💳 Subscription Console <span style="color:#94a3b8;">· subscription</span></div>
+      <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 13px;">💸 Transfer Point <span style="color:#94a3b8;">· wallet</span></div>
+      <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 13px;">🎟️ Voucher Console <span style="color:#94a3b8;">· voucher</span></div>
+    </div>
+
+    <h3 style="color: #fca5a5; margin: 16px 0 8px 0;">⬜ ยังไม่ได้ทำ (6 หน้า · ~2 เดือน)</h3>
+    <table style="width: 100%; border-collapse: collapse; color: #ecfdf5;">
+      <thead><tr style="background: rgba(0,0,0,0.3);">
+        <th style="padding: 8px; text-align: left; width: 90px;">ID</th>
+        <th style="padding: 8px; text-align: left;">หน้าที่ขาด</th>
+        <th style="padding: 8px; text-align: left;">ใช้ทำอะไร (ผู้ใช้)</th>
+        <th style="padding: 8px; text-align: left;">Source</th>
+        <th style="padding: 8px; text-align: right; width: 70px;">Effort</th>
+      </tr></thead>
+      <tbody>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #14532d;">TASK-102</td><td style="padding: 8px; border-bottom: 1px solid #14532d;">Customer 360 view (L1-L4 tabs)</td><td style="padding: 8px; border-bottom: 1px solid #14532d;">ดูข้อมูลลูกค้าคนเดียวครบทุกแง่มุม (ประวัติ / แต้ม / สัญญา / consent)</td><td style="padding: 8px; border-bottom: 1px solid #14532d; font-size: 11px;">03-admin-console-design.md</td><td style="padding: 8px; border-bottom: 1px solid #14532d; text-align: right;">S</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #14532d;">TASK-103</td><td style="padding: 8px; border-bottom: 1px solid #14532d;">Merge Account UI (3-step wizard)</td><td style="padding: 8px; border-bottom: 1px solid #14532d;">รวมบัญชีซ้ำ 3 ขั้น (ค้นหา → ยืนยัน → ทำ)</td><td style="padding: 8px; border-bottom: 1px solid #14532d; font-size: 11px;">03-admin-console-design.md</td><td style="padding: 8px; border-bottom: 1px solid #14532d; text-align: right;">M</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #14532d;">TASK-104</td><td style="padding: 8px; border-bottom: 1px solid #14532d;">Transfer Point UI (Finance Approval)</td><td style="padding: 8px; border-bottom: 1px solid #14532d;">โอนแต้มพร้อม Finance Approval workflow</td><td style="padding: 8px; border-bottom: 1px solid #14532d; font-size: 11px;">Master Report REQ-2</td><td style="padding: 8px; border-bottom: 1px solid #14532d; text-align: right;">M</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #14532d;">TASK-105</td><td style="padding: 8px; border-bottom: 1px solid #14532d;">Identity Resolution Queue</td><td style="padding: 8px; border-bottom: 1px solid #14532d;">คิว auto-merge ที่รอคนอนุมัติ</td><td style="padding: 8px; border-bottom: 1px solid #14532d; font-size: 11px;">03-admin-console-design.md</td><td style="padding: 8px; border-bottom: 1px solid #14532d; text-align: right;">M</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #14532d;">TASK-106</td><td style="padding: 8px; border-bottom: 1px solid #14532d;">Audit Log Viewer (filterable)</td><td style="padding: 8px; border-bottom: 1px solid #14532d;">กรอง log ตาม admin/action/วันที่ + export CSV</td><td style="padding: 8px; border-bottom: 1px solid #14532d; font-size: 11px;">03-admin-console-design.md</td><td style="padding: 8px; border-bottom: 1px solid #14532d; text-align: right;">S</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #14532d;">TASK-107</td><td style="padding: 8px; border-bottom: 1px solid #14532d;">RBAC Middleware (3 roles enforcement)</td><td style="padding: 8px; border-bottom: 1px solid #14532d;">บังคับ 3 ระดับสิทธิ์ (Super / Tenant / Support) ในทุกหน้า</td><td style="padding: 8px; border-bottom: 1px solid #14532d; font-size: 11px;">03-admin-console-design.md</td><td style="padding: 8px; border-bottom: 1px solid #14532d; text-align: right;">S</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ====== Sprint Plan + Open Questions ====== -->
+  <div style="background: #1e293b; padding: 20px; border-radius: 10px; border: 2px solid #3b82f6; margin-bottom: 20px;">
+    <h2 style="color: #93c5fd; margin: 0 0 12px 0;">🚀 Sprint Plan (4 Sprints · ~8 สัปดาห์)</h2>
+    <table style="width: 100%; border-collapse: collapse; color: #e2e8f0;">
+      <thead><tr style="background: #0f172a;">
+        <th style="padding: 8px; text-align: left; width: 80px;">Sprint</th>
+        <th style="padding: 8px; text-align: left; width: 90px;">Week</th>
+        <th style="padding: 8px; text-align: left;">Focus</th>
+        <th style="padding: 8px; text-align: left;">Deliverable</th>
+      </tr></thead>
+      <tbody>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #334155; color: #fca5a5; font-weight: bold;">S1</td><td style="padding: 8px; border-bottom: 1px solid #334155;">1-2</td><td style="padding: 8px; border-bottom: 1px solid #334155;">TASK-001, 002, 004 + TASK-102-106 (UI gap)</td><td style="padding: 8px; border-bottom: 1px solid #334155;">Wallet ปลอดภัย + Admin ครบ</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #334155; color: #fca5a5; font-weight: bold;">S2</td><td style="padding: 8px; border-bottom: 1px solid #334155;">3-4</td><td style="padding: 8px; border-bottom: 1px solid #334155;">TASK-003, 005, 006-008 + TASK-107 (RBAC)</td><td style="padding: 8px; border-bottom: 1px solid #334155;">Production-ready + PDPA compliant</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #334155; color: #93c5fd; font-weight: bold;">S3</td><td style="padding: 8px; border-bottom: 1px solid #334155;">5-6</td><td style="padding: 8px; border-bottom: 1px solid #334155;">Integrate PF-6 ถึง PF-22 เข้า backend production</td><td style="padding: 8px; border-bottom: 1px solid #334155;">ฟีเจอร์ใช้งานได้จริง</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #334155; color: #93c5fd; font-weight: bold;">S4</td><td style="padding: 8px; border-bottom: 1px solid #334155;">7-8</td><td style="padding: 8px; border-bottom: 1px solid #334155;">Load test 10K + E2E + Monitoring</td><td style="padding: 8px; border-bottom: 1px solid #334155;">Scale + observability</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="background: #1e293b; padding: 20px; border-radius: 10px; border: 2px solid #8b5cf6;">
+    <h2 style="color: #c4b5fd; margin: 0 0 12px 0;">❓ Open Questions (ถาม Dev ก่อนคุย)</h2>
+    <ol style="color: #e2e8f0; line-height: 1.8; padding-left: 20px;">
+      <li><strong>Migration Strategy</strong> — Strangler Fig (ค่อย ๆ ย้าย) vs Big-Bang (ย้ายทีเดียว) → แนะนำ Strangler</li>
+      <li><strong>Event Bus Production</strong> — AWS SQS vs GCP PubSub vs Kafka — ขึ้นกับ infra</li>
+      <li><strong>Audit Log Storage</strong> — Partition by year ใน PostgreSQL หรือแยกไป S3/Cold Storage</li>
+      <li><strong>MFA UX</strong> — TOTP ก่อน หรือ SMS ก่อน — TOTP ปลอดภัยกว่า แต่ UX ยาก</li>
+      <li><strong>KYC SLA</strong> — 48h vs 72h สำหรับ L2/L3 — ขึ้นกับจำนวน reviewer</li>
+      <li><strong>i18n Default Locale</strong> — th เป็นหลัก หรือ en เป็นหลัก — ขึ้นกับตลาดหลัก</li>
+    </ol>
+  </div>
+
+  <div style="background: #1e293b; padding: 20px; border-radius: 10px; border: 2px solid #3b82f6; margin-top: 20px;">
+    <h2 style="color: #93c5fd; margin: 0 0 12px 0;">📌 ที่มา + Next</h2>
+    <p style="color: #94a3b8; font-size: 13px; line-height: 1.6;">
+      <strong>ที่มา:</strong> TASK-BOARD.md (35 tasks) + memory/2026-07-07.md (22 cycles) + memory/2026-07-07-1035.md (PF-2 feedback) + EXECUTIVE-SUMMARY.md + likepoint-master-report.md (Tab 7 REQ-1,2,3)<br>
+      <strong>สรุปทั้งหมด:</strong> 47 งาน (8 เสถียร + 14 ฟีเจอร์ + 25 admin) — เหลือ 14 งาน (~3-4 เดือน)<br>
+      <strong>เอกสารฉบับเต็ม:</strong> <code style="background:#0f172a; padding:2px 6px; border-radius:3px;">/home/admin/.openclaw/workspace/exports/LIKEPOINT-NEXT-VERSION-ROADMAP-2026-07-08.md</code><br>
+      <strong>อัปเดตเมื่อ:</strong> 8 ก.ค. 2569 · อลิเคล้า · สำหรับแนนคุยกับ Dev
+    </p>
+  </div>
+</div><!-- ==================== TAB 9: DATA FLOW ==================== -->
 <div id="tab9" class="main-content" style="display:none;">
   <h2>🌊 Tab 9: Data Flow — ข้อมูล DATA แต่ละกระบวนการอยู่ที่ไหน</h2>
   <h2 style="color: #fbbf24; margin-top: 30px;">📋 Complete Cycle Log (22 cycles · 100% deploy success)</h2>
