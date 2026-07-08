@@ -1,0 +1,13 @@
+{
+  "name": "likepoint-2.0",
+  "version": "2.0.0",
+  "description": "Likepoint 2.0 — Web App + Admin Console + Engines (UAT prototype)",
+  "private": true,
+  "scripts": {
+    "start": "node api/index.js",
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
