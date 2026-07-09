@@ -58,6 +58,15 @@
   .sub-panel { display: none; }
   .sub-panel.active { display: block; }
 
+  /* Audience Tabs (Tab 9: Dev vs User) */
+  .audience-tabs { display: flex; gap: 6px; background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); padding: 8px; border-radius: 10px; margin-bottom: 16px; border: 1px solid #334155; }
+  .audience-tab { background: transparent; color: #94a3b8; border: 1px solid #334155; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; flex: 1; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .audience-tab:hover { background: rgba(59, 130, 246, 0.1); color: #e2e8f0; }
+  .audience-tab.active.dev-view { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; border-color: #60a5fa; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4); }
+  .audience-tab.active.user-view { background: linear-gradient(135deg, #10b981 0%, #047857 100%); color: white; border-color: #34d399; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4); }
+  .audience-panel { display: none; }
+  .audience-panel.active { display: block; animation: fadeIn 0.3s; }
+
   /* Typography */
   .content h2 { font-size: 22px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
   .content h3 { font-size: 17px; margin: 16px 0 8px 0; color: #fbbf24; }
@@ -2333,6 +2342,23 @@ function showMain(n) {
   window.location.hash = 'tab' + n;
 }
 
+function switchTab9Audience(aud) {
+  // Hide both audience panels in Tab 9
+  document.querySelectorAll('#tab9 .audience-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('#tab9 .audience-tab').forEach(t => t.classList.remove('active'));
+  // Show target panel
+  const target = document.getElementById('tab9-' + aud);
+  if (target) target.classList.add('active');
+  // Activate button
+  const tabs = document.querySelectorAll('#tab9 .audience-tab');
+  const idx = aud === 'dev' ? 0 : 1;
+  if (tabs[idx]) tabs[idx].classList.add('active');
+  // Update URL hash (preserve main tab)
+  const current = window.location.hash.replace('#', '') || 'tab1';
+  const base = current.split('-')[0];
+  window.location.hash = base + '-tab9-' + aud;
+}
+
 function showSub(mainIdx, aud) {
   // Hide all sub panels in this main tab
   const mainPanel = document.getElementById('main-' + mainIdx);
@@ -2647,6 +2673,27 @@ window.addEventListener('load', () => {
     </details>
   </div>
   <h2>🌊 Tab 9: Data Flow — ข้อมูล DATA แต่ละกระบวนการอยู่ที่ไหน</h2>
+
+  <!-- Audience Switcher (Dev vs User) -->
+  <div class="audience-tabs">
+    <button class="audience-tab dev-view active" onclick="switchTab9Audience('dev')">
+      <span style="font-size: 20px;">👨‍💻</span>
+      <div style="text-align: left;">
+        <div>มุมมอง Dev</div>
+        <div style="font-size: 11px; opacity: 0.85; font-weight: 400;">Engine · Storage · EventBus · Matrix</div>
+      </div>
+    </button>
+    <button class="audience-tab user-view" onclick="switchTab9Audience('user')">
+      <span style="font-size: 20px;">👤</span>
+      <div style="text-align: left;">
+        <div>มุมมองผู้ใช้งาน</div>
+        <div style="font-size: 11px; opacity: 0.85; font-weight: 400;">ภาษาคน · เรื่องจริง · ไม่มี tech jargon</div>
+      </div>
+    </button>
+  </div>
+
+  <!-- ============== DEV VIEW (existing 5 sections) ============== -->
+  <div id="tab9-dev" class="audience-panel active">
   <h2 style="color: #fbbf24; margin-top: 30px;">📋 Complete Cycle Log (22 cycles · 100% deploy success)</h2>
   <table style="width: 100%; border-collapse: collapse; color: #e2e8f0; font-size: 12px;">
     <thead><tr style="background: #0f172a;"><th style="padding: 8px; text-align: left;">#</th><th style="padding: 8px; text-align: left;">Phase</th><th style="padding: 8px; text-align: left;">Feature</th><th style="padding: 8px; text-align: right;">Tests</th><th style="padding: 8px; text-align: right;">Status</th></tr></thead>
@@ -2864,7 +2911,131 @@ ReportingEngine:aggregate() → (no external) ──→ audit_log → 📊 Dashb
       <tr><td style="padding: 6px; border-bottom: 1px solid #334155;">SessionGuard (PF-14)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">sessions, request_idempotency</td><td style="padding: 6px; border-bottom: 1px solid #334155;">sessions (in-memory + DB)</td><td style="padding: 6px; border-bottom: 1px solid #334155;">session.created, session.destroyed</td></tr>
     </tbody>
   </table>
-</div>
+  </div><!-- /tab9-dev -->
+
+  <!-- ============== USER VIEW (5 sections ภาษาคน) ============== -->
+  <div id="tab9-user" class="audience-panel">
+    <p style="margin-bottom: 20px; color: #a7f3d0; font-size: 14px;">🌱 <strong>มุมมองผู้ใช้งาน</strong> — อธิบายข้อมูล DATA ในภาษาคนธรรมดา ไม่มีศัพท์เทคนิค เหมาะสำหรับสมาชิกทั่วไป, ฝ่ายการตลาด, หรือคนที่อยากเข้าใจว่า "ข้อมูลของฉันไปอยู่ที่ไหนบ้าง"</p>
+
+    <!-- 1. ข้อมูลของฉันถูกเก็บตรงไหน -->
+    <h2 style="color: #34d399; margin-top: 30px;">1️⃣ ข้อมูลส่วนตัวของฉันถูกเก็บไว้ที่ไหน?</h2>
+    <div style="background: #064e3b; border-left: 6px solid #10b981; padding: 18px; border-radius: 8px; margin: 16px 0;">
+      <h3 style="color: #6ee7b7; margin-top: 0;">👤 สมมติว่าคุณชื่อ "น้านน" สมัครสมาชิก LikePoint</h3>
+      <p style="color: #d1fae5; line-height: 1.8;">ตอนกดสมัคร ระบบจะเก็บข้อมูลของคุณไว้ใน "สมุดสมาชิก" (ตาราง <code style="background:#022c22; padding:2px 6px; border-radius:3px;">members</code>) โดยแยกเป็นหมวดดังนี้:</p>
+      <table style="width: 100%; color: #d1fae5; font-size: 13px; margin-top: 12px; border-collapse: collapse;">
+        <thead><tr style="background: #065f46;"><th style="padding: 8px; text-align: left;">ข้อมูลอะไร</th><th style="padding: 8px; text-align: left;">เก็บไว้ที่ไหน</th><th style="padding: 8px; text-align: left;">ใครเห็นได้บ้าง</th></tr></thead>
+        <tbody>
+          <tr><td style="padding: 6px; border-bottom: 1px solid #047857;">📱 เบอร์โทร, อีเมล, รหัสผ่าน</td><td style="padding: 6px; border-bottom: 1px solid #047857;"><code>members</code> (เข้ารหัส)</td><td style="padding: 6px; border-bottom: 1px solid #047857;">เฉพาะคุณ + ระบบ</td></tr>
+          <tr><td style="padding: 6px; border-bottom: 1px solid #047857;">💰 จำนวน point ใน wallet</td><td style="padding: 6px; border-bottom: 1px solid #047857;"><code>members.wallet</code></td><td style="padding: 6px; border-bottom: 1px solid #047857;">เฉพาะคุณ</td></tr>
+          <tr><td style="padding: 6px; border-bottom: 1px solid #047857;">🏆 ระดับสมาชิก (Free/Pro/Enterprise)</td><td style="padding: 6px; border-bottom: 1px solid #047857;"><code>members.tier</code></td><td style="padding: 6px; border-bottom: 1px solid #047857;">เฉพาะคุณ + ร้านค้า</td></tr>
+          <tr><td style="padding: 6px; border-bottom: 1px solid #047857;">📍 สถานที่ + เวลาที่ใช้บ่อย (POI)</td><td style="padding: 6px; border-bottom: 1px solid #047857;"><code>poi_triggers</code></td><td style="padding: 6px; border-bottom: 1px solid #047857;">ระบบ (เพื่อส่งโปรโมชั่น)</td></tr>
+          <tr><td style="padding: 6px; border-bottom: 1px solid #047857;">🛡️ การยืนยันตัวตน (KYC)</td><td style="padding: 6px; border-bottom: 1px solid #047857;"><code>kyc_applications</code> + เอกสารแนบ</td><td style="padding: 6px; border-bottom: 1px solid #047857;">เฉพาะทีมตรวจสอบ</td></tr>
+          <tr><td style="padding: 6px; border-bottom: 1px solid #047857;">🔐 การเข้าสู่ระบบ (Login)</td><td style="padding: 6px; border-bottom: 1px solid #047857;"><code>sessions</code> + MFA factors</td><td style="padding: 6px; border-bottom: 1px solid #047857;">เฉพาะคุณ + ระบบ</td></tr>
+        </tbody>
+      </table>
+      <p style="color: #6ee7b7; font-size: 13px; margin-top: 12px;"><strong>🔒 สิ่งสำคัญ:</strong> รหัสผ่าน + OTP + biometric ถูกเข้ารหัสเสมอ ไม่มีใครเห็นข้อความต้นฉบับ แม้แต่แอดมิน (PDPA compliance)</p>
+    </div>
+
+    <!-- 2. เงิน/point ไหลไปไหน -->
+    <h2 style="color: #34d399; margin-top: 30px;">2️⃣ point ของฉันไหลไปไหนบ้างในชีวิตจริง?</h2>
+    <div style="background: #1e3a8a; border-left: 6px solid #60a5fa; padding: 18px; border-radius: 8px; margin: 16px 0;">
+      <h3 style="color: #93c5fd; margin-top: 0;">💸 ตัวอย่าง: น้านนมี point 1,000 — ใช้ 1 สัปดาห์</h3>
+      <pre style="background: #020617; color: #d1fae5; padding: 14px; border-radius: 6px; font-size: 12px; line-height: 1.8; overflow-x: auto;">
+จันทร์  🏪 กินข้าวร้านป้าแจ๋ว (Merchant)
+        └─ จ่าย 100 pt → ป้าแจ๋วได้รับ 100 pt
+        └─ ระบบบันทึก: "โอน 100 pt จากน้านน → ป้าแจ๋ว"
+
+อังคาร  🎰 ซื้อล็อตเตอรี่ 50 pt
+        └─ ระบบหัก 50 pt จาก wallet
+        └─ ถ้าถูกรางวัล → ระบบเพิ่ม point คืนอัตโนมัติ
+
+พุธ     🎁 ได้รับ Gift Card 200 pt จากเพื่อน
+        └─ เพื่อนซื้อ Gift Card 200 pt + ค่าธรรมเนียม 2 pt
+        └─ น้านน redeem ได้ 200 pt เข้า wallet
+
+ศุกร์   🎫 ใช้ Voucher ส่วนลด 50 pt ที่ร้านกาแฟ
+        └─ ร้านกาแฟได้รับ 50 pt (ลดจาก 100 pt ที่จ่ายจริง)
+        └─ Voucher ถูกทำเครื่องหมาย "ใช้แล้ว"
+
+เสาร์   📍 เดินผ่านห้าง (POI trigger)
+        └─ ระบบตรวจ GPS + เวลา + กฎของร้าน
+        └─ ได้รับ 10 pt "โบนัสเข้าห้าง" อัตโนมัติ
+
+อาทิตย์ 💎 ต่ออายุ Pro Subscription 300 pt/เดือน
+        └─ ระบบหัก 300 pt + ต่ออายุ 30 วัน
+        └─ ได้รับแจ้งเตือน + ใบเสร็จ
+      </pre>
+      <p style="color: #93c5fd; font-size: 13px; margin-top: 12px;"><strong>📊 สรุป:</strong> ทุกการเคลื่อนไหวของ point จะถูกบันทึกใน "สมุดบัญชี" (audit log) เสมอ — เช็คย้อนหลังได้ตลอด 7 ปี (PDPA)</p>
+    </div>
+
+    <!-- 3. ใครเห็นข้อมูลฉันบ้าง -->
+    <h2 style="color: #34d399; margin-top: 30px;">3️⃣ ใครเห็นข้อมูลของฉันบ้าง?</h2>
+    <div style="background: #7c2d12; border-left: 6px solid #fb923c; padding: 18px; border-radius: 8px; margin: 16px 0;">
+      <h3 style="color: #fed7aa; margin-top: 0;">👀 แบ่งเป็น 4 ระดับการเข้าถึง</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin-top: 12px;">
+        <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px;">
+          <strong style="color: #fed7aa;">🟢 ระดับ 1: ตัวคุณเอง</strong>
+          <p style="color: #fdba74; font-size: 12px; margin-top: 4px;">เห็นทุกอย่าง: เบอร์โทร, point, ประวัติ, ที่อยู่, KYC</p>
+        </div>
+        <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px;">
+          <strong style="color: #fed7aa;">🟡 ระดับ 2: ร้านค้า (Merchant)</strong>
+          <p style="color: #fdba74; font-size: 12px; margin-top: 4px;">เห็น: ชื่อ (ถ้ายินยอม), point ที่ใช้ที่ร้าน, voucher</p>
+        </div>
+        <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px;">
+          <strong style="color: #fed7aa;">🟠 ระดับ 3: ทีมตรวจสอบ (KYC Reviewer)</strong>
+          <p style="color: #fdba74; font-size: 12px; margin-top: 4px;">เห็น: เอกสาร KYC + ภาพถ่ายบัตรประชาชน (กรณีขอ Pro/Enterprise)</p>
+        </div>
+        <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px;">
+          <strong style="color: #fed7aa;">🔴 ระดับ 4: แอดมินระบบ</strong>
+          <p style="color: #fdba74; font-size: 12px; margin-top: 4px;">เห็น: สถิติการใช้งานรวม (ไม่เห็นรหัสผ่าน/OTP/biometric ต้นฉบับ)</p>
+        </div>
+      </div>
+      <p style="color: #fed7aa; font-size: 13px; margin-top: 14px;"><strong>🛡️ สิทธิ์ของคุณ:</strong> ขอดูข้อมูลทั้งหมด, ขอแก้ไข, ขอลบ, ขอยกเลิกการตลาด — ได้ทุกเมื่อ (PDPA rights)</p>
+    </div>
+
+    <!-- 4. Notification ตัวอย่างจริง -->
+    <h2 style="color: #34d399; margin-top: 30px;">4️⃣ ฉันจะได้รับแจ้งเตือนเมื่อไหร่? (5 ช่องทาง)</h2>
+    <div style="background: #581c87; border-left: 6px solid #c084fc; padding: 18px; border-radius: 8px; margin: 16px 0;">
+      <h3 style="color: #e9d5ff; margin-top: 0;">🔔 ตัวอย่างแจ้งเตือนจริงในชีวิตประจำวัน</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 12px;">
+        <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px;">
+          <strong style="color: #e9d5ff;">📱 SMS</strong>
+          <p style="color: #d8b4fe; font-size: 12px; margin-top: 4px;">"LikePoint: OTP 829374 (ref: login) ห้ามบอกคนอื่น"</p>
+        </div>
+        <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px;">
+          <strong style="color: #e9d5ff;">📧 Email</strong>
+          <p style="color: #d8b4fe; font-size: 12px; margin-top: 4px;">"ยืนยันการสมัคร LikePoint — คลิกลิงก์ยืนยันภายใน 24 ชม."</p>
+        </div>
+        <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px;">
+          <strong style="color: #e9d5ff;">🔔 Push</strong>
+          <p style="color: #d8b4fe; font-size: 12px; margin-top: 4px;">"คุณได้รับ 10 pt โบนัสจากการเดินผ่านห้าง Central"</p>
+        </div>
+        <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px;">
+          <strong style="color: #e9d5ff;">💬 LINE</strong>
+          <p style="color: #d8b4fe; font-size: 12px; margin-top: 4px;">"[LikePoint] ล็อตเตอรี่งวด 9/7 ออกแล้ว — เช็คผลได้เลย"</p>
+        </div>
+        <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px;">
+          <strong style="color: #e9d5ff;">✈️ Telegram</strong>
+          <p style="color: #d8b4fe; font-size: 12px; margin-top: 4px;">"แจ้งเตือน: บัญชีถูกล็อก — กรุณาติดต่อ support"</p>
+        </div>
+      </div>
+      <p style="color: #e9d5ff; font-size: 13px; margin-top: 14px;"><strong>⚙️ ตั้งค่าได้:</strong> เลือกได้ว่าจะรับช่องทางไหน + เวลาใด (Settings → Notifications) · ปิดเสียงได้ · ปฏิเสธการตลาดได้</p>
+    </div>
+
+    <!-- 5. ลืมรหัสผ่าน/โดนล็อก -->
+    <h2 style="color: #34d399; margin-top: 30px;">5️⃣ ถ้าลืมรหัสผ่าน หรือโดนล็อก จะทำยังไง?</h2>
+    <div style="background: #831843; border-left: 6px solid #f472b6; padding: 18px; border-radius: 8px; margin: 16px 0;">
+      <h3 style="color: #fbcfe8; margin-top: 0;">🔐 3 ชั้นป้องกัน + กู้คืน</h3>
+      <div style="color: #fce7f3; line-height: 1.8;">
+        <p><strong>🟢 ชั้น 1: ลืมรหัสผ่าน</strong> → กด "ลืมรหัสผ่าน" → รับ OTP ทาง SMS → ตั้งรหัสใหม่ (ใช้ได้ทันที)</p>
+        <p><strong>🟡 ชั้น 2: เปิด MFA (แนะนำ!)</strong> → ตั้ง TOTP (Google Authenticator) + SMS + biometric → ปลอดภัยขึ้น 10 เท่า</p>
+        <p><strong>🔴 ชั้น 3: ถ้าโดนล็อก (5 ครั้งผิด)</strong> → รอ 15 นาที + ตอบคำถามความปลอดภัย → ปลดล็อกอัตโนมัติ</p>
+        <p><strong>🆘 ถ้ายังไม่ได้:</strong> ติดต่อ support ผ่าน Telegram/Line/Email → ทีมงานตรวจสอบ + ปลดล็อกภายใน 24 ชม. (มี KYC verification)</p>
+      </div>
+      <p style="color: #fbcfe8; font-size: 13px; margin-top: 14px;"><strong>💡 Tips:</strong> เปิด MFA + บันทึก Recovery Code ไว้ที่ปลอดภัย จะไม่มีวันโดนล็อกถาวร</p>
+    </div>
+
+  </div><!-- /tab9-user -->
 
 <!-- ==================== TAB 10: AUDIENCE MATRIX ==================== -->
 <div id="tab10" class="main-content">
