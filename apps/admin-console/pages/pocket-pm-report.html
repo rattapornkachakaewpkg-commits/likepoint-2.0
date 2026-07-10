@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Pocket PM Report — TASK-204 · LikePoint 2.0</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; padding: 24px; }
+  h1 { color: #c4b5fd; margin: 0 0 4px 0; }
+  h2 { color: #93c5fd; margin: 24px 0 12px 0; font-size: 1.2rem; }
+  .subtitle { color: #94a3b8; margin: 0 0 24px 0; font-size: 14px; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .stat { background: #1e293b; padding: 16px; border-radius: 8px; border-left: 4px solid #3b82f6; }
+  .stat.danger { border-left-color: #ef4444; }
+  .stat.warn { border-left-color: #fbbf24; }
+  .stat.success { border-left-color: #22c55e; }
+  .stat-num { font-size: 1.8rem; font-weight: bold; }
+  .stat-label { color: #94a3b8; font-size: 12px; margin-top: 4px; }
+  .section { background: #1e293b; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  th { text-align: left; padding: 10px; background: #0f172a; color: #93c5fd; font-size: 12px; text-transform: uppercase; }
+  td { padding: 10px; border-bottom: 1px solid #334155; font-size: 14px; }
+  tr:hover td { background: rgba(255,255,255,0.03); }
+  .btn { background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+  .btn:hover { background: #2563eb; }
+  .btn.danger { background: #ef4444; }
+  .btn.success { background: #22c55e; }
+  .btn.warn { background: #fbbf24; color: #0f172a; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+  .badge.pending { background: #fbbf24; color: #0f172a; }
+  .badge.applied { background: #22c55e; color: white; }
+  .empty { color: #64748b; text-align: center; padding: 24px; font-style: italic; }
+  .controls { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+  .controls input, .controls select { background: #0f172a; color: #e2e8f0; border: 1px solid #334155; padding: 6px 10px; border-radius: 4px; font-size: 13px; }
+  .toast { position: fixed; top: 20px; right: 20px; background: #22c55e; color: white; padding: 12px 20px; border-radius: 6px; display: none; z-index: 1000; }
+  .toast.error { background: #ef4444; }
+  details { margin-top: 8px; }
+  summary { cursor: pointer; color: #93c5fd; font-size: 13px; }
+  pre { background: #0f172a; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 12px; color: #94a3b8; }
+  .impact { color: #fca5a5; font-weight: bold; }
+  .pmmode-banner { background: linear-gradient(135deg, #4c1d95 0%, #5b21b6 100%); padding: 12px 20px; border-radius: 8px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+  .pmmode-banner .label { color: #e9d5ff; font-size: 13px; }
+  .pmmode-banner input { background: rgba(0,0,0,0.3); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<div class="pmmode-banner">
+  <span class="label">🔧 <strong>Pocket PM Report</strong> · TASK-204 · Cycle 25</span>
+  <span>
+    <label style="color:#e9d5ff; font-size:12px;">Acting PM: </label>
+    <input id="pmId" value="PM-001" style="width:100px;">
+  </span>
+</div>
+
+<h1>📊 Pocket PM Daily Report</h1>
+<p class="subtitle">ตรวจ pocket ซ้ำอัตโนมัติ · PM ตัดสินใจ reject/keep ทีละรายการ · ใช้ PF-17 (Reporting) + PF-15 (Notification)</p>
+
+<div class="stats" id="stats">
+  <div class="stat danger">
+    <div class="stat-num" id="stat-dupes">0</div>
+    <div class="stat-label">🔴 กลุ่มที่ซ้ำ</div>
+  </div>
+  <div class="stat warn">
+    <div class="stat-num" id="stat-members">0</div>
+    <div class="stat-label">👥 สมาชิกที่ได้รับผลกระทบ</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num" id="stat-impact">0</div>
+    <div class="stat-label">💸 ผลกระทบ (แต้ม)</div>
+  </div>
+  <div class="stat success">
+    <div class="stat-num" id="stat-decisions">0</div>
+    <div class="stat-label">⏳ รอ PM ตัดสินใจ</div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>🔍 กลุ่ม Pocket ที่ซ้ำ</h2>
+  <div class="controls">
+    <label style="color:#94a3b8; font-size:13px;">กรอง:</label>
+    <select id="filter-source">
+      <option value="">ทุก Source</option>
+      <option>BU-CAFE</option>
+      <option>BU-SHOP</option>
+      <option>BU-REST</option>
+    </select>
+    <button class="btn" onclick="rescan()">🔄 Rescan</button>
+    <button class="btn warn" onclick="sendDailyReport()">📧 ส่ง Daily Report ให้ PM</button>
+  </div>
+  <div id="dupe-list"></div>
+</div>
+
+<div class="section">
+  <h2>📋 PM Decisions Log</h2>
+  <div class="controls">
+    <label style="color:#94a3b8; font-size:13px;">สถานะ:</label>
+    <select id="filter-status" onchange="renderDecisions()">
+      <option value="all">ทั้งหมด</option>
+      <option value="pending">⏳ Pending</option>
+      <option value="applied">✅ Applied</option>
+    </select>
+  </div>
+  <div id="decisions-list"></div>
+</div>
+
+<div class="section">
+  <h2>ℹ️ เกี่ยวกับ TASK-204</h2>
+  <p style="color:#94a3b8; font-size:13px; line-height:1.6;">
+    Engine: <code>pocket-pm-engine.js</code> · 16 unit tests pass · ใช้ 3-step workflow: <strong style="color:#86efac;">report (auto) → ตรวจ (PM) → อนุมัติโอน (apply)</strong>
+  </p>
+  <details>
+    <summary>🔬 ดู Mock Data (seed)</summary>
+    <pre>seedDupes(BU-CAFE × 3)  // M-1, 100, source=CAFÉ
+seedDupes(BU-SHOP × 2)  // M-2, 50, source=SHOP
+seedDupes(BU-REST × 4)  // M-3, 200, source=REST</pre>
+  </details>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="../engine/pocket-pm-engine.js"></script>
+<script>
+// ===== Mock data (in real app: fetch from API) =====
+const mockPockets = new Map();
+function seedMock() {
+  const now = Date.now();
+  // Group 1: M-1, 100, BU-CAFE × 3 (1 original + 2 dupes)
+  for (let i = 0; i < 3; i++) {
+    mockPockets.set(`P-CAFE-${i + 1}`, {
+      id: `P-CAFE-${i + 1}`,
+      memberId: 'M-1', amount: 100, source: 'BU-CAFE',
+      createdAt: new Date(now - (3 - i) * 5000).toISOString(),
+      status: 'active'
+    });
+  }
+  // Group 2: M-2, 50, BU-SHOP × 2
+  for (let i = 0; i < 2; i++) {
+    mockPockets.set(`P-SHOP-${i + 1}`, {
+      id: `P-SHOP-${i + 1}`,
+      memberId: 'M-2', amount: 50, source: 'BU-SHOP',
+      createdAt: new Date(now - (2 - i) * 5000).toISOString(),
+      status: 'active'
+    });
+  }
+  // Group 3: M-3, 200, BU-REST × 4
+  for (let i = 0; i < 4; i++) {
+    mockPockets.set(`P-REST-${i + 1}`, {
+      id: `P-REST-${i + 1}`,
+      memberId: 'M-3', amount: 200, source: 'BU-REST',
+      createdAt: new Date(now - (4 - i) * 5000).toISOString(),
+      status: 'active'
+    });
+  }
+}
+seedMock();
+
+const engine = new PocketPMEngine({ pocketStore: mockPockets });
+
+// ===== Render =====
+function render() {
+  const report = engine.generateDailyReport();
+  document.getElementById('stat-dupes').textContent = report.summary.totalDuplicates;
+  document.getElementById('stat-members').textContent = report.summary.affectedMembers;
+  document.getElementById('stat-impact').textContent = report.summary.totalImpactAmount.toLocaleString();
+  document.getElementById('stat-decisions').textContent = report.summary.pendingPMDecisions;
+
+  // Dupe list
+  const filterSource = document.getElementById('filter-source').value;
+  const groups = report.dupeGroups.filter(g => !filterSource || g.source === filterSource);
+  const list = document.getElementById('dupe-list');
+  if (groups.length === 0) {
+    list.innerHTML = '<div class="empty">✅ ไม่พบ pocket ซ้ำ</div>';
+  } else {
+    list.innerHTML = `<table>
+      <thead><tr>
+        <th>Group Key</th>
+        <th>สมาชิก</th>
+        <th>Source</th>
+        <th>จำนวน</th>
+        <th>ผลกระทบ</th>
+        <th>Actions</th>
+      </tr></thead>
+      <tbody>${groups.map(g => `
+        <tr>
+          <td><code style="font-size:11px;color:#94a3b8;">${g.key}</code></td>
+          <td>${g.memberId}</td>
+          <td>${g.source}</td>
+          <td><span class="badge pending">${g.count} รายการ (${g.duplicates} ซ้ำ)</span></td>
+          <td class="impact">${g.totalImpact.toLocaleString()} แต้ม</td>
+          <td>
+            <button class="btn danger" onclick="decide('${g.key}', 'reject_copies')">🚫 Reject Copies</button>
+            <button class="btn success" onclick="decide('${g.key}', 'keep_all')">✅ Keep All</button>
+            <button class="btn warn" onclick="decide('${g.key}', 'investigate')">🔍 Investigate</button>
+          </td>
+        </tr>
+        <tr><td colspan="6" style="background:rgba(0,0,0,0.2); padding:8px 12px;">
+          <details>
+            <summary>📋 ดู pockets ในกลุ่ม (${g.count} รายการ)</summary>
+            <pre>${JSON.stringify([g.original, ...g.copies], null, 2)}</pre>
+          </details>
+        </td></tr>
+      `).join('')}</tbody></table>`;
+  }
+
+  renderDecisions();
+}
+
+function renderDecisions() {
+  const status = document.getElementById('filter-status').value;
+  const decisions = engine.listDecisions(status);
+  const list = document.getElementById('decisions-list');
+  if (decisions.length === 0) {
+    list.innerHTML = '<div class="empty">ยังไม่มี decision</div>';
+  } else {
+    list.innerHTML = `<table>
+      <thead><tr>
+        <th>Decision ID</th><th>PM</th><th>Action</th><th>กลุ่ม</th><th>สมาชิก</th><th>สถานะ</th><th></th>
+      </tr></thead>
+      <tbody>${decisions.map(d => `
+        <tr>
+          <td><code style="font-size:11px;color:#94a3b8;">${d.decisionId}</code></td>
+          <td>${d.pmId}</td>
+          <td>${d.action}</td>
+          <td>${d.groupKey}</td>
+          <td>${d.memberId} · ${d.amount} แต้ม × ${d.copyCount}</td>
+          <td>${d.status === 'pending' ? '<span class="badge pending">⏳ pending</span>' : '<span class="badge applied">✅ applied</span>'}</td>
+          <td>${d.status === 'pending' ? `<button class="btn success" onclick="applyDec('${d.decisionId}')">▶ Apply</button>` : `<span style="color:#64748b;font-size:12px;">affected: ${d.affected || 0}</span>`}</td>
+        </tr>
+      `).join('')}</tbody></table>`;
+  }
+}
+
+function decide(groupKey, action) {
+  const pmId = document.getElementById('pmId').value || 'PM-001';
+  try {
+    const d = engine.recordDecision(groupKey, pmId, action);
+    toast(`✅ Decision recorded: ${action} (${d.decisionId})`);
+    render();
+  } catch (e) {
+    toast(`❌ ${e.message}`, true);
+  }
+}
+
+function applyDec(decisionId) {
+  try {
+    const r = engine.applyDecision(decisionId);
+    toast(`✅ Applied! Affected ${r.affected} pockets`);
+    render();
+  } catch (e) {
+    toast(`❌ ${e.message}`, true);
+  }
+}
+
+function rescan() { render(); toast('🔄 Rescanned'); }
+
+function sendDailyReport() {
+  const report = engine.generateDailyReport();
+  const notif = engine.notifyPM(report);
+  toast(`📧 Daily report sent: ${notif.subject}`);
+}
+
+function toast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '');
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3500);
+}
+
+render();
+</script>
+
+</body>
+</html>
