@@ -1,0 +1,731 @@
+<!doctype html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Identity + KYC End-to-End — ภาษาง่ายๆ</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f8fafc;
+    --fg: #172033;
+    --muted: #5b6475;
+    --line: #64748b;
+    --neutral: #e2e8f0;
+    --input: #bfdbfe;
+    --process: #c7d2fe;
+    --storage: #99f6e4;
+    --external: #fde68a;
+    --risk: #fecaca;
+    --ok: #bbf7d0;
+    --purple: #ddd6fe;
+    --orange: #fed7aa;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f172a;
+      --fg: #e5e7eb;
+      --muted: #a3adbd;
+      --line: #94a3b8;
+      --neutral: #334155;
+      --input: #1d4ed8;
+      --process: #4338ca;
+      --storage: #0f766e;
+      --external: #92400e;
+      --risk: #991b1b;
+      --ok: #166534;
+      --purple: #5b21b6;
+      --orange: #9a3412;
+    }
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main {
+    max-width: 1100px;
+    margin: 24px auto;
+    padding: 0 20px 60px;
+  }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .sub { color: var(--muted); margin-bottom: 20px; font-size: 13px; }
+  svg { width: 100%; height: auto; display: block; }
+  .title { font-size: 18px; font-weight: 700; fill: var(--fg); }
+  .big { font-size: 15px; font-weight: 600; fill: var(--fg); }
+  .label { font-size: 13px; font-weight: 600; fill: var(--fg); }
+  .small { font-size: 11px; fill: var(--muted); }
+  .tiny { font-size: 10px; fill: var(--muted); }
+  .step { font-size: 11px; font-weight: 700; fill: white; }
+  .step-bg { fill: var(--line); }
+  .node { stroke: var(--line); stroke-width: 1; }
+  .neutral { fill: var(--neutral); }
+  .input { fill: var(--input); }
+  .process { fill: var(--process); }
+  .storage { fill: var(--storage); }
+  .external { fill: var(--external); }
+  .risk { fill: var(--risk); }
+  .ok { fill: var(--ok); }
+  .purple { fill: var(--purple); }
+  .orange { fill: var(--orange); }
+  .edge { stroke: var(--line); stroke-width: 1.5; fill: none; }
+  .edge-bold { stroke: var(--line); stroke-width: 2.2; fill: none; }
+  .edge-dashed { stroke: var(--line); stroke-width: 1.5; fill: none; stroke-dasharray: 5 4; }
+  .zone { fill: none; stroke: var(--line); stroke-width: 1; stroke-dasharray: 6 5; opacity: 0.7; }
+  .zone-label { font-size: 12px; font-weight: 700; fill: var(--muted); letter-spacing: 1px; }
+  .legend-box { display: inline-block; width: 12px; height: 12px; vertical-align: middle; margin-right: 4px; border: 1px solid var(--line); }
+  .legend { font-size: 12px; color: var(--muted); margin-top: 18px; }
+  .legend span { margin-right: 16px; }
+  .nav { position: sticky; top: 0; background: var(--bg); padding: 8px 0; font-size: 12px; border-bottom: 1px solid var(--line); z-index: 10; }
+  .nav a { color: var(--muted); text-decoration: none; margin-right: 14px; }
+  .nav a:hover { color: var(--fg); }
+  h2 { font-size: 16px; margin: 40px 0 8px; padding: 8px 14px; background: var(--neutral); border-left: 4px solid #6366f1; border-radius: 4px; }
+</style>
+
+<main>
+  <h1>🛡️ Identity + KYC End-to-End — ภาษาง่ายๆ</h1>
+  <div class="sub">ภาพรวม: สมัครสมาชิก → ยืนยันเบอร์ → ผูกเครื่อง → ตรวจคนซ้ำ → ขอ KYC Pro → อนุมัติ/ปฏิเสธ</div>
+
+  <div class="nav">
+    <a href="#big-picture">ภาพรวม</a>
+    <a href="#signup">สมัคร</a>
+    <a href="#dup">คนซ้ำ</a>
+    <a href="#kyc-l1">L0→L1</a>
+    <a href="#kyc-l2">L1→L2</a>
+    <a href="#data">ฐานข้อมูล</a>
+  </div>
+
+  <!-- ========== BIG PICTURE ========== -->
+  <h2 id="big-picture">📊 ภาพรวมทั้งหมด (3 โซน + 2 ตาราง + RLS)</h2>
+  <svg viewBox="0 0 1060 720" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--line)" />
+      </marker>
+    </defs>
+
+    <!-- ZONE 1: User -->
+    <rect class="zone" x="20" y="40" width="280" height="640" rx="12" />
+    <text class="zone-label" x="40" y="65">👤 ฝั่งสมาชิก (USER APP)</text>
+
+    <g>
+      <rect class="node input" x="50" y="90" width="220" height="70" rx="10" />
+      <text class="big" x="160" y="118" text-anchor="middle">📱 เปิดแอปครั้งแรก</text>
+      <text class="small" x="160" y="138" text-anchor="middle">กรอกชื่อ + เบอร์โทร</text>
+    </g>
+
+    <g>
+      <rect class="node process" x="50" y="180" width="220" height="70" rx="10" />
+      <text class="big" x="160" y="208" text-anchor="middle">🔢 ยืนยัน OTP</text>
+      <text class="small" x="160" y="228" text-anchor="middle">ใส่รหัส 6 หลัก → ผ่าน L1</text>
+    </g>
+
+    <g>
+      <rect class="node purple" x="50" y="270" width="220" height="70" rx="10" />
+      <text class="big" x="160" y="298" text-anchor="middle">📱💻 ผูกเครื่อง</text>
+      <text class="small" x="160" y="318" text-anchor="middle">ระบบจำอุปกรณ์อัตโนมัติ</text>
+    </g>
+
+    <g>
+      <rect class="node external" x="50" y="360" width="220" height="80" rx="10" />
+      <text class="big" x="160" y="388" text-anchor="middle">🛒 อยากเปิดร้านค้า</text>
+      <text class="small" x="160" y="408" text-anchor="middle">ขายของเยอะ/ทำธุรกิจ</text>
+      <text class="small" x="160" y="425" text-anchor="middle">→ ต้อง KYC L2</text>
+    </g>
+
+    <g>
+      <rect class="node process" x="50" y="460" width="220" height="80" rx="10" />
+      <text class="big" x="160" y="488" text-anchor="middle">📄 แนบเอกสาร</text>
+      <text class="small" x="160" y="508" text-anchor="middle">บัตรปชช. + ทะเบียนบริษัท</text>
+      <text class="small" x="160" y="525" text-anchor="middle">+ selfie ถือบัตร</text>
+    </g>
+
+    <g>
+      <rect class="node neutral" x="50" y="560" width="220" height="50" rx="10" />
+      <text class="big" x="160" y="582" text-anchor="middle">⏳ รอ 48 ชม.</text>
+      <text class="small" x="160" y="600" text-anchor="middle">(เจ้าหน้าที่ตรวจ)</text>
+    </g>
+
+    <g>
+      <rect class="node ok" x="50" y="630" width="105" height="40" rx="10" />
+      <text class="big" x="102" y="655" text-anchor="middle">✅ ผ่าน</text>
+    </g>
+    <g>
+      <rect class="node risk" x="165" y="630" width="105" height="40" rx="10" />
+      <text class="big" x="217" y="655" text-anchor="middle">❌ ไม่ผ่าน</text>
+    </g>
+
+    <!-- ZONE 2: Backend -->
+    <rect class="zone" x="320" y="40" width="420" height="640" rx="12" />
+    <text class="zone-label" x="340" y="65">⚙️ ระบบหลังบ้าน (ENGINE)</text>
+
+    <!-- Identity Service -->
+    <g>
+      <rect class="node storage" x="350" y="90" width="360" height="80" rx="10" />
+      <text class="big" x="530" y="118" text-anchor="middle">🗂️ Identity Service</text>
+      <text class="small" x="530" y="138" text-anchor="middle">สร้าง member_id (UUID)</text>
+      <text class="small" x="530" y="155" text-anchor="middle">เก็บข้อมูล + เบอร์โทร (PDPA hash)</text>
+    </g>
+
+    <!-- Identity Resolution -->
+    <g>
+      <rect class="node purple" x="350" y="190" width="360" height="90" rx="10" />
+      <text class="big" x="530" y="218" text-anchor="middle">🔍 Identity Resolution (AI จับคนซ้ำ)</text>
+      <text class="small" x="530" y="238" text-anchor="middle">3 สัญญาณ: เบอร์ (0.95) / เครื่อง (0.85) / IP (0.6)</text>
+      <text class="small" x="530" y="253" text-anchor="middle">+ ชื่อคล้าย (Levenshtein > 0.8)</text>
+      <text class="small" x="530" y="270" text-anchor="middle" fill="#16a34a" font-weight="600">&gt; 0.95 = รวมอัตโนมัติ · &gt; 0.80 = ให้คนดู</text>
+    </g>
+
+    <!-- KYC Stub (L0/L1) -->
+    <g>
+      <rect class="node process" x="350" y="300" width="170" height="100" rx="10" />
+      <text class="big" x="435" y="328" text-anchor="middle">🛡️ KYC Engine (stub)</text>
+      <text class="small" x="435" y="348" text-anchor="middle">📜 kyc.js</text>
+      <text class="small" x="435" y="365" text-anchor="middle">L0 → L1: อัตโนมัติ</text>
+      <text class="small" x="435" y="382" text-anchor="middle">L1 → L2: ขอเอกสาร</text>
+    </g>
+
+    <!-- KYC Engine (L2/L3) -->
+    <g>
+      <rect class="node process" x="540" y="300" width="170" height="100" rx="10" />
+      <text class="big" x="625" y="328" text-anchor="middle">🛡️ KYC Engine (PF-16)</text>
+      <text class="small" x="625" y="348" text-anchor="middle">📜 kyc-engine.js</text>
+      <text class="small" x="625" y="365" text-anchor="middle">L2: 48h · L3: 72h</text>
+      <text class="small" x="625" y="382" text-anchor="middle">+ 24h ถ้าขอเพิ่ม</text>
+    </g>
+
+    <!-- KYC Workflow -->
+    <g>
+      <rect class="node external" x="350" y="420" width="360" height="80" rx="10" />
+      <text class="big" x="530" y="448" text-anchor="middle">📋 KYC Workflow (10 methods)</text>
+      <text class="small" x="530" y="468" text-anchor="middle">submit → upload → auto-assign reviewer</text>
+      <text class="small" x="530" y="485" text-anchor="middle">→ approve/reject/more_info → update tier</text>
+    </g>
+
+    <!-- Audit + Notification -->
+    <g>
+      <rect class="node storage" x="350" y="520" width="170" height="70" rx="10" />
+      <text class="big" x="435" y="548" text-anchor="middle">📋 Audit Log</text>
+      <text class="small" x="435" y="568" text-anchor="middle">บันทึกทุก action</text>
+      <text class="small" x="435" y="585" text-anchor="middle">(6 event types)</text>
+    </g>
+    <g>
+      <rect class="node storage" x="540" y="520" width="170" height="70" rx="10" />
+      <text class="big" x="625" y="548" text-anchor="middle">🔔 Notification</text>
+      <text class="small" x="625" y="568" text-anchor="middle">Push/SMS/Email</text>
+      <text class="small" x="625" y="585" text-anchor="middle">4 templates</text>
+    </g>
+
+    <!-- RLS -->
+    <g>
+      <rect class="node orange" x="350" y="610" width="360" height="60" rx="10" />
+      <text class="big" x="530" y="636" text-anchor="middle">🔒 RLS (4 roles × 2 tables)</text>
+      <text class="small" x="530" y="654" text-anchor="middle">member / reviewer / admin / service</text>
+    </g>
+
+    <!-- ZONE 3: Reviewer -->
+    <rect class="zone" x="760" y="40" width="280" height="640" rx="12" />
+    <text class="zone-label" x="780" y="65">👮 ฝั่งเจ้าหน้าที่ (ADMIN CONSOLE)</text>
+
+    <g>
+      <rect class="node input" x="790" y="90" width="220" height="90" rx="10" />
+      <text class="big" x="900" y="118" text-anchor="middle">📥 คิวงาน</text>
+      <text class="small" x="900" y="138" text-anchor="middle">เรียงตามด่วน</text>
+      <text class="small" x="900" y="156" text-anchor="middle">🔴 BREACHED (เลยกำหนด)</text>
+      <text class="small" x="900" y="173" text-anchor="middle">🟠 URGENT / WARNING</text>
+    </g>
+
+    <g>
+      <rect class="node process" x="790" y="200" width="220" height="80" rx="10" />
+      <text class="big" x="900" y="228" text-anchor="middle">🔎 ตรวจเอกสาร</text>
+      <text class="small" x="900" y="248" text-anchor="middle">ดูข้อมูล + รูป</text>
+      <text class="small" x="900" y="265" text-anchor="middle">+ ประวัติสมาชิก</text>
+    </g>
+
+    <g>
+      <rect class="node ok" x="790" y="300" width="220" height="50" rx="10" />
+      <text class="big" x="900" y="330" text-anchor="middle">✅ อนุมัติ → อัปเกรด Pro</text>
+    </g>
+    <g>
+      <rect class="node risk" x="790" y="360" width="220" height="50" rx="10" />
+      <text class="big" x="900" y="390" text-anchor="middle">❌ ปฏิเสธ + บอกเหตุผล</text>
+    </g>
+    <g>
+      <rect class="node external" x="790" y="420" width="220" height="60" rx="10" />
+      <text class="big" x="900" y="448" text-anchor="middle">📨 ขอเพิ่มเอกสาร</text>
+      <text class="small" x="900" y="468" text-anchor="middle">SLA ขยาย +24 ชม.</text>
+    </g>
+    <g>
+      <rect class="node purple" x="790" y="500" width="220" height="80" rx="10" />
+      <text class="big" x="900" y="528" text-anchor="middle">🎯 Round-robin</text>
+      <text class="small" x="900" y="548" text-anchor="middle">สลับคนดูอัตโนมัติ</text>
+      <text class="small" x="900" y="565" text-anchor="middle">(ไม่ให้คนใดคนเดียวทำ)</text>
+    </g>
+    <g>
+      <rect class="node neutral" x="790" y="600" width="220" height="70" rx="10" />
+      <text class="big" x="900" y="628" text-anchor="middle">📊 สถิติ</text>
+      <text class="small" x="900" y="648" text-anchor="middle">อนุมัติ/ปฏิเสธ/เฉลี่ยเวลา</text>
+      <text class="small" x="900" y="665" text-anchor="middle">+ breach กี่ครั้ง</text>
+    </g>
+
+    <!-- ARROWS -->
+    <path class="edge-bold" d="M 270 125 L 350 130" marker-end="url(#arrow)" />
+    <text class="tiny" x="278" y="118">ส่งข้อมูลสมัคร</text>
+
+    <path class="edge-bold" d="M 270 215 L 350 130" marker-end="url(#arrow)" />
+    <text class="tiny" x="278" y="200">OTP ยืนยัน</text>
+
+    <path class="edge" d="M 270 305 L 350 235" marker-end="url(#arrow)" />
+    <text class="tiny" x="278" y="280">device fingerprint</text>
+
+    <path class="edge-bold" d="M 270 400 L 350 460" marker-end="url(#arrow)" />
+    <text class="tiny" x="278" y="450">ส่งใบสมัคร KYC</text>
+
+    <path class="edge-bold" d="M 270 500 L 350 460" marker-end="url(#arrow)" />
+    <text class="tiny" x="278" y="490">แนบรูปเอกสาร</text>
+
+    <path class="edge" d="M 530 170 L 530 190" marker-end="url(#arrow)" />
+
+    <path class="edge" d="M 710 460 L 790 220" marker-end="url(#arrow)" />
+    <text class="tiny" x="715" y="380">แจกงาน</text>
+
+    <path class="edge" d="M 710 350 L 790 325" marker-end="url(#arrow)" />
+    <text class="tiny" x="715" y="335">อนุมัติ/ปฏิเสธ</text>
+
+    <path class="edge" d="M 350 555 L 270 615" marker-end="url(#arrow)" />
+    <text class="tiny" x="278" y="610">ส่งผลกลับ</text>
+
+    <path class="edge" d="M 625 400 L 625 520" marker-end="url(#arrow)" />
+  </svg>
+
+  <div class="legend">
+    <strong>สีในภาพ:</strong>
+    <span><span class="legend-box" style="background:var(--input)"></span>ข้อมูลนำเข้า</span>
+    <span><span class="legend-box" style="background:var(--process)"></span>กระบวนการ</span>
+    <span><span class="legend-box" style="background:var(--storage)"></span>ที่เก็บข้อมูล</span>
+    <span><span class="legend-box" style="background:var(--external)"></span>ภายนอก/เอกสาร</span>
+    <span><span class="legend-box" style="background:var(--purple)"></span>AI/ระบบช่วย</span>
+    <span><span class="legend-box" style="background:var(--orange)"></span>ความปลอดภัย</span>
+    <span><span class="legend-box" style="background:var(--ok)"></span>สำเร็จ</span>
+    <span><span class="legend-box" style="background:var(--risk)"></span>ปฏิเสธ</span>
+  </div>
+
+  <!-- ========== SIGNUP FLOW ========== -->
+  <h2 id="signup">📊 ลำดับการสมัคร (5 ขั้นตอน)</h2>
+  <svg viewBox="0 0 1040 220" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--line)" />
+      </marker>
+    </defs>
+
+    <g>
+      <rect class="node input" x="20" y="50" width="180" height="100" rx="10" />
+      <circle class="step-bg" cx="40" cy="70" r="13" />
+      <text class="step" x="40" y="74" text-anchor="middle">1</text>
+      <text class="big" x="110" y="90" text-anchor="middle">📝 กรอกข้อมูล</text>
+      <text class="small" x="110" y="110" text-anchor="middle">ชื่อ + เบอร์โทร</text>
+      <text class="small" x="110" y="128" text-anchor="middle">(phone_hash เก็บ PDPA)</text>
+    </g>
+
+    <g>
+      <rect class="node process" x="230" y="50" width="180" height="100" rx="10" />
+      <circle class="step-bg" cx="250" cy="70" r="13" />
+      <text class="step" x="250" y="74" text-anchor="middle">2</text>
+      <text class="big" x="320" y="90" text-anchor="middle">🆔 สร้าง member_id</text>
+      <text class="small" x="320" y="110" text-anchor="middle">UUID: usr_&lt;32 hex&gt;</text>
+      <text class="small" x="320" y="128" text-anchor="middle">status: ACTIVE, L0</text>
+    </g>
+
+    <g>
+      <rect class="node storage" x="440" y="50" width="180" height="100" rx="10" />
+      <circle class="step-bg" cx="460" cy="70" r="13" />
+      <text class="step" x="460" y="74" text-anchor="middle">3</text>
+      <text class="big" x="530" y="90" text-anchor="middle">📞 ผูกเบอร์หลัก</text>
+      <text class="small" x="530" y="110" text-anchor="middle">is_primary = true</text>
+      <text class="small" x="530" y="128" text-anchor="middle">UNIQUE กันซ้ำ</text>
+    </g>
+
+    <g>
+      <rect class="node purple" x="650" y="50" width="180" height="100" rx="10" />
+      <circle class="step-bg" cx="670" cy="70" r="13" />
+      <text class="step" x="670" y="74" text-anchor="middle">4</text>
+      <text class="big" x="740" y="90" text-anchor="middle">📱 ผูกเครื่อง</text>
+      <text class="small" x="740" y="110" text-anchor="middle">device_fingerprint</text>
+      <text class="small" x="740" y="128" text-anchor="middle">ios / android / web</text>
+    </g>
+
+    <g>
+      <rect class="node ok" x="860" y="50" width="160" height="100" rx="10" />
+      <circle class="step-bg" cx="880" cy="70" r="13" />
+      <text class="step" x="880" y="74" text-anchor="middle">5</text>
+      <text class="big" x="940" y="90" text-anchor="middle">✅ พร้อมใช้</text>
+      <text class="small" x="940" y="110" text-anchor="middle">trust_score: 50</text>
+      <text class="small" x="940" y="128" text-anchor="middle">kyc_level: LEVEL_0</text>
+    </g>
+
+    <path class="edge-bold" d="M 200 100 L 230 100" marker-end="url(#arrow2)" />
+    <path class="edge-bold" d="M 410 100 L 440 100" marker-end="url(#arrow2)" />
+    <path class="edge-bold" d="M 620 100 L 650 100" marker-end="url(#arrow2)" />
+    <path class="edge-bold" d="M 830 100 L 860 100" marker-end="url(#arrow2)" />
+  </svg>
+
+  <!-- ========== DUPLICATE DETECTION ========== -->
+  <h2 id="dup">🔍 ระบบจับคนซ้ำ (Identity Resolution) — 4 สัญญาณ</h2>
+  <svg viewBox="0 0 1040 360" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arrow3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--line)" />
+      </marker>
+    </defs>
+
+    <g>
+      <rect class="node input" x="20" y="130" width="200" height="100" rx="10" />
+      <text class="big" x="120" y="160" text-anchor="middle">👤 สมาชิกใหม่</text>
+      <text class="small" x="120" y="180" text-anchor="middle">ส่งข้อมูล:</text>
+      <text class="small" x="120" y="198" text-anchor="middle">เบอร์ / เครื่อง / IP / ชื่อ</text>
+    </g>
+
+    <g>
+      <rect class="node purple" x="270" y="40" width="200" height="60" rx="10" />
+      <text class="big" x="370" y="65" text-anchor="middle">📞 เบอร์ตรงกัน</text>
+      <text class="small" x="370" y="83" text-anchor="middle">confidence 0.95 ⭐</text>
+    </g>
+    <g>
+      <rect class="node purple" x="270" y="110" width="200" height="60" rx="10" />
+      <text class="big" x="370" y="135" text-anchor="middle">💻 เครื่องเดียวกัน</text>
+      <text class="small" x="370" y="153" text-anchor="middle">confidence 0.85</text>
+    </g>
+    <g>
+      <rect class="node purple" x="270" y="180" width="200" height="60" rx="10" />
+      <text class="big" x="370" y="205" text-anchor="middle">🌐 IP เดียว (7 วัน)</text>
+      <text class="small" x="370" y="223" text-anchor="middle">confidence 0.6</text>
+    </g>
+    <g>
+      <rect class="node purple" x="270" y="250" width="200" height="60" rx="10" />
+      <text class="big" x="370" y="275" text-anchor="middle">🅰️ ชื่อคล้าย &gt; 80%</text>
+      <text class="small" x="370" y="293" text-anchor="middle">Levenshtein · max 0.4</text>
+    </g>
+
+    <g>
+      <rect class="node process" x="520" y="130" width="180" height="100" rx="10" />
+      <text class="big" x="610" y="158" text-anchor="middle">🧮 รวมคะแนน</text>
+      <text class="small" x="610" y="178" text-anchor="middle">max + 0.05 × (n-1)</text>
+      <text class="small" x="610" y="196" text-anchor="middle">ไม่เกิน 0.99</text>
+    </g>
+
+    <g>
+      <rect class="node ok" x="750" y="40" width="130" height="80" rx="10" />
+      <text class="big" x="815" y="68" text-anchor="middle">✅ รวมอัตโนมัติ</text>
+      <text class="small" x="815" y="88" text-anchor="middle">confidence &gt; 0.95</text>
+    </g>
+    <g>
+      <rect class="node external" x="750" y="130" width="130" height="80" rx="10" />
+      <text class="big" x="815" y="158" text-anchor="middle">👮 ให้คนดู</text>
+      <text class="small" x="815" y="178" text-anchor="middle">0.80 - 0.95</text>
+    </g>
+    <g>
+      <rect class="node risk" x="750" y="220" width="130" height="80" rx="10" />
+      <text class="big" x="815" y="248" text-anchor="middle">❌ ปฏิเสธ</text>
+      <text class="small" x="815" y="268" text-anchor="middle">≤ 0.80</text>
+    </g>
+
+    <path class="edge" d="M 220 160 L 270 70" marker-end="url(#arrow3)" />
+    <path class="edge" d="M 220 175 L 270 140" marker-end="url(#arrow3)" />
+    <path class="edge" d="M 220 200 L 270 210" marker-end="url(#arrow3)" />
+    <path class="edge" d="M 220 215 L 270 280" marker-end="url(#arrow3)" />
+    <path class="edge" d="M 470 70 L 520 145" marker-end="url(#arrow3)" />
+    <path class="edge" d="M 470 140 L 520 165" marker-end="url(#arrow3)" />
+    <path class="edge" d="M 470 210 L 520 185" marker-end="url(#arrow3)" />
+    <path class="edge" d="M 470 280 L 520 205" marker-end="url(#arrow3)" />
+    <path class="edge" d="M 700 155 L 750 80" marker-end="url(#arrow3)" />
+    <path class="edge" d="M 700 175 L 750 170" marker-end="url(#arrow3)" />
+    <path class="edge" d="M 700 195 L 750 260" marker-end="url(#arrow3)" />
+  </svg>
+
+  <!-- ========== KYC L0→L1 ========== -->
+  <h2 id="kyc-l1">🛡️ KYC L0 → L1 (อัตโนมัติ ผ่าน stub)</h2>
+  <svg viewBox="0 0 1040 200" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arrow4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--line)" />
+      </marker>
+    </defs>
+
+    <g>
+      <rect class="node neutral" x="20" y="60" width="160" height="80" rx="10" />
+      <text class="big" x="100" y="92" text-anchor="middle">🟡 LEVEL_0</text>
+      <text class="small" x="100" y="112" text-anchor="middle">สมัครเสร็จใหม่ๆ</text>
+      <text class="small" x="100" y="128" text-anchor="middle">trust_score 50</text>
+    </g>
+
+    <g>
+      <rect class="node process" x="220" y="60" width="220" height="80" rx="10" />
+      <text class="big" x="330" y="90" text-anchor="middle">upgradeKYC('LEVEL_1')</text>
+      <text class="small" x="330" y="110" text-anchor="middle">📞 ยืนยันเบอร์แล้ว → auto</text>
+      <text class="small" x="330" y="128" text-anchor="middle">📜 kyc.js (stub)</text>
+    </g>
+
+    <g>
+      <rect class="node process" x="480" y="60" width="220" height="80" rx="10" />
+      <text class="big" x="590" y="90" text-anchor="middle">updateMember</text>
+      <text class="small" x="590" y="110" text-anchor="middle">kyc_level: 'LEVEL_1'</text>
+      <text class="small" x="590" y="128" text-anchor="middle">+ Audit KYC_UPGRADED</text>
+    </g>
+
+    <g>
+      <rect class="node ok" x="740" y="60" width="160" height="80" rx="10" />
+      <text class="big" x="820" y="92" text-anchor="middle">🟢 LEVEL_1</text>
+      <text class="small" x="820" y="112" text-anchor="middle">ผ่านอัตโนมัติ</text>
+      <text class="small" x="820" y="128" text-anchor="middle">{ approved: true }</text>
+    </g>
+
+    <path class="edge-bold" d="M 180 100 L 220 100" marker-end="url(#arrow4)" />
+    <path class="edge-bold" d="M 440 100 L 480 100" marker-end="url(#arrow4)" />
+    <path class="edge-bold" d="M 700 100 L 740 100" marker-end="url(#arrow4)" />
+  </svg>
+
+  <!-- ========== KYC L1→L2 ========== -->
+  <h2 id="kyc-l2">🛡️ KYC L1 → L2 (ต้องให้เจ้าหน้าที่ตรวจ)</h2>
+  <svg viewBox="0 0 1040 360" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arrow5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--line)" />
+      </marker>
+    </defs>
+
+    <g>
+      <rect class="node ok" x="20" y="130" width="140" height="80" rx="10" />
+      <text class="big" x="90" y="160" text-anchor="middle">🟢 LEVEL_1</text>
+      <text class="small" x="90" y="180" text-anchor="middle">เริ่มขอ L2</text>
+    </g>
+
+    <g>
+      <rect class="node external" x="200" y="130" width="180" height="80" rx="10" />
+      <text class="big" x="290" y="160" text-anchor="middle">📄 แนบเอกสาร</text>
+      <text class="small" x="290" y="180" text-anchor="middle">บัตรปชช. / ทะเบียน</text>
+    </g>
+
+    <g>
+      <rect class="node process" x="420" y="40" width="200" height="70" rx="10" />
+      <text class="big" x="520" y="68" text-anchor="middle">📝 submitApplication</text>
+      <text class="small" x="520" y="86" text-anchor="middle">level: 2 · sla: 48h</text>
+    </g>
+
+    <g>
+      <rect class="node purple" x="420" y="130" width="200" height="80" rx="10" />
+      <text class="big" x="520" y="158" text-anchor="middle">🎯 _assignReviewer</text>
+      <text class="small" x="520" y="178" text-anchor="middle">round-robin</text>
+      <text class="small" x="520" y="195" text-anchor="middle">(สลับคนดู)</text>
+    </g>
+
+    <g>
+      <rect class="node process" x="420" y="230" width="200" height="70" rx="10" />
+      <text class="big" x="520" y="258" text-anchor="middle">⏳ in_review</text>
+      <text class="small" x="520" y="276" text-anchor="middle">SLA: 48 ชม.</text>
+    </g>
+
+    <g>
+      <rect class="node input" x="660" y="40" width="160" height="60" rx="10" />
+      <text class="big" x="740" y="68" text-anchor="middle">📄 uploadDocument</text>
+      <text class="small" x="740" y="86" text-anchor="middle">1 ใบ หรือ หลายใบ</text>
+    </g>
+
+    <g>
+      <rect class="node external" x="660" y="130" width="160" height="80" rx="10" />
+      <text class="big" x="740" y="158" text-anchor="middle">📨 requestMoreInfo</text>
+      <text class="small" x="740" y="178" text-anchor="middle">SLA +24 ชม.</text>
+      <text class="small" x="740" y="195" text-anchor="middle">(ขอเพิ่มเอกสาร)</text>
+    </g>
+
+    <g>
+      <rect class="node ok" x="860" y="20" width="160" height="60" rx="10" />
+      <text class="big" x="940" y="48" text-anchor="middle">✅ approve</text>
+      <text class="small" x="940" y="66" text-anchor="middle">→ tier: pro</text>
+    </g>
+    <g>
+      <rect class="node risk" x="860" y="100" width="160" height="60" rx="10" />
+      <text class="big" x="940" y="128" text-anchor="middle">❌ reject</text>
+      <text class="small" x="940" y="146" text-anchor="middle">+ เหตุผล</text>
+    </g>
+    <g>
+      <rect class="node process" x="860" y="180" width="160" height="60" rx="10" />
+      <text class="big" x="940" y="208" text-anchor="middle">📋 getStatus</text>
+      <text class="small" x="940" y="226" text-anchor="middle">ดูสถานะ</text>
+    </g>
+
+    <g>
+      <rect class="node purple" x="660" y="240" width="360" height="80" rx="10" />
+      <text class="big" x="840" y="268" text-anchor="middle">🟢 LEVEL_2 = อัปเกรด Pro/Enterprise</text>
+      <text class="small" x="840" y="288" text-anchor="middle">อัปเดต member.kyc_level + tier = 'pro' (L2) | 'enterprise' (L3)</text>
+    </g>
+
+    <path class="edge-bold" d="M 160 170 L 200 170" marker-end="url(#arrow5)" />
+    <path class="edge-bold" d="M 380 170 L 420 75" marker-end="url(#arrow5)" />
+    <path class="edge-bold" d="M 380 170 L 420 170" marker-end="url(#arrow5)" />
+    <path class="edge-bold" d="M 380 170 L 420 265" marker-end="url(#arrow5)" />
+    <path class="edge-bold" d="M 620 75 L 660 70" marker-end="url(#arrow5)" />
+    <path class="edge-bold" d="M 620 170 L 660 170" marker-end="url(#arrow5)" />
+    <path class="edge-bold" d="M 820 70 L 860 50" marker-end="url(#arrow5)" />
+    <path class="edge-bold" d="M 820 170 L 860 130" marker-end="url(#arrow5)" />
+    <path class="edge-bold" d="M 1020 50 L 1020 240 L 1020 270" marker-end="url(#arrow5)" />
+    <path class="edge" d="M 620 265 L 660 270" marker-end="url(#arrow5)" />
+  </svg>
+
+  <!-- ========== DATABASE ========== -->
+  <h2 id="data">🗄️ โครงสร้างฐานข้อมูล (10 ตาราง)</h2>
+  <svg viewBox="0 0 1040 540" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arrow6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--line)" />
+      </marker>
+    </defs>
+
+    <!-- members -->
+    <g>
+      <rect class="node storage" x="20" y="40" width="200" height="120" rx="8" />
+      <text class="big" x="120" y="65" text-anchor="middle">🗂️ members</text>
+      <text class="small" x="35" y="85">PK: member_id (UUID)</text>
+      <text class="small" x="35" y="100">display_name</text>
+      <text class="small" x="35" y="115">status (ACTIVE/SUSP/DELETED)</text>
+      <text class="small" x="35" y="130">trust_score (0-100)</text>
+      <text class="small" x="35" y="145">kyc_level (L0/L1/L2)</text>
+    </g>
+
+    <!-- phone_bindings -->
+    <g>
+      <rect class="node storage" x="260" y="40" width="200" height="120" rx="8" />
+      <text class="big" x="360" y="65" text-anchor="middle">📞 phone_bindings</text>
+      <text class="small" x="275" y="85">PK: binding_id (UUID)</text>
+      <text class="small" x="275" y="100">FK: member_id</text>
+      <text class="small" x="275" y="115">phone_hash (UNIQUE)</text>
+      <text class="small" x="275" y="130">phone_last4</text>
+      <text class="small" x="275" y="145">is_primary, status</text>
+    </g>
+
+    <!-- device_bindings -->
+    <g>
+      <rect class="node storage" x="500" y="40" width="200" height="120" rx="8" />
+      <text class="big" x="600" y="65" text-anchor="middle">📱 device_bindings</text>
+      <text class="small" x="515" y="85">PK: device_id (UUID)</text>
+      <text class="small" x="515" y="100">FK: member_id</text>
+      <text class="small" x="515" y="115">device_fingerprint</text>
+      <text class="small" x="515" y="130">platform (ios/android/web)</text>
+      <text class="small" x="515" y="145">last_seen_at, first_seen_at</text>
+    </g>
+
+    <!-- login_history -->
+    <g>
+      <rect class="node storage" x="740" y="40" width="200" height="100" rx="8" />
+      <text class="big" x="840" y="65" text-anchor="middle">🔐 login_history</text>
+      <text class="small" x="755" y="85">PK: id (BIGSERIAL)</text>
+      <text class="small" x="755" y="100">member_id, phone_hash</text>
+      <text class="small" x="755" y="115">login_at, ip_address</text>
+      <text class="small" x="755" y="130">result (SUCCESS/FAILED)</text>
+    </g>
+
+    <!-- consent_log -->
+    <g>
+      <rect class="node storage" x="20" y="200" width="200" height="120" rx="8" />
+      <text class="big" x="120" y="225" text-anchor="middle">✅ consent_log</text>
+      <text class="small" x="35" y="245">PK: consent_id (UUID)</text>
+      <text class="small" x="35" y="260">FK: member_id</text>
+      <text class="small" x="35" y="275">consent_type (3 แบบ)</text>
+      <text class="small" x="35" y="290">granted, granted_at, revoked_at</text>
+      <text class="small" x="35" y="305">ip_address, user_agent (PDPA)</text>
+    </g>
+
+    <!-- kyc_reviewers -->
+    <g>
+      <rect class="node orange" x="260" y="200" width="200" height="100" rx="8" />
+      <text class="big" x="360" y="225" text-anchor="middle">👮 kyc_reviewers</text>
+      <text class="small" x="275" y="245">PK: reviewer_id (R-1, R-2)</text>
+      <text class="small" x="275" y="260">name, email</text>
+      <text class="small" x="275" y="275">specializations (JSONB)</text>
+      <text class="small" x="275" y="290">active, status, added_at</text>
+    </g>
+
+    <!-- kyc_applications -->
+    <g>
+      <rect class="node orange" x="500" y="200" width="220" height="160" rx="8" />
+      <text class="big" x="610" y="225" text-anchor="middle">📋 kyc_applications</text>
+      <text class="small" x="515" y="245">PK: application_id (KYC-...)</text>
+      <text class="small" x="515" y="260">FK: member_id (UUID)</text>
+      <text class="small" x="515" y="275">level (2|3), business_name</text>
+      <text class="small" x="515" y="290">status (pending/in_review/...)</text>
+      <text class="small" x="515" y="305">FK: assigned_reviewer_id</text>
+      <text class="small" x="515" y="320">submitted_at, sla_deadline</text>
+      <text class="small" x="515" y="335">decision, decision_reason</text>
+    </g>
+
+    <!-- kyc_documents -->
+    <g>
+      <rect class="node storage" x="750" y="200" width="200" height="120" rx="8" />
+      <text class="big" x="850" y="225" text-anchor="middle">📄 kyc_documents</text>
+      <text class="small" x="765" y="245">PK: document_id (DOC-...)</text>
+      <text class="small" x="765" y="260">FK: application_id (CASCADE)</text>
+      <text class="small" x="765" y="275">document_type, file_name</text>
+      <text class="small" x="765" y="290">file_url, file_size_bytes</text>
+      <text class="small" x="765" y="305">mime_type, uploaded_at</text>
+    </g>
+
+    <!-- kyc_reviews -->
+    <g>
+      <rect class="node storage" x="20" y="360" width="200" height="100" rx="8" />
+      <text class="big" x="120" y="385" text-anchor="middle">⭐ kyc_reviews</text>
+      <text class="small" x="35" y="405">PK: review_id (REV-...)</text>
+      <text class="small" x="35" y="420">FK: application_id (CASCADE)</text>
+      <text class="small" x="35" y="435">FK: reviewer_id</text>
+      <text class="small" x="35" y="450">decision, notes, reviewed_at</text>
+    </g>
+
+    <!-- Views + Functions -->
+    <g>
+      <rect class="node purple" x="260" y="360" width="280" height="60" rx="8" />
+      <text class="big" x="400" y="385" text-anchor="middle">📊 v_kyc_pending_queue</text>
+      <text class="small" x="400" y="403" text-anchor="middle">+ hours_until_sla · sla_status (BREACHED/URGENT/...)</text>
+    </g>
+
+    <g>
+      <rect class="node purple" x="260" y="430" width="280" height="60" rx="8" />
+      <text class="big" x="400" y="455" text-anchor="middle">⚙️ get_kyc_stats(p_since)</text>
+      <text class="small" x="400" y="473" text-anchor="middle">→ total/pending/approved/sla_breaches/approval_rate</text>
+    </g>
+
+    <!-- RLS note -->
+    <g>
+      <rect class="node orange" x="580" y="360" width="370" height="130" rx="8" />
+      <text class="big" x="765" y="385" text-anchor="middle">🔒 RLS Policies (4 roles × 2 tables)</text>
+      <text class="small" x="595" y="405">• member: ดูได้เฉพาะของตัวเอง</text>
+      <text class="small" x="595" y="420">• reviewer: ดู/แก้ได้เฉพาะที่ได้รับมอบหมาย</text>
+      <text class="small" x="595" y="435">• admin: ทำได้ทุกอย่าง</text>
+      <text class="small" x="595" y="450">• service: ทำได้ทุกอย่าง (สำหรับ system)</text>
+      <text class="small" x="595" y="475" fill="#16a34a" font-weight="600">ใช้ current_setting('app.current_role')</text>
+    </g>
+
+    <!-- Relationships -->
+    <path class="edge" d="M 220 100 L 260 90" marker-end="url(#arrow6)" />
+    <text class="tiny" x="225" y="85">has</text>
+
+    <path class="edge" d="M 220 100 L 500 100" marker-end="url(#arrow6)" />
+    <text class="tiny" x="280" y="92">has</text>
+
+    <path class="edge" d="M 220 130 L 740 110" marker-end="url(#arrow6)" />
+    <text class="tiny" x="280" y="120">logs</text>
+
+    <path class="edge" d="M 220 250 L 20 280" marker-end="url(#arrow6)" />
+    <text class="tiny" x="110" y="245">grants</text>
+
+    <path class="edge-bold" d="M 220 280 L 500 250" marker-end="url(#arrow6)" />
+    <text class="tiny" x="280" y="260">submits</text>
+
+    <path class="edge" d="M 460 240 L 500 270" marker-end="url(#arrow6)" />
+    <text class="tiny" x="465" y="255">assigned</text>
+
+    <path class="edge" d="M 720 260 L 750 250" marker-end="url(#arrow6)" />
+    <text class="tiny" x="725" y="250">uploads</text>
+
+    <path class="edge" d="M 600 360 L 200 380" marker-end="url(#arrow6)" />
+    <text class="tiny" x="280" y="375">receives</text>
+  </svg>
+
+</main>
