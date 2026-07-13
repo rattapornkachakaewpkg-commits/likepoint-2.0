@@ -1,0 +1,315 @@
+<!doctype html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KYC/Verify Flow — Likepoint 2.0</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f8fafc;
+    --fg: #172033;
+    --muted: #5b6475;
+    --line: #64748b;
+    --neutral: #e2e8f0;
+    --input: #bfdbfe;
+    --process: #c7d2fe;
+    --storage: #99f6e4;
+    --external: #fde68a;
+    --risk: #fecaca;
+    --ok: #bbf7d0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f172a;
+      --fg: #e5e7eb;
+      --muted: #a3adbd;
+      --line: #94a3b8;
+      --neutral: #334155;
+      --input: #1d4ed8;
+      --process: #4338ca;
+      --storage: #0f766e;
+      --external: #92400e;
+      --risk: #991b1b;
+      --ok: #166534;
+    }
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main {
+    max-width: 1080px;
+    margin: 24px auto;
+    padding: 0 20px 60px;
+  }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .sub { color: var(--muted); margin-bottom: 20px; font-size: 13px; }
+  svg { width: 100%; height: auto; display: block; }
+  .title { font-size: 18px; font-weight: 700; fill: var(--fg); }
+  .big { font-size: 16px; font-weight: 600; fill: var(--fg); }
+  .label { font-size: 13px; font-weight: 600; fill: var(--fg); }
+  .small { font-size: 11px; fill: var(--muted); }
+  .tiny { font-size: 10px; fill: var(--muted); }
+  .node { stroke: var(--line); stroke-width: 1; }
+  .neutral { fill: var(--neutral); }
+  .input { fill: var(--input); }
+  .process { fill: var(--process); }
+  .storage { fill: var(--storage); }
+  .external { fill: var(--external); }
+  .risk { fill: var(--risk); }
+  .ok { fill: var(--ok); }
+  .edge { stroke: var(--line); stroke-width: 1.5; fill: none; }
+  .edge-bold { stroke: var(--line); stroke-width: 2.2; fill: none; }
+  .zone { fill: none; stroke: var(--line); stroke-width: 1; stroke-dasharray: 6 5; opacity: 0.7; }
+  .zone-label { font-size: 12px; font-weight: 700; fill: var(--muted); letter-spacing: 1px; }
+  .step-num { font-size: 13px; font-weight: 700; fill: white; }
+  .step-num-bg { fill: var(--line); }
+  .emoji { font-size: 18px; }
+  .legend-box { display: inline-block; width: 12px; height: 12px; vertical-align: middle; margin-right: 4px; border: 1px solid var(--line); }
+  .legend { font-size: 12px; color: var(--muted); margin-top: 18px; }
+  .legend span { margin-right: 16px; }
+</style>
+
+<main>
+  <h1>🔐 KYC/Verify Flow — Likepoint 2.0 (ภาษาง่ายๆ)</h1>
+  <div class="sub">ภาพรวม: สมาชิกสมัคร → ระบบตรวจสอบ → รอเจ้าหน้าที่ → อนุมัติ/ปฏิเสธ</div>
+
+  <svg viewBox="0 0 1040 900" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--line)" />
+      </marker>
+    </defs>
+
+    <!-- ========== ZONE 1: สมาชิก (Member) ========== -->
+    <rect class="zone" x="20" y="60" width="280" height="780" rx="12" />
+    <text class="zone-label" x="40" y="85">👤 ฝั่งสมาชิก (USER APP)</text>
+
+    <!-- Step 1: สมัคร -->
+    <g>
+      <rect class="node input" x="50" y="110" width="220" height="80" rx="10" />
+      <text class="big" x="160" y="140" text-anchor="middle">📱 สมัครสมาชิก</text>
+      <text class="small" x="160" y="160" text-anchor="middle">กรอกเบอร์โทร + ชื่อ</text>
+      <text class="small" x="160" y="178" text-anchor="middle">(ผ่านแอปมือถือ)</text>
+    </g>
+
+    <!-- Step 2: ยืนยันเบอร์ -->
+    <g>
+      <rect class="node process" x="50" y="220" width="220" height="80" rx="10" />
+      <text class="big" x="160" y="250" text-anchor="middle">🔢 ยืนยันเบอร์โทร (OTP)</text>
+      <text class="small" x="160" y="270" text-anchor="middle">ระบบส่งรหัส 6 หลัก</text>
+      <text class="small" x="160" y="288" text-anchor="middle">กรอกถูก → ผ่าน Level 1</text>
+    </g>
+
+    <!-- Step 3: ต้องการ Pro/Enterprise -->
+    <g>
+      <rect class="node external" x="50" y="330" width="220" height="90" rx="10" />
+      <text class="big" x="160" y="360" text-anchor="middle">🛒 อยากใช้ Pro/Enterprise</text>
+      <text class="small" x="160" y="380" text-anchor="middle">ขายของเยอะ / ทำธุรกิจ</text>
+      <text class="small" x="160" y="398" text-anchor="middle">→ ต้องยืนยันตัวตน (L2/L3)</text>
+    </g>
+
+    <!-- Step 4: กรอกฟอร์ม + แนบเอกสาร -->
+    <g>
+      <rect class="node process" x="50" y="450" width="220" height="100" rx="10" />
+      <text class="big" x="160" y="478" text-anchor="middle">📄 กรอกฟอร์ม + แนบรูป</text>
+      <text class="small" x="160" y="498" text-anchor="middle">• บัตรประชาชน / Passport</text>
+      <text class="small" x="160" y="513" text-anchor="middle">• ทะเบียนบริษัท (ถ้ามี)</text>
+      <text class="small" x="160" y="528" text-anchor="middle">• Selfie ถือบัตร</text>
+    </g>
+
+    <!-- Step 5: รอ -->
+    <g>
+      <rect class="node neutral" x="50" y="580" width="220" height="80" rx="10" />
+      <text class="big" x="160" y="610" text-anchor="middle">⏳ รอเจ้าหน้าที่ตรวจ</text>
+      <text class="small" x="160" y="630" text-anchor="middle">L2: 48 ชม. · L3: 72 ชม.</text>
+      <text class="small" x="160" y="648" text-anchor="middle">(จะมีแจ้งเตือนผล)</text>
+    </g>
+
+    <!-- Step 6: ผลลัพธ์ -->
+    <g>
+      <rect class="node ok" x="50" y="690" width="105" height="120" rx="10" />
+      <text class="big" x="102" y="720" text-anchor="middle">✅ ผ่าน</text>
+      <text class="small" x="102" y="745" text-anchor="middle">อัปเกรดเป็น</text>
+      <text class="small" x="102" y="762" text-anchor="middle">Pro/Enterprise</text>
+      <text class="small" x="102" y="785" text-anchor="middle">เริ่มขายได้!</text>
+    </g>
+    <g>
+      <rect class="node risk" x="165" y="690" width="105" height="120" rx="10" />
+      <text class="big" x="217" y="720" text-anchor="middle">❌ ไม่ผ่าน</text>
+      <text class="small" x="217" y="745" text-anchor="middle">บอกเหตุผล</text>
+      <text class="small" x="217" y="762" text-anchor="middle">แก้ไขส่งใหม่ได้</text>
+      <text class="small" x="217" y="785" text-anchor="middle">หรืออุทธรณ์</text>
+    </g>
+
+    <!-- ========== ZONE 2: ระบบ (Engine) ========== -->
+    <rect class="zone" x="320" y="60" width="380" height="780" rx="12" />
+    <text class="zone-label" x="340" y="85">⚙️ ระบบหลังบ้าน (ENGINE)</text>
+
+    <!-- Engine 1: Identity Service -->
+    <g>
+      <rect class="node storage" x="350" y="110" width="320" height="80" rx="10" />
+      <text class="big" x="510" y="138" text-anchor="middle">🗂️ Identity Service</text>
+      <text class="small" x="510" y="158" text-anchor="middle">เก็บข้อมูลสมาชิก + เบอร์โทร</text>
+      <text class="small" x="510" y="176" text-anchor="middle">(เช็คว่าเบอร์นี้สมัครซ้ำไหม)</text>
+    </g>
+
+    <!-- Engine 2: Identity Resolution -->
+    <g>
+      <rect class="node storage" x="350" y="220" width="320" height="90" rx="10" />
+      <text class="big" x="510" y="250" text-anchor="middle">🔍 Identity Resolution (AI)</text>
+      <text class="small" x="510" y="270" text-anchor="middle">จับคนซ้ำ 3 สัญญาณ:</text>
+      <text class="small" x="510" y="285" text-anchor="middle">• เบอร์โทรตรงกัน (มั่นใจ 95%)</text>
+      <text class="small" x="510" y="300" text-anchor="middle">• อุปกรณ์เดียวกัน (85%) · IP เดียวกัน (60%)</text>
+    </g>
+
+    <!-- Engine 3: KYC Engine -->
+    <g>
+      <rect class="node process" x="350" y="340" width="320" height="120" rx="10" />
+      <text class="big" x="510" y="370" text-anchor="middle">🛡️ KYC Engine (PF-16)</text>
+      <text class="small" x="510" y="390" text-anchor="middle">รับใบสมัคร → ตั้ง deadline</text>
+      <text class="small" x="510" y="405" text-anchor="middle">→ แจกงานให้เจ้าหน้าที่ (สลับกันดู)</text>
+      <text class="small" x="510" y="420" text-anchor="middle">→ เก็บ log ทุกขั้นตอน (audit)</text>
+      <text class="small" x="510" y="440" text-anchor="middle">→ ถ้าเอกสารไม่ครบ ขอเพิ่มได้ (SLA +24ชม.)</text>
+    </g>
+
+    <!-- Engine 4: Notification -->
+    <g>
+      <rect class="node storage" x="350" y="490" width="320" height="80" rx="10" />
+      <text class="big" x="510" y="520" text-anchor="middle">🔔 Notification Service</text>
+      <text class="small" x="510" y="540" text-anchor="middle">แจ้งเตือนสมาชิก + เจ้าหน้าที่</text>
+      <text class="small" x="510" y="558" text-anchor="middle">(ผ่าน Push / SMS / Email)</text>
+    </g>
+
+    <!-- Engine 5: Audit -->
+    <g>
+      <rect class="node storage" x="350" y="600" width="320" height="80" rx="10" />
+      <text class="big" x="510" y="630" text-anchor="middle">📋 Audit Log</text>
+      <text class="small" x="510" y="650" text-anchor="middle">บันทึกทุก action ไว้ตรวจสอบ</text>
+      <text class="small" x="510" y="668" text-anchor="middle">(กฎหมาย + ป้องกันทุจริต)</text>
+    </g>
+
+    <!-- 4 Levels box -->
+    <g>
+      <rect class="node neutral" x="350" y="710" width="320" height="110" rx="10" />
+      <text class="big" x="510" y="735" text-anchor="middle">🎚️ 4 ระดับ KYC</text>
+      <text class="small" x="370" y="757">L0: ยังไม่ยืนยัน · L1: ยืนยันเบอร์แล้ว (auto)</text>
+      <text class="small" x="370" y="775">L2: ตรวจเอกสารด้วยคน (Pro, 48ชม.)</text>
+      <text class="small" x="370" y="793">L3: เอกสารครบ + ตรวจเข้ม (Enterprise, 72ชม.)</text>
+      <text class="small" x="370" y="811" fill="#16a34a" font-weight="600">ยิ่งระดับสูง → ยิ่งขายได้เยอะ</text>
+    </g>
+
+    <!-- ========== ZONE 3: เจ้าหน้าที่ (Reviewer) ========== -->
+    <rect class="zone" x="720" y="60" width="300" height="780" rx="12" />
+    <text class="zone-label" x="740" y="85">👮 ฝั่งเจ้าหน้าที่ (ADMIN CONSOLE)</text>
+
+    <!-- Reviewer sees queue -->
+    <g>
+      <rect class="node input" x="750" y="110" width="240" height="100" rx="10" />
+      <text class="big" x="870" y="140" text-anchor="middle">📥 คิวงานของฉัน</text>
+      <text class="small" x="870" y="160" text-anchor="middle">เรียงตามด่วนสุดก่อน</text>
+      <text class="small" x="870" y="178" text-anchor="middle">🔴 เลยกำหนด (Breach)</text>
+      <text class="small" x="870" y="196" text-anchor="middle">🟠 ใกล้หมดเวลา · 🟢 ปกติ</text>
+    </g>
+
+    <!-- Reviewer sees docs -->
+    <g>
+      <rect class="node process" x="750" y="240" width="240" height="100" rx="10" />
+      <text class="big" x="870" y="270" text-anchor="middle">🔎 ดูรายละเอียด</text>
+      <text class="small" x="870" y="290" text-anchor="middle">• ข้อมูลที่กรอก</text>
+      <text class="small" x="870" y="305" text-anchor="middle">• รูปเอกสารแนบ</text>
+      <text class="small" x="870" y="320" text-anchor="middle">• ประวัติการสมัคร</text>
+    </g>
+
+    <!-- Decision -->
+    <g>
+      <rect class="node ok" x="750" y="370" width="240" height="60" rx="10" />
+      <text class="big" x="870" y="397" text-anchor="middle">✅ อนุมัติ</text>
+      <text class="small" x="870" y="415" text-anchor="middle">→ อัปเกรด tier อัตโนมัติ</text>
+    </g>
+
+    <g>
+      <rect class="node risk" x="750" y="450" width="240" height="60" rx="10" />
+      <text class="big" x="870" y="477" text-anchor="middle">❌ ปฏิเสธ</text>
+      <text class="small" x="870" y="495" text-anchor="middle">→ ต้องบอกเหตุผล (audit)</text>
+    </g>
+
+    <g>
+      <rect class="node external" x="750" y="530" width="240" height="70" rx="10" />
+      <text class="big" x="870" y="560" text-anchor="middle">📨 ขอเอกสารเพิ่ม</text>
+      <text class="small" x="870" y="580" text-anchor="middle">→ ขยายเวลา +24 ชม.</text>
+      <text class="small" x="870" y="598" text-anchor="middle">→ ส่งข้อความหาสมาชิก</text>
+    </g>
+
+    <!-- Stats -->
+    <g>
+      <rect class="node neutral" x="750" y="620" width="240" height="200" rx="10" />
+      <text class="big" x="870" y="650" text-anchor="middle">📊 สถิติ</text>
+      <text class="small" x="770" y="675">• ค้างอยู่กี่คิว</text>
+      <text class="small" x="770" y="695">• เฉลี่ยอนุมัติใช้เวลากี่ชม.</text>
+      <text class="small" x="770" y="715">• อัตราอนุมัติ/ปฏิเสธ</text>
+      <text class="small" x="770" y="735">• เคย breach SLA กี่ครั้ง</text>
+      <text class="small" x="770" y="755">• ทีมไหนทำงานเยอะสุด</text>
+      <text class="small" x="770" y="785" fill="#16a34a" font-weight="600">💡 เจ้าหน้าที่ assign แบบสลับ</text>
+      <text class="small" x="770" y="800" fill="#16a34a" font-weight="600">(ไม่ให้คนใดคนหนึ่งทำคนเดียว)</text>
+    </g>
+
+    <!-- ========== ARROWS ========== -->
+    <!-- Member → Identity Service -->
+    <path class="edge-bold" d="M 270 150 L 350 150" marker-end="url(#arrow)" />
+    <text class="tiny" x="280" y="142">ส่งข้อมูลสมัคร</text>
+
+    <!-- Member verify → Identity -->
+    <path class="edge-bold" d="M 270 260 L 350 200" marker-end="url(#arrow)" />
+    <text class="tiny" x="278" y="240">OTP</text>
+
+    <!-- Identity → Resolution -->
+    <path class="edge" d="M 510 190 L 510 220" marker-end="url(#arrow)" />
+
+    <!-- Member submit form → KYC Engine -->
+    <path class="edge-bold" d="M 270 500 L 350 400" marker-end="url(#arrow)" />
+    <text class="tiny" x="278" y="460">ส่งใบสมัคร + เอกสาร</text>
+
+    <!-- KYC → Reviewer (queue) -->
+    <path class="edge-bold" d="M 670 400 L 750 160" marker-end="url(#arrow)" />
+    <text class="tiny" x="678" y="290">แจกงาน</text>
+
+    <!-- KYC → Notification -->
+    <path class="edge" d="M 510 460 L 510 490" marker-end="url(#arrow)" />
+
+    <!-- KYC → Audit -->
+    <path class="edge" d="M 510 570 L 510 600" marker-end="url(#arrow)" />
+
+    <!-- Reviewer → KYC (approve/reject) -->
+    <path class="edge" d="M 750 400 L 670 420" marker-end="url(#arrow)" />
+    <text class="tiny" x="678" y="395">อนุมัติ/ปฏิเสธ</text>
+
+    <!-- Notification → Member -->
+    <path class="edge" d="M 350 530 L 270 620" marker-end="url(#arrow)" />
+    <text class="tiny" x="278" y="568">ส่งผลกลับ</text>
+
+    <!-- KYC → Member (status update) -->
+    <path class="edge" d="M 350 420 L 270 620" marker-end="url(#arrow)" />
+    <text class="tiny" x="278" y="600">อัปเกรด tier</text>
+
+    <!-- Resolution → Audit (loops back) -->
+    <path class="edge" d="M 670 260 L 720 260 L 720 640 L 670 640" marker-end="url(#arrow)" />
+    <text class="tiny" x="678" y="640">log</text>
+
+  </svg>
+
+  <div class="legend">
+    <strong>สีในภาพ:</strong>
+    <span><span class="legend-box" style="background:var(--input)"></span>ข้อมูลนำเข้า</span>
+    <span><span class="legend-box" style="background:var(--process)"></span>กระบวนการ</span>
+    <span><span class="legend-box" style="background:var(--storage)"></span>ที่เก็บข้อมูล</span>
+    <span><span class="legend-box" style="background:var(--external)"></span>ภายนอก/เอกสาร</span>
+    <span><span class="legend-box" style="background:var(--ok)"></span>สำเร็จ</span>
+    <span><span class="legend-box" style="background:var(--risk)"></span>ปฏิเสธ/ความเสี่ยง</span>
+  </div>
+
+  <div class="legend" style="margin-top:10px;">
+    <strong>📖 อ่านง่ายๆ:</strong> เริ่มจากซ้าย → ขวา — สมาชิกกดสมัคร → ระบบหลังบ้านประมวลผล → เจ้าหน้าที่ตัดสิน → ส่งผลกลับ
+  </div>
+</main>
