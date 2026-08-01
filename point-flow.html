@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📊 LikePoint 2.0 — Point Flow Infographic</title>
+<style>
+:root {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --border: #334155;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --green: #22c55e;
+  --orange: #f97316;
+  --yellow: #eab308;
+  --blue: #3b82f6;
+  --red: #ef4444;
+  --purple: #a855f7;
+  --teal: #14b8a6;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Thai", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  padding: 1rem;
+  min-height: 100vh;
+}
+.container { max-width: 1280px; margin: 0 auto; }
+
+/* Header (สไตล์ dashboard เดิม) */
+header {
+  text-align: center;
+  padding: 1.5rem 1rem;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border);
+}
+h1 { font-size: clamp(1.4rem, 4vw, 2.2rem); margin-bottom: 0.5rem; }
+.subtitle { color: var(--muted); font-size: 0.95rem; }
+.badge {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  color: #fff;
+  font-weight: 700;
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  letter-spacing: .05em;
+  margin-bottom: 10px;
+}
+
+/* Nav back */
+.nav-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  margin-bottom: 1rem;
+  transition: all .15s;
+}
+.nav-back:hover { color: var(--green); border-color: var(--green); }
+
+/* Stats (สไตล์ dashboard เดิม) */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.stat {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+}
+.stat-num { font-size: 1.8rem; font-weight: bold; color: var(--blue); }
+.stat-label { color: var(--muted); font-size: 0.85rem; margin-top: 0.25rem; }
+
+/* Section card (สไตล์เดียวกับ dashboard — แต่เพิ่มสีขอบซ้าย) */
+.section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 5px solid;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+.s-green  { border-color: var(--green); }
+.s-red    { border-color: var(--red); }
+.s-yellow { border-color: var(--yellow); }
+.s-blue   { border-color: var(--blue); }
+.s-purple { border-color: var(--purple); }
+.s-teal   { border-color: var(--teal); }
+.s-orange { border-color: var(--orange); }
+
+.section h2 {
+  font-size: 1.05rem;
+  margin-bottom: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--text);
+}
+.icon {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  background: rgba(255,255,255,0.06);
+}
+
+/* Flow steps */
+.flow {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  flex-wrap: wrap;
+  margin: 0.75rem 0 0.25rem;
+}
+.step {
+  flex: 1 1 0;
+  min-width: 110px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 0.7rem;
+  text-align: center;
+}
+.step .n { font-size: 10px; color: var(--muted); font-weight: 700; letter-spacing: 0.05em; }
+.step .t { font-size: 0.85rem; font-weight: 600; color: var(--text); margin-top: 2px; }
+.arrow {
+  align-self: center;
+  color: var(--muted);
+  font-size: 16px;
+  padding: 0 4px;
+}
+
+.branch {
+  display: flex;
+  gap: 8px;
+  margin: 0.6rem 0;
+  flex-wrap: wrap;
+}
+.branch > div {
+  flex: 1;
+  min-width: 140px;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.82rem;
+  text-align: center;
+}
+.tag {
+  display: inline-block;
+  background: var(--border);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+
+.note {
+  background: rgba(234, 179, 8, 0.08);
+  border-left: 3px solid var(--yellow);
+  padding: 0.6rem 0.9rem;
+  border-radius: 6px;
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: #fde68a;
+}
+
+.formula {
+  background: #020617;
+  color: #f1f5f9;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+  margin: 0.6rem 0;
+}
+
+/* Pills (tags) */
+.pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin: 2px;
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+.pill.green  { background: rgba(34, 197, 94, 0.15);  color: #86efac; border-color: rgba(34, 197, 94, 0.3); }
+.pill.red    { background: rgba(239, 68, 68, 0.15);  color: #fca5a5; border-color: rgba(239, 68, 68, 0.3); }
+.pill.amber  { background: rgba(234, 179, 8, 0.15);  color: #fde68a; border-color: rgba(234, 179, 8, 0.3); }
+.pill.violet { background: rgba(168, 85, 247, 0.15); color: #d8b4fe; border-color: rgba(168, 85, 247, 0.3); }
+.pill.teal   { background: rgba(20, 184, 166, 0.15); color: #5eead4; border-color: rgba(20, 184, 166, 0.3); }
+.pill.pink   { background: rgba(236, 72, 153, 0.15); color: #f9a8d4; border-color: rgba(236, 72, 153, 0.3); }
+.pill.orange { background: rgba(249, 115, 22, 0.15); color: #fdba74; border-color: rgba(249, 115, 22, 0.3); }
+
+/* Tables (FX Pegging) */
+table.fx {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.5rem 0;
+  font-size: 0.85rem;
+}
+table.fx th, table.fx td {
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  text-align: left;
+}
+table.fx th {
+  background: rgba(15, 23, 42, 0.8);
+  font-weight: 700;
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+table.fx td { color: var(--text); }
+
+/* Tax flow */
+.tax-flow {
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 10px;
+  padding: 0.9rem;
+  margin-top: 0.5rem;
+}
+.tax-flow .row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+  flex-wrap: wrap;
+}
+.tax-flow .node {
+  background: var(--card);
+  border: 2px solid var(--blue);
+  color: #93c5fd;
+  padding: 5px 11px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+.tax-flow .node.green  { border-color: var(--green);  color: #86efac; }
+.tax-flow .node.violet { border-color: var(--purple); color: #d8b4fe; }
+.tax-flow .arrow { color: var(--muted); font-size: 14px; }
+
+/* Risk list */
+.risk-list {
+  margin-left: 20px;
+  font-size: 0.95rem;
+  line-height: 1.8;
+}
+.risk-list li { margin-bottom: 0.5rem; }
+
+/* Legend */
+.legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.legend-item { display: flex; align-items: center; gap: 6px; }
+
+/* Footer */
+footer {
+  margin-top: 1.5rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+footer a { color: var(--green); text-decoration: none; }
+
+/* Responsive */
+@media (max-width: 640px) {
+  .step { min-width: 90px; padding: 0.5rem; }
+  .step .t { font-size: 0.78rem; }
+  .branch > div { min-width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <a href="index.html" class="nav-back">← กลับไป Task Dashboard</a>
+
+  <header>
+    <span class="badge">21CT · 2022-09 · DRAWIO</span>
+    <h1>🪙 LikePoint 2.0 — Point Flow</h1>
+    <div class="subtitle">ภาพรวม 16 diagrams · Mint · Burn · Pegging · Value · Cash-Out · Crypto · Tax Structure</div>
+  </header>
+
+  <!-- Quick stats -->
+  <div class="stats">
+    <div class="stat"><div class="stat-num">16</div><div class="stat-label">Diagrams</div></div>
+    <div class="stat"><div class="stat-num">3</div><div class="stat-label">ประเทศ (TH/LA/KH)</div></div>
+    <div class="stat"><div class="stat-num">4</div><div class="stat-label">สกุลเงิน (THB/LAK/USD/KHR)</div></div>
+    <div class="stat"><div class="stat-num">7</div><div class="stat-label">Roles</div></div>
+  </div>
+
+  <!-- 0. MASTER MAP -->
+  <div class="section s-blue">
+    <h2><span class="icon">🗺️</span> 0. MASTER MAP — ภาพรวม Roles &amp; Flow</h2>
+    <div class="flow">
+      <div class="step" style="background:rgba(234,179,8,0.1);"><div class="n">MERCHANT / BU</div><div class="t">ผู้ซื้อ Point</div></div>
+      <div class="arrow">⇄</div>
+      <div class="step" style="background:rgba(59,130,246,0.1);"><div class="n">PLATFORM 21CT</div><div class="t">Mint · Burn · Pegging</div></div>
+      <div class="arrow">⇄</div>
+      <div class="step" style="background:rgba(20,184,166,0.1);"><div class="n">INVESTMENT</div><div class="t">Fund · Yield · PVP · LNTV</div></div>
+      <div class="arrow">→</div>
+      <div class="step" style="background:rgba(34,197,94,0.1);"><div class="n">USERS</div><div class="t">Redeem · Cash-out · Crypto</div></div>
+    </div>
+    <div class="note">📌 ทั้งหมดเชื่อมผ่าน <b>Smart Contract + API</b> · BU/Merchant ฝั่งซ้าย, Platform 21CT ตรงกลาง, Investment/Offshore ฝั่งขวา, Users ปลายทาง</div>
+  </div>
+
+  <!-- 1. MINT -->
+  <div class="section s-green">
+    <h2><span class="icon">➕</span> 1. MINT — สร้างคะแนน (4 diagrams)</h2>
+    <div class="flow">
+      <div class="step"><div class="n">01</div><div class="t">Merchant สมัคร</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">02</div><div class="t">เลือก package</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">03</div><div class="t">โอนเงินผ่านธนาคาร</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">04</div><div class="t">Platform ตรวจยอด</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">05</div><div class="t">Smart Contract Mint Point</div></div>
+    </div>
+
+    <div class="branch">
+      <div><span class="tag">🇹🇭 TH</span><br>โอน <b>THB</b> → Platform</div>
+      <div><span class="tag">🇱🇦 LA</span><br>โอน <b>LAK</b> → Platform</div>
+      <div><span class="tag">🇰🇭 KH</span><br>โอน <b>USD/KHR</b> → Platform</div>
+    </div>
+
+    <div style="margin-top:0.6rem;">
+      <span class="pill green">Mint (withBackup)</span>
+      <span class="pill">Mint_non (nonBackup)</span>
+      <span class="pill violet">BUpoint Mint (B2B)</span>
+      <span class="pill teal">BUpoint Mint v2</span>
+    </div>
+
+    <div class="note">📌 <b>Mint withBackup</b> = Platform เก็บเงิน Fiat จริงไว้เป็น "เงินสำรอง" ในบัญชี 21CT<br>
+    📌 <b>Mint nonBackup</b> = สร้าง Point โดยไม่มีเงินสำรอง (ใช้สำหรับ Point ที่ไม่ต้องการ Peg)</div>
+  </div>
+
+  <!-- 2. BURN -->
+  <div class="section s-red">
+    <h2><span class="icon">🔥</span> 2. BURN — ทำลาย/ยกเลิกคะแนน (2 diagrams)</h2>
+    <div class="flow">
+      <div class="step"><div class="n">01</div><div class="t">User ขอเบิก (cash-out)</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">02</div><div class="t">Platform รับ Point</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">03</div><div class="t">จ่ายเงินสำรองคืน</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">04</div><div class="t">Burn Point ออกจากระบบ</div></div>
+    </div>
+    <div class="note">⚠️ <b>Flow withBackup</b> = มีเงินจริงคืนให้ User · <b>Flow nonBackup</b> = แค่ลบ Point ออก ไม่มีเงินคืน (ต้อง burn จาก 21CT เองเท่านั้น)</div>
+  </div>
+
+  <!-- 3. PEGGING -->
+  <div class="section s-yellow">
+    <h2><span class="icon">💱</span> 3. PEGGING — กำหนดอัตราแลกเปลี่ยน (2 diagrams)</h2>
+
+    <div style="margin-bottom:0.8rem;">
+      <b style="color:#fde68a;">📅 Flow 1 — ก่อนยกเลิก 10/05/2023</b>
+      <table class="fx">
+        <tr><th>Currency</th><th>Rate</th><th>Sample</th></tr>
+        <tr><td>🇹🇭 Thai Baht</td><td><b style="color:#86efac;">100 Point : 1 THB</b></td><td>1 THB ≈ 495.049 Kip</td></tr>
+        <tr><td>🇱🇦 Lao Kip</td><td><b style="color:#86efac;">1 Point : 1 LAOKIP</b></td><td>1688.1 P = 1000 P (0.1 USDC)</td></tr>
+        <tr><td>🇰🇭 Cambodia USD</td><td><b style="color:#86efac;">100 Point : 0.01 USD</b></td><td>ผ่าน Algorithm</td></tr>
+      </table>
+    </div>
+
+    <div>
+      <b style="color:#fde68a;">📅 Flow 2 — Update 10/06/2023 (อ้วน)</b>
+      <table class="fx">
+        <tr><th>Currency</th><th>Rate</th><th>Note</th></tr>
+        <tr><td>🇹🇭 Thai Baht</td><td><b style="color:#86efac;">100 Point : 1 THB</b></td><td>เท่าเดิม</td></tr>
+        <tr><td>🇱🇦 Lao Kip</td><td><b style="color:#86efac;">100 Point : 494.75 LAK</b></td><td>ปรับลงจาก 1:1</td></tr>
+        <tr><td>🇰🇭 Cambodia USD</td><td><b style="color:#86efac;">100 Point : 0.0293 USD</b></td><td>ปรับขึ้นจาก 0.01</td></tr>
+      </table>
+    </div>
+
+    <div class="formula">🎯 <b>Algorithm</b> ทำการแลกเปลี่ยนตามอัตราแลกเปลี่ยน ณ วันที่ทำรายการ</div>
+  </div>
+
+  <!-- 4. VALUE / SUBSCRIPTION -->
+  <div class="section s-blue">
+    <h2><span class="icon">💎</span> 4. VALUE &amp; SUBSCRIPTION — มูลค่า Point (3 diagrams)</h2>
+
+    <div class="formula">🎯 <b>Base Value:</b> 1 point = 0.01 บาท (100 point = 1 บาท)</div>
+
+    <div class="flow">
+      <div class="step"><div class="n">01</div><div class="t">Merchant สมัคร</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">02</div><div class="t">ตั้งชื่อ Point</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">03</div><div class="t">กำหนดมูลค่าต่อสกุลเงิน</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">04</div><div class="t">จ่าย Subscription (THB)</div></div>
+    </div>
+
+    <div class="branch">
+      <div><span class="tag">🇹🇭 TH</span><br><b>THB</b></div>
+      <div><span class="tag">🇱🇦 LA</span><br><b>LAK</b></div>
+      <div><span class="tag">🇰🇭 KH</span><br><b>USD/KHR</b></div>
+    </div>
+
+    <div class="note">💡 แต่ละ Merchant กำหนดมูลค่า/อัตราแลกใช้ point <b>ได้เอง</b> · ไม่จำเป็นต้องเท่ากับ Merchant อื่น และในแต่ละกิจกรรม Redeem ก็ไม่จำเป็นต้องเท่ากันก็ได้</div>
+  </div>
+
+  <!-- 5. CASH OUT & CLAIM BACKUP -->
+  <div class="section s-purple">
+    <h2><span class="icon">💸</span> 5. CASH-OUT &amp; CLAIM BACKUP (2 diagrams · NEW_B2B)</h2>
+
+    <div class="flow">
+      <div class="step"><div class="n">01</div><div class="t">User ใช้เมนู cash-out<br>ใน minipoint@App-BU</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">02</div><div class="t">BU รับ BUpoint<br>(pocket-cash out)</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">03</div><div class="t">BU โอนเงินจาก<br>ธนาคาร BU → User</div></div>
+    </div>
+
+    <div class="flow">
+      <div class="step"><div class="n">04</div><div class="t">BU เลือกเมนู<br>Claim Backup</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">05</div><div class="t">คำนวณ point → USD<br>(BUbackup_USD)</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">06</div><div class="t">Platform โอน USD<br>กลับให้ Merchant</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">07</div><div class="t">Burn BUpoint<br>ออกจากระบบ</div></div>
+    </div>
+
+    <div class="formula">
+      <b style="color:#d8b4fe;">Use Case:</b> 500,000 บาท @ 35 บาท/$ = <b style="color:#86efac;">14,285.71 USD</b><br>
+      → 50,000,000 points (1 BUpoint = 0.01 บาท)<br>
+      → ถอน 10,000 USD @ 34 บาท/$ = 340,000 บาท = 34,000,000 points<br>
+      → คงเหลือ <b style="color:#fde68a;">16,000,000 points / 4,285.71 USD</b>
+    </div>
+  </div>
+
+  <!-- 6. CRYPTO -->
+  <div class="section s-teal">
+    <h2><span class="icon">🪙</span> 6. CRYPTO — แลก Point เป็น Crypto (1 diagram)</h2>
+
+    <div class="flow">
+      <div class="step"><div class="n">01</div><div class="t">User ส่ง Point<br>(LIKE@LikeWallet)</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">02</div><div class="t">Platform แลก<br>Point → USD</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">03</div><div class="t">Crypto Broker<br>ซื้อ BTC/ETH</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">04</div><div class="t">โอนเข้า Crypto Wallet<br>(NATIV/Self)</div></div>
+    </div>
+
+    <div class="note">🔐 NATIV Services = Custodian wallet (KYC ผ่าน 3rd party) · ลูกค้าเปิด wallet กับ Nativ แล้วใช้จ่าย/crypto-withdraw ได้</div>
+  </div>
+
+  <!-- 7. TAX STRUCTURE -->
+  <div class="section s-purple">
+    <h2><span class="icon">🏛️</span> 7. TAX STRUCTURE — Loyalty Point Platform Flow</h2>
+
+    <div class="tax-flow">
+      <b style="color:#d8b4fe;">โครงสร้างทางภาษี (เงินกู้ยืมระหว่างบริษัท)</b>
+      <div class="row">
+        <div class="node">AAM / PMS</div>
+        <div class="arrow">──(กู้)──►</div>
+        <div class="node">AMH</div>
+        <div class="arrow">──(กู้)──►</div>
+        <div class="node">PBP</div>
+        <div class="arrow">──►</div>
+        <div class="node green">PGVI</div>
+        <div class="arrow">──(ลงทุน/กู้)──►</div>
+        <div class="node violet">LNTV</div>
+      </div>
+      <div class="row" style="margin-top:0.6rem;">
+        <span style="font-size:0.82rem;color:var(--muted);">ถ้ามี PVP แข่งขัน (PK):</span>
+      </div>
+      <div class="row">
+        <div class="node">PVP</div>
+        <div class="arrow">──(กู้)──►</div>
+        <div class="node green">PGVI</div>
+        <div class="arrow">──(ลงทุน/กู้)──►</div>
+        <div class="node violet">LNTV<br><small style="color:var(--muted);">(LIKEinnovativ)</small></div>
+      </div>
+    </div>
+
+    <div class="note">💡 <b>PMS→AMH→PBP</b> ใช้เงินกู้ยืม → <b>PGVI</b> เพิ่มทุนหรือให้กู้ → <b>LNTV</b> (Offshore account) · โครงสร้างนี้จัดการทางภาษี + Investment Fund ในต่างประเทศ</div>
+  </div>
+
+  <!-- 8. RISK -->
+  <div class="section s-red">
+    <h2><span class="icon">⚠️</span> 8. ข้อสังเกต / ความเสี่ยง</h2>
+    <ol class="risk-list">
+      <li><b>BU ยึดเงิน Backup ลงทุนเป็น USD</b> — เงินบาทที่ BU ใช้กำหนดมูลค่า BUpoint จะ <u>ไม่เท่ากับ</u> เงิน Backup (Backup ยึดตาม USD)</li>
+      <li>ถ้ามูลค่า BUpoint &gt; Backup USD → <b style="color:#86efac;">กำไร</b>จากอัตราแลกเปลี่ยน · ถ้า &lt; → <b style="color:#fca5a5;">ขาดทุน</b>จากอัตราแลกเปลี่ยน</li>
+      <li>ตอน Claim-backup ถ้า BUpoint ที่เหลือ &lt; USD-backup ที่จะ Claim → <b style="color:#fca5a5;">ไม่สามารถ Claim ได้</b></li>
+      <li>มี 2 แบบ: <span class="pill green">BU จ่าย USD (BU รับความเสี่ยง FX)</span> หรือ <span class="pill amber">BU จ่าย Fiat (Platform รับความเสี่ยง FX)</span></li>
+    </ol>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item"><span class="pill green">Mint</span> สร้าง</div>
+    <div class="legend-item"><span class="pill red">Burn</span> ทำลาย</div>
+    <div class="legend-item"><span class="pill amber">Pegging</span> อัตรา FX</div>
+    <div class="legend-item"><span class="pill violet">B2B</span> BUpoint</div>
+    <div class="legend-item"><span class="pill teal">Crypto</span> Fiat → Crypto</div>
+    <div class="legend-item"><span class="pill pink">Tax</span> Offshore</div>
+  </div>
+
+  <!-- GLOSSARY -->
+  <div class="section s-teal" style="margin-top:1.25rem;">
+    <h2><span class="icon">📖</span> Glossary — คำย่อที่ใช้ในเอกสาร</h2>
+    <table class="fx">
+      <tr><th>ตัวย่อ</th><th>ความหมาย</th></tr>
+      <tr><td><b style="color:#93c5fd;">21CT</b></td><td>ชื่อบริษัท Platform (Likepoint Service Provider)</td></tr>
+      <tr><td><b style="color:#86efac;">BU</b></td><td>BackUp unit / Business Unit — Merchant ที่ซื้อ Point แบบสำรองเงิน</td></tr>
+      <tr><td><b style="color:#86efac;">BUpoint</b></td><td>คะแนนที่ BU สร้าง (มี Fiat หรือ USD หนุนหลัง)</td></tr>
+      <tr><td><b style="color:#93c5fd;">PMS / AAM</b></td><td>Property/ระบบจัดการโรงแรม — ลูกค้าต้นทาง</td></tr>
+      <tr><td><b style="color:#93c5fd;">AMH</b></td><td>Admin Module Hub — ศูนย์กลางบริหาร</td></tr>
+      <tr><td><b style="color:#93c5fd;">PBP</b></td><td>Point Back Program — โปรแกรมคืน Point</td></tr>
+      <tr><td><b style="color:#86efac;">PGVI</b></td><td>Point Global Virtual Investment — ตัวลงทุนหลัก</td></tr>
+      <tr><td><b style="color:#d8b4fe;">LNTV / LIKEinnovativ</b></td><td>บริษัท Offshore ปลายทาง (ลงทุน/ภาษี)</td></tr>
+      <tr><td><b style="color:#93c5fd;">PVP</b></td><td>Point Value Platform — ตัวเลือกแข่งขัน (ถ้ามี)</td></tr>
+      <tr><td><b style="color:#5eead4;">RPLC</b></td><td>บริษัทในลาว (ฝั่ง LAK)</td></tr>
+      <tr><td><b style="color:#5eead4;">RAFCO</b></td><td>บริษัทในลาว (ฝั่ง Motor/อื่นๆ)</td></tr>
+      <tr><td><b style="color:#86efac;">Smart Contract</b></td><td>สัญญาอัจฉริยะที่ทำการ Mint/Burn Point</td></tr>
+      <tr><td><b style="color:#86efac;">POI</b></td><td>Point of Interest — กิจกรรมแจก Point</td></tr>
+      <tr><td><b style="color:#fde68a;">FX</b></td><td>Foreign Exchange — อัตราแลกเปลี่ยน</td></tr>
+    </table>
+  </div>
+
+  <footer>
+    🐾 สรุปโดยอลิเคล้า (OpenClaw) · ที่มา: 21CT_Likepoint_2.0_2022_09_-Point_Flow.drawio · 1 ส.ค. 2569 · <a href="index.html">← กลับไป Task Dashboard</a>
+  </footer>
+
+</div>
+
+</body>
+</html>
