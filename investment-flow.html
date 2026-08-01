@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💰 LikePoint 2.0 — Investment & Backup Flow</title>
+<style>
+:root {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --border: #334155;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --green: #22c55e;
+  --orange: #f97316;
+  --yellow: #eab308;
+  --blue: #3b82f6;
+  --red: #ef4444;
+  --purple: #a855f7;
+  --teal: #14b8a6;
+  --pink: #ec4899;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Thai", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  padding: 1rem;
+}
+.container { max-width: 1200px; margin: 0 auto; }
+
+.nav-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+.nav-back:hover { color: var(--green); border-color: var(--green); }
+
+header {
+  text-align: center;
+  padding: 1.5rem 1rem;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border);
+}
+.badge {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--green), var(--teal));
+  color: #000;
+  font-weight: 700;
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  letter-spacing: .05em;
+  margin-bottom: 10px;
+}
+h1 { font-size: clamp(1.4rem, 4vw, 2rem); margin-bottom: 0.5rem; }
+.subtitle { color: var(--muted); font-size: 0.95rem; }
+
+/* TL;DR Box */
+.tldr {
+  background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(20,184,166,0.1));
+  border: 1px solid var(--green);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+.tldr b { color: #86efac; }
+
+/* Big number showcase */
+.showcase {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0 1.5rem;
+}
+.num-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  text-align: center;
+}
+.num-card .num {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.num-card .lbl {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin-top: 2px;
+}
+.num-card.thb  .num { color: #fde68a; }
+.num-card.usd  .num { color: #86efac; }
+.num-card.pnt  .num { color: #93c5fd; }
+.num-card.fx   .num { color: #fca5a5; }
+
+/* Section card */
+.section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 5px solid;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+.s-green  { border-color: var(--green); }
+.s-red    { border-color: var(--red); }
+.s-yellow { border-color: var(--yellow); }
+.s-blue   { border-color: var(--blue); }
+.s-purple { border-color: var(--purple); }
+.s-teal   { border-color: var(--teal); }
+
+.section h2 {
+  font-size: 1.05rem;
+  margin-bottom: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.icon {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  background: rgba(255,255,255,0.06);
+}
+
+/* Flow pipeline (vertical) */
+.flow-v {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 1rem 0;
+}
+.step {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--blue);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  position: relative;
+}
+.step .n {
+  display: inline-block;
+  background: var(--blue);
+  color: #000;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.step .who { color: var(--muted); font-size: 0.8rem; font-weight: 700; }
+.step .what {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 4px 0 0;
+}
+.step .num {
+  display: inline-block;
+  background: rgba(132, 204, 22, 0.15);
+  color: #bef264;
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 0.82rem;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-top: 4px;
+  border: 1px solid rgba(132, 204, 22, 0.3);
+}
+.step.s-green { border-left-color: var(--green); }
+.step.s-green .n { background: var(--green); }
+.step.s-yellow { border-left-color: var(--yellow); }
+.step.s-yellow .n { background: var(--yellow); }
+.step.s-red { border-left-color: var(--red); }
+.step.s-red .n { background: var(--red); color: #fff; }
+.step.s-purple { border-left-color: var(--purple); }
+.step.s-purple .n { background: var(--purple); color: #fff; }
+.step.s-teal { border-left-color: var(--teal); }
+.step.s-teal .n { background: var(--teal); }
+
+.arrow-down {
+  text-align: center;
+  font-size: 18px;
+  color: var(--muted);
+  margin: 2px 0;
+}
+
+/* Side-by-side flow */
+.flow-h {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  flex-wrap: wrap;
+  margin: 0.75rem 0;
+}
+.flow-h .step {
+  flex: 1 1 0;
+  min-width: 130px;
+  border-left: 1px solid var(--border);
+  border-top: 4px solid var(--blue);
+  border-radius: 0;
+  text-align: center;
+}
+.flow-h .step:first-child { border-radius: 8px 0 0 8px; }
+.flow-h .step:last-child { border-radius: 0 8px 8px 0; }
+.flow-h .arrow {
+  align-self: center;
+  color: var(--muted);
+  font-size: 18px;
+  padding: 0 4px;
+}
+
+/* Formula box */
+.formula {
+  background: #020617;
+  color: #f1f5f9;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.88rem;
+  margin: 0.75rem 0;
+  line-height: 1.6;
+}
+.formula b { color: #86efac; }
+.formula .warning { color: #fca5a5; }
+
+/* Note */
+.note {
+  background: rgba(234, 179, 8, 0.08);
+  border-left: 3px solid var(--yellow);
+  padding: 0.6rem 0.9rem;
+  border-radius: 6px;
+  margin-top: 0.75rem;
+  font-size: 0.88rem;
+  color: #fde68a;
+}
+.note.red {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: var(--red);
+  color: #fca5a5;
+}
+.note.green {
+  background: rgba(34, 197, 94, 0.08);
+  border-color: var(--green);
+  color: #86efac;
+}
+
+/* Tax structure (PVP) */
+.pvp-flow {
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 10px;
+  padding: 0.9rem;
+  margin-top: 0.5rem;
+}
+.pvp-flow .row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+  flex-wrap: wrap;
+}
+.pvp-flow .node {
+  background: var(--card);
+  border: 2px solid var(--blue);
+  color: #93c5fd;
+  padding: 5px 11px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+.pvp-flow .node.green  { border-color: var(--green);  color: #86efac; }
+.pvp-flow .node.violet { border-color: var(--purple); color: #d8b4fe; }
+.pvp-flow .node.pink   { border-color: var(--pink);   color: #f9a8d4; }
+.pvp-flow .arrow { color: var(--muted); font-size: 14px; }
+
+/* Risk comparison table */
+.compare {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 0.75rem 0;
+}
+.compare th, .compare td {
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  text-align: left;
+}
+.compare th {
+  background: rgba(15, 23, 42, 0.8);
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.compare td b.up   { color: #86efac; }
+.compare td b.down { color: #fca5a5; }
+
+/* Pills */
+.pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin: 2px;
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+.pill.green  { background: rgba(34, 197, 94, 0.15);  color: #86efac; border-color: rgba(34, 197, 94, 0.3); }
+.pill.red    { background: rgba(239, 68, 68, 0.15);  color: #fca5a5; border-color: rgba(239, 68, 68, 0.3); }
+.pill.amber  { background: rgba(234, 179, 8, 0.15);  color: #fde68a; border-color: rgba(234, 179, 8, 0.3); }
+.pill.violet { background: rgba(168, 85, 247, 0.15); color: #d8b4fe; border-color: rgba(168, 85, 247, 0.3); }
+.pill.teal   { background: rgba(20, 184, 166, 0.15); color: #5eead4; border-color: rgba(20, 184, 166, 0.3); }
+.pill.pink   { background: rgba(236, 72, 153, 0.15); color: #f9a8d4; border-color: rgba(236, 72, 153, 0.3); }
+
+footer {
+  margin-top: 1.5rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+footer a { color: var(--green); text-decoration: none; }
+
+@media (max-width: 640px) {
+  .flow-h { flex-direction: column; }
+  .flow-h .step { border-radius: 8px; border-left: 4px solid var(--blue); }
+  .flow-h .arrow { transform: rotate(90deg); }
+  .num-card { font-size: 0.9rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <a href="index.html" class="nav-back">← กลับไป Task Dashboard</a>
+
+  <header>
+    <span class="badge">💰 INVESTMENT &amp; BACKUP FLOW</span>
+    <h1>🪙 เงินลงทุน &amp; การ Backup เงิน</h1>
+    <div class="subtitle">LikePoint 2.0 — BUpoint (B2B) · NEW_B2B 01/09/2023 · update 11/05/2024</div>
+  </header>
+
+  <!-- TL;DR -->
+  <div class="tldr">
+    💡 <b>สั้นๆ คือ:</b> BU/Merchant ส่งเงิน Fiat → Platform แลกเป็น <b>USD</b> → เก็บเป็น <b>เงิน Backup</b> + ลงทุน → ได้ <b>Yield รายวัน</b> + Mint <b>BUpoint</b> ให้ BU ใช้แจกลูกค้า → ถอนคืนได้ผ่าน <b>Claim Backup</b>
+  </div>
+
+  <!-- Big numbers -->
+  <div class="showcase">
+    <div class="num-card thb"><div class="num">500,000 ฿</div><div class="lbl">BU ฝากเงิน</div></div>
+    <div class="num-card usd"><div class="num">14,285.71 $</div><div class="lbl">เงิน Backup (USD)</div></div>
+    <div class="num-card pnt"><div class="num">50,000,000 pt</div><div class="lbl">BUpoint ที่ Mint</div></div>
+    <div class="num-card fx"><div class="num">35→34 ฿/$</div><div class="lbl">FX เปลี่ยนระหว่างทาง</div></div>
+  </div>
+
+  <!-- 1. FLOW A: Mint + Backup + Invest -->
+  <div class="section s-green">
+    <h2><span class="icon">🟢</span> Flow A · Mint + Backup + ลงทุน (NEW_B2B)</h2>
+
+    <div class="flow-v">
+      <div class="step s-green">
+        <span class="n">1</span>
+        <span class="who">BU/Merchant (TH · LA · KH)</span>
+        <p class="what">ส่งเงิน Fiat ให้ Platform ตามจำนวนที่ต้องการสร้าง BUpoint</p>
+        <div class="num">🇹🇭 THB · 🇱🇦 LAK · 🇰🇭 USD/KHR</div>
+      </div>
+      <div class="arrow-down">↓</div>
+
+      <div class="step s-yellow">
+        <span class="n">2</span>
+        <span class="who">Platform (21CT)</span>
+        <p class="what">แปลงเงิน Fiat ทั้งหมดเป็น <b>USD</b> (อัตราวันนั้น) แล้วเข้าระบบ Backup</p>
+        <div class="num">฿/₭/$ → USD</div>
+      </div>
+      <div class="arrow-down">↓</div>
+
+      <div class="step s-yellow">
+        <span class="n">3</span>
+        <span class="who">Platform</span>
+        <p class="what">สร้าง BUpoint ตามมูลค่าที่ Peg · บันทึกเงิน Backup ของ BUpoint นั้น</p>
+        <div class="num">1 BUpoint = 0.01 บาท (100 pt = 1 ฿)</div>
+      </div>
+      <div class="arrow-down">↓</div>
+
+      <div class="step s-purple">
+        <span class="n">4</span>
+        <span class="who">Investment Fund</span>
+        <p class="what"><b>นำเงิน Backup (USD) ไปลงทุน</b> · บันทึกรับ Yield ประจำวันเป็น USD</p>
+        <div class="num">→ PVP / DeFi / Offshore</div>
+      </div>
+      <div class="arrow-down">↓</div>
+
+      <div class="step s-teal">
+        <span class="n">5</span>
+        <span class="who">Platform</span>
+        <p class="what">ส่ง BUpoint ที่ Mint แล้วให้ BU · BU นำไปทำกิจกรรม Loyalty Point กับลูกค้า</p>
+        <div class="num">Daily Reward + ค่าบริการ Transactions</div>
+      </div>
+    </div>
+
+    <div class="note">
+      📌 <b>BU ใช้งบประมาณการตลาด มาสร้าง BUpoint</b> และบันทึกไว้ว่ามียอดเงินที่สร้าง BUpoint เท่าไหร่ · ต้องเท่ากับมูลค่า BUpoint ในระบบของตนเอง
+    </div>
+  </div>
+
+  <!-- 2. FLOW B: Claim Backup -->
+  <div class="section s-blue">
+    <h2><span class="icon">🔵</span> Flow B · BU Claim Backup (ถอนเงินคืน)</h2>
+
+    <div class="flow-v">
+      <div class="step s-blue">
+        <span class="n">1</span>
+        <span class="who">BU/Merchant</span>
+        <p class="what">เลือกเมนู "Claim Backup" ใน Merchant admin</p>
+      </div>
+      <div class="arrow-down">↓</div>
+
+      <div class="step s-blue">
+        <span class="n">2</span>
+        <span class="who">Platform</span>
+        <p class="what">รับ BUpoint เข้า pocket-BUclaimbackup · <b>คำนวณ point → USD</b> (BUbackup_USD)</p>
+        <div class="num">BUbackup_USD = BUpoint × rate วันนั้น</div>
+      </div>
+      <div class="arrow-down">↓</div>
+
+      <div class="step s-yellow">
+        <span class="n">3</span>
+        <span class="who">Platform (Investment)</span>
+        <p class="what"><b>ถอนการลงทุนกลับมาเป็น USD</b> ตามจำนวนที่ BU ต้องการ</p>
+      </div>
+      <div class="arrow-down">↓</div>
+
+      <div class="step s-red">
+        <span class="n">4</span>
+        <span class="who">Platform</span>
+        <p class="what"><b>Burn BUpoint</b> ออกจากระบบ + ลด BUbackup_USD (ลดเงินลงทุน)</p>
+      </div>
+      <div class="arrow-down">↓</div>
+
+      <div class="step s-green">
+        <span class="n">5</span>
+        <span class="who">Platform → BU</span>
+        <p class="what">โอน USD ให้กับ Merchant (ผ่าน Payment → บัญชีธนาคารของ BU)</p>
+      </div>
+    </div>
+
+    <div class="note red">
+      ⚠️ <b>ถ้า BUpoint ที่เหลือ &lt; USD-backup ที่ BU จะ Claim → ไม่สามารถ Claim ได้</b>
+    </div>
+  </div>
+
+  <!-- 3. USE CASE ตัวเลขจริง -->
+  <div class="section s-yellow">
+    <h2><span class="icon">🧮</span> Use Case · ตัวเลขจริง 500,000 บาท</h2>
+
+    <div class="formula">
+      <b>ตอน Mint (อัตรา 35 ฿/$):</b><br>
+      500,000 ฿ ÷ 35 = <b>14,285.71 USD</b> = เงิน Backup<br>
+      500,000 ฿ × 100 = <b>50,000,000 points</b> = BUpoint<br>
+      1 BUpoint = 0.01 ฿ (100 pt = 1 ฿)
+    </div>
+
+    <div class="formula">
+      <b>ตอน BU Claim 10,000 USD (อัตราใหม่ 34 ฿/$):</b><br>
+      10,000 × 34 = <b>340,000 ฿</b><br>
+      × 100 = <b>34,000,000 points</b> ต้อง Burn<br>
+      ─────────────────────────<br>
+      50,000,000 - 34,000,000 = <b>16,000,000 points</b> คงเหลือ<br>
+      14,285.71 - 10,000 = <b>4,285.71 USD</b> คงเหลือ
+    </div>
+
+    <table class="compare">
+      <tr><th>ฝั่ง</th><th>ก่อน Claim</th><th>หลัง Claim 10,000 USD</th></tr>
+      <tr><td><b>BUpoint ในระบบ</b></td><td>50,000,000 pt</td><td><b class="up">16,000,000 pt</b></td></tr>
+      <tr><td><b>เงิน Backup (USD)</b></td><td>14,285.71 $</td><td><b class="up">4,285.71 $</b></td></tr>
+      <tr><td><b>อัตรา FX</b></td><td>35 ฿/$</td><td>34 ฿/$ (บาทแข็งขึ้น)</td></tr>
+    </table>
+  </div>
+
+  <!-- 4. 3 RISK (ความเสี่ยง FX) -->
+  <div class="section s-red">
+    <h2><span class="icon">⚠️</span> 3 จุดสังเกต (ความเสี่ยง FX)</h2>
+
+    <div class="flow-v">
+      <div class="step s-red">
+        <span class="n">0</span>
+        <p class="what"><b>BU ยึดเงิน Backup ลงทุนเป็น USD</b></p>
+        <div class="num">ไม่ใช่ "เงินบาทในบัญชี" แต่เป็น "สินทรัพย์ต่างประเทศ"</div>
+      </div>
+
+      <div class="step s-red">
+        <span class="n">1</span>
+        <p class="what"><b>เงินบาทที่ BU ใช้กำหนดมูลค่า BUpoint ≠ เงิน Backup</b><br>(เพราะ Backup ยึดตาม USD)</p>
+        <div class="num">BUpoint (฿)  vs  Backup (USD)  ≠  กันเสมอ</div>
+      </div>
+
+      <div class="step s-yellow">
+        <span class="n">2</span>
+        <p class="what">เทียบมูลค่า BUpoint ทั้งหมด (฿) กับ Backup USD (คิดเป็น ฿)</p>
+        <div class="num">BUpoint &gt; USD-backup → <span class="pill green">กำไร FX</span> &nbsp; · &nbsp; BUpoint &lt; USD-backup → <span class="pill red">ขาดทุน FX</span></div>
+      </div>
+
+      <div class="step s-red">
+        <span class="n">3</span>
+        <p class="what"><b>ถ้า BUpoint ที่เหลือ &lt; USD-backup ที่ BU ต้องการ Claim → ไม่สามารถ Claim ได้</b></p>
+      </div>
+    </div>
+
+    <div class="note">
+      💡 สรุปง่ายๆ: <b>BUpoint เก็บ "พลังซื้อ" เป็นบาท · Backup เก็บ "เงินจริง" เป็น USD</b> · สองอย่างนี้เดินทางคนละทาง เมื่อบาทแข็ง/อ่อน จะเกิดส่วนต่างกำไร/ขาดทุน
+    </div>
+  </div>
+
+  <!-- 5. FLOW C: โครงสร้างการลงทุนผ่าน PVP -->
+  <div class="section s-purple">
+    <h2><span class="icon">🏛️</span> Flow C · โครงสร้างการลงทุนผ่าน PVP/DeFi</h2>
+
+    <div class="pvp-flow">
+      <b style="color:#d8b4fe;">🛤️ ทางหลัก (ผ่าน PVP):</b>
+      <div class="row" style="margin-top:6px;">
+        <div class="node">AAM / PMS</div>
+        <div class="arrow">─฿→</div>
+        <div class="node">AMH</div>
+        <div class="arrow">─→</div>
+        <div class="node">PBP</div>
+        <div class="arrow">─→</div>
+        <div class="node green">PGVI</div>
+        <div class="arrow">─→</div>
+        <div class="node pink">PVP</div>
+        <div class="arrow">─→</div>
+        <div class="node violet">USDT → DeFi</div>
+      </div>
+      <div class="row" style="margin-top:8px;">
+        <span style="font-size:0.82rem;color:var(--muted);">ทำไปแล้ว 1 ครั้ง = <b style="color:#fde68a;">300,000 บาท</b> · แลก USDT กับกองทุน PVP-LIKE</span>
+      </div>
+    </div>
+
+    <div class="pvp-flow" style="margin-top:0.75rem;">
+      <b style="color:#f9a8d4;">🛤️ ทางเลือก (Offshore):</b>
+      <div class="row" style="margin-top:6px;">
+        <div class="node">AAM / PMS</div>
+        <div class="arrow">─→</div>
+        <div class="node">AMH</div>
+        <div class="arrow">─→</div>
+        <div class="node">PBP</div>
+        <div class="arrow">─→</div>
+        <div class="node green">PGVI</div>
+        <div class="arrow">─→</div>
+        <div class="node pink">LNTV (LIKEinnovativ)</div>
+      </div>
+      <div class="row" style="margin-top:8px;">
+        <span style="font-size:0.82rem;color:var(--muted);">เมื่อเปิดบริษัท + บัญชี Offshore ได้แล้ว</span>
+      </div>
+    </div>
+
+    <div class="note">
+      💡 <b>ทางภาษี:</b> PMS → AMH → PBP ใช้ "เงินกู้ยืม" ระหว่างกัน · แล้ว PGVI เพิ่มทุน/ให้กู้ → LNTV (ลงทุน Offshore)<br>
+      ⚖️ ถ้ามี PVP แข่งขัน (PK): PVP → PGVI → LNTV
+    </div>
+  </div>
+
+  <!-- 6. สรุป 4 มิติ -->
+  <div class="section s-teal">
+    <h2><span class="icon">📊</span> สรุป 4 มิติของ "Investment + Backup"</h2>
+
+    <table class="compare">
+      <tr><th>มิติ</th><th>คำอธิบาย</th></tr>
+      <tr><td><b>💰 แหล่งเงิน Backup</b></td><td>BU ส่งเงิน Fiat (THB/LAK/USD/KHR) → Platform แปลงเป็น <b>USD</b></td></tr>
+      <tr><td><b>📈 การลงทุน</b></td><td>Investment Fund → <b>PVP / DeFi / Offshore (LNTV)</b></td></tr>
+      <tr><td><b>🎁 ผลตอบแทน</b></td><td><b>Yield รายวัน</b> (USD) → Daily Reward + ค่าบริการ Platform</td></tr>
+      <tr><td><b>🔄 การคืนเงิน</b></td><td>BU Claim → Platform <b>ถอนลงทุน</b> → โอน USD คืน Merchant (Burn BUpoint)</td></tr>
+    </table>
+
+    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:0.75rem;">
+      <span class="pill green">Mint</span>
+      <span class="pill amber">Backup USD</span>
+      <span class="pill violet">Invest</span>
+      <span class="pill teal">Yield</span>
+      <span class="pill red">Claim &amp; Burn</span>
+      <span class="pill pink">PVP / LNTV</span>
+    </div>
+  </div>
+
+  <footer>
+    🐾 สรุปโดยอลิเคล้า (OpenClaw) · ที่มา: 21CT_Likepoint_2.0_2022_09_-Point_Flow.drawio · 1 ส.ค. 2569 · <a href="point-flow.html">← Point Flow ทั้งหมด</a> · <a href="index.html">← Task Dashboard</a>
+  </footer>
+
+</div>
+
+</body>
+</html>
