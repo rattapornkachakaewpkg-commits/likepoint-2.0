@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Role Approval Console — Phase F PF-23</title>
+  <script src="../engines/role-approval-engine.js"></script>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 24px;
+    }
+    .container { max-width: 1280px; margin: 0 auto; }
+    .header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+      padding: 24px 32px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+    .header h1 { font-size: 24px; margin-bottom: 4px; }
+    .header .subtitle { opacity: 0.9; font-size: 14px; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+    .badge-pf { background: rgba(255,255,255,0.2); }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+    .card h2 { font-size: 16px; margin-bottom: 16px; color: var(--primary); }
+    .form-group { margin-bottom: 12px; }
+    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--muted); }
+    input, select, textarea {
+      width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;
+      font-size: 14px; font-family: inherit;
+    }
+    button {
+      padding: 8px 16px; border: none; border-radius: 6px; font-size: 14px;
+      font-weight: 600; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-light); }
+    .btn-success { background: var(--success); color: white; }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-secondary { background: var(--border); color: var(--text); }
+    .list { list-style: none; }
+    .list-item {
+      padding: 12px; border: 1px solid var(--border); border-radius: 6px;
+      margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
+    }
+    .list-item .meta { font-size: 12px; color: var(--muted); }
+    .list-item .actions { display: flex; gap: 8px; }
+    .status-open { color: var(--warning); font-weight: 600; }
+    .status-closed { color: var(--muted); }
+    .status-approved { color: var(--success); font-weight: 600; }
+    .status-rejected { color: var(--danger); font-weight: 600; }
+    .log-entry { font-family: monospace; font-size: 12px; padding: 4px 8px; background: #f1f5f9; border-radius: 4px; margin-bottom: 4px; }
+    .spec-rule {
+      background: #fef3c7; border-left: 4px solid var(--warning); padding: 12px; border-radius: 4px;
+      margin-bottom: 16px; font-size: 13px;
+    }
+    .stat { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .stat:last-child { border-bottom: none; }
+    .stat-label { color: var(--muted); }
+    .stat-value { font-weight: 700; color: var(--primary); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🛡️ Role Approval Console <span class="badge badge-pf">PF-23</span></h1>
+      <div class="subtitle">Phase F: Role/Approval Workflow — Likepoint 2.0 Admin</div>
+    </div>
+
+    <div class="spec-rule">
+      <strong>📋 Business Rules (Spec from วิชัย(ขวัญ) 2026-08-14):</strong><br>
+      ✅ Request เข้ากลุ่ม ทำได้เฉพาะ <code>merchant_admin_console</code> เท่านั้น<br>
+      ✅ ส่งแจ้งเตือนเฉพาะไปยัง <code>superadmin</code> role (ไม่กระจายไป admin ทั่วไป)<br>
+      ✅ Invite flow ต้องสร้างกลุ่ม approve + notify superadmin
+    </div>
+
+    <div class="grid">
+      <!-- LEFT: Invite User -->
+      <div class="card">
+        <h2>📨 1. Invite User → Role</h2>
+        <form id="inviteForm">
+          <div class="form-group">
+            <label>Tenant ID</label>
+            <input id="tenant_id" value="t_ags_demo" required>
+          </div>
+          <div class="form-group">
+            <label>Invitee User ID</label>
+            <input id="invitee_user_id" value="u_new_merchant" required>
+          </div>
+          <div class="form-group">
+            <label>Invitee Phone</label>
+            <input id="invitee_phone" value="0812345678" required>
+          </div>
+          <div class="form-group">
+            <label>Role Code</label>
+            <select id="role_code" required>
+              <option value="merchant_admin">merchant_admin</option>
+              <option value="admin">admin</option>
+              <option value="viewer">viewer</option>
+              <option value="superadmin">superadmin</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Invited By (your user_id)</label>
+            <input id="invited_by" value="u_admin_demo" required>
+          </div>
+          <div class="form-group">
+            <label>Source Console</label>
+            <input id="source_console" value="merchant_admin_console" readonly>
+            <small style="color:var(--muted);">🔒 Locked per spec #11</small>
+          </div>
+          <div class="form-group">
+            <label>Notify Room</label>
+            <select id="notify_room">
+              <option value="ห้องรับใช้">ห้องรับใช้</option>
+              <option value="pkg_support">pkg_support</option>
+            </select>
+          </div>
+          <button type="submit" class="btn-primary">🚀 Send Invite</button>
+        </form>
+        <div id="inviteResult" style="margin-top:16px;"></div>
+      </div>
+
+      <!-- RIGHT: Pending Approvals (Superadmin View) -->
+      <div class="card">
+        <h2>⏳ 2. Pending Approvals (Superadmin)</h2>
+        <div id="pendingStats" class="card" style="background:#f8fafc; padding:12px; margin-bottom:16px;">
+          <div class="stat"><span class="stat-label">Open Groups</span><span class="stat-value" id="statOpen">0</span></div>
+          <div class="stat"><span class="stat-label">Approved Today</span><span class="stat-value" id="statApproved">0</span></div>
+          <div class="stat"><span class="stat-label">Rejected Today</span><span class="stat-value" id="statRejected">0</span></div>
+        </div>
+        <ul id="pendingList" class="list"></ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📊 3. Audit Log (Live)</h2>
+      <div id="auditLog"></div>
+      <button class="btn-secondary" onclick="clearLog()" style="margin-top:8px;">Clear Log</button>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // Initialize engines (in-browser, in-memory for demo)
+    // ============================================================
+    const eventBus = {
+      subscribers: new Map(),
+      published: [],
+      subscribe(topic, handler) {
+        if (!this.subscribers.has(topic)) this.subscribers.set(topic, []);
+        this.subscribers.get(topic).push(handler);
+      },
+      async publish(topic, payload) {
+        const event_id = `${topic}-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+        this.published.push({ event_id, topic, payload });
+        const handlers = this.subscribers.get(topic) || [];
+        for (const h of handlers) await h({ event_id, topic, payload });
+        return { event_id, topic, delivered: handlers.length, dlq: 0 };
+      }
+    };
+
+    const audit = {
+      logs: [],
+      async log(entry) {
+        this.logs.push({ ...entry, ts: new Date().toISOString() });
+        renderLog();
+      }
+    };
+
+    const notif = {
+      sent: { notify: [], notifySuperadmin: [] },
+      async notify(msg) {
+        this.sent.notify.push(msg);
+        logToUI(`📤 Notification → ${msg.room}: ${msg.title}`, 'info');
+      },
+      async notifySuperadmin(msg) {
+        this.sent.notifySuperadmin.push(msg);
+        logToUI(`🛡️ Superadmin notify → ${msg.room}: ${msg.title}`, 'success');
+      }
+    };
+
+    const inviteEngine = new RoleInviteEngine({ eventBus, audit, notification: notif });
+    const approvalEngine = new ApprovalGroupEngine({ eventBus, audit, notification: notif });
+    approvalEngine.subscribe();
+
+    // ============================================================
+    // Form handlers
+    // ============================================================
+    document.getElementById('inviteForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const params = {
+        tenant_id: document.getElementById('tenant_id').value,
+        invitee_user_id: document.getElementById('invitee_user_id').value,
+        invitee_phone: document.getElementById('invitee_phone').value,
+        role_code: document.getElementById('role_code').value,
+        invited_by: document.getElementById('invited_by').value,
+        source_console: document.getElementById('source_console').value,
+        notify_room: document.getElementById('notify_room').value,
+      };
+
+      const resultDiv = document.getElementById('inviteResult');
+      try {
+        const result = await inviteEngine.requestInvite(params);
+        resultDiv.innerHTML = `<div style="background:#d1fae5; padding:12px; border-radius:6px; margin-top:12px;">
+          ✅ <strong>Invite Sent!</strong><br>
+          Invitation ID: <code>${result.invitation_id}</code><br>
+          Status: <span class="status-open">${result.status}</span><br>
+          Notify Room: ${params.notify_room}<br>
+          Event: <code>${result.event_id}</code>
+        </div>`;
+        // Wait for approval group to be created (async event)
+        setTimeout(() => { refreshPending(); }, 100);
+      } catch (err) {
+        resultDiv.innerHTML = `<div style="background:#fee2e2; padding:12px; border-radius:6px; margin-top:12px;">
+          ❌ <strong>Error:</strong> ${err.message}
+        </div>`;
+      }
+    });
+
+    // ============================================================
+    // Render pending approvals
+    // ============================================================
+    async function refreshPending() {
+      const openGroups = await approvalEngine.listOpenGroups();
+      document.getElementById('statOpen').textContent = openGroups.length;
+
+      const listEl = document.getElementById('pendingList');
+      if (openGroups.length === 0) {
+        listEl.innerHTML = '<li style="color:var(--muted); text-align:center; padding:24px;">No pending approvals</li>';
+        return;
+      }
+
+      listEl.innerHTML = openGroups.map(g => {
+        const summary = approvalEngine.getVoteSummary(g.group_id);
+        return `<li class="list-item">
+          <div>
+            <strong>${g.invitee_user_id || '(unknown)'}</strong> → <code>${g.role_code || '?'}</code>
+            <div class="meta">Group: ${g.group_id.slice(0,12)}... · Required: ${g.required_role} · ${summary.then ? '' : 'Votes: ' + summary.votes.approve + '/' + summary.min_approvals}</div>
+          </div>
+          <div class="actions">
+            <button class="btn-success" onclick="vote('${g.group_id}','approve')">✅ Approve</button>
+            <button class="btn-danger" onclick="vote('${g.group_id}','reject')">❌ Reject</button>
+          </div>
+        </li>`;
+      }).join('');
+    }
+
+    async function vote(groupId, decision) {
+      try {
+        const result = await approvalEngine.castVote({
+          group_id: groupId,
+          voter_user_id: 'u_superadmin_demo',
+          voter_role: 'superadmin',
+          decision,
+          reason: decision === 'reject' ? 'Manual rejection from console' : null,
+        });
+        logToUI(`🗳️ Voted ${decision} on ${groupId.slice(0,12)}... → ${result.final_decision || 'open'}`, decision === 'approve' ? 'success' : 'danger');
+        refreshPending();
+      } catch (err) {
+        logToUI(`❌ Vote failed: ${err.message}`, 'danger');
+      }
+    }
+
+    // ============================================================
+    // Audit log
+    // ============================================================
+    function logToUI(message, type) {
+      const logDiv = document.getElementById('auditLog');
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.style.borderLeft = type === 'success' ? '3px solid var(--success)' :
+                               type === 'danger' ? '3px solid var(--danger)' :
+                               '3px solid var(--primary-light)';
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logDiv.insertBefore(entry, logDiv.firstChild);
+    }
+
+    function renderLog() {
+      const logDiv = document.getElementById('auditLog');
+      logDiv.innerHTML = audit.logs.slice(-15).reverse().map(l =>
+        `<div class="log-entry">[${new Date(l.ts).toLocaleTimeString()}] <strong>${l.action}</strong> · ${l.actor_user_id} · ${JSON.stringify(l.details).slice(0,80)}</div>`
+      ).join('');
+    }
+
+    function clearLog() {
+      audit.logs = [];
+      renderLog();
+    }
+
+    // Initial render
+    refreshPending();
+    renderLog();
+
+    // Auto-refresh pending every 3s (in case of async events)
+    setInterval(refreshPending, 3000);
+  </script>
+</body>
+</html>
